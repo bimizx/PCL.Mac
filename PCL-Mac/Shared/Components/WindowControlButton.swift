@@ -7,39 +7,20 @@
 
 import SwiftUI
 
-struct WindowControlCloseButton: View {
-    @State private var isHovered = false
-    
-    var body: some View {
-        VStack {
-            Image(systemName: "xmark")
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 13)
-                .bold()
-                .background(
-                    RoundedRectangle(cornerRadius: 15)
-                        .fill(isHovered ? Color(hex: 0x3F89D1) : Color.clear)
-                        .animation(.easeInOut(duration: 0.2), value: isHovered)
-                        .frame(width: 30, height: 30)
-                )
-        }
-        .frame(width: 30, height: 30)
-        .onHover { hover in
-            isHovered = hover
-        }
-        .onTapGesture {
-            NSApplication.shared.terminate(self)
-        }
+struct WindowControlButton: View {
+    static let Close: WindowControlButton = WindowControlButton(systemName: "xmark") {
+        NSApplication.shared.terminate(nil)
     }
-}
-
-struct WindowControlMinusButton: View {
+    static let Miniaturize: WindowControlButton = WindowControlButton(systemName: "minus") {
+        NSApplication.shared.windows.first!.miniaturize(nil)
+    }
+    let systemName: String
+    let action: () -> Void
     @State private var isHovered = false
-    
+
     var body: some View {
         VStack {
-            Image(systemName: "minus")
+            Image(systemName: systemName)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 13)
@@ -55,8 +36,6 @@ struct WindowControlMinusButton: View {
         .onHover { hover in
             isHovered = hover
         }
-        .onTapGesture {
-            NSApplication.shared.windows.first?.miniaturize(self)
-        }
+        .onTapGesture(perform: action)
     }
 }
