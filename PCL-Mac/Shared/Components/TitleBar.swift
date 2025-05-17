@@ -14,10 +14,19 @@ struct TitleBar: View {
                 Text("PCL")
                     .font(.system(size: 20, weight: .bold))
                 Spacer()
+                WindowControlMinusButton()
+                WindowControlCloseButton()
             }
-            .padding()
         }
-        .frame(maxWidth: .infinity, maxHeight: 50)
-        .background(Color.blue)
+        .padding()
+        .frame(maxWidth: .infinity, maxHeight: 47)
+        .background(
+            RadialGradient(
+                gradient: Gradient(colors: [Color(hex: 0x0F6AC4), Color(hex: 0x1177DC)]),
+                center: .center,
+                startRadius: 0,
+                endRadius: 100
+            )
+        )
     }
 }

@@ -18,6 +18,14 @@ struct ContentView: View {
             Text("Hello, world!")
             Spacer()
         }
+        .background(
+            RadialGradient(
+                gradient: Gradient(colors: [Color(hex: 0xC8DCF4), Color(hex: 0xB7CBE3)]),
+                center: .center,
+                startRadius: 0,
+                endRadius: 1000
+            )
+        )
     }
 }
 
