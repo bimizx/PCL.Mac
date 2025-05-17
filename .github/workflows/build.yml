@@ -1,0 +1,58 @@
+name: Build PCL-Mac
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-13
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Xcode
+        uses: actions/setup-xcode@v3
+        with:
+          xcode-version: '15.0'
+
+      - name: Cache Swift packages
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/Library/Developer/Xcode/DerivedData
+            ~/Library/Caches/org.swift.swiftpm
+          key: ${{ runner.os }}-spm-${{ hashFiles('​**​/Package.resolved') }}
+          restore-keys: |
+            ${{ runner.os }}-spm-
+
+      - name: Install Homebrew dependencies
+        run: |
+          brew update
+          brew install pcl
+          brew list pcl
+
+      - name: Build Release version
+        run: |
+          xcodebuild -scheme PCL-Mac \
+            -configuration Release \
+            -destination 'platform=macOS,arch=arm64' \
+            clean build
+
+      - name: Create Artifact
+        run: |
+          mkdir -p PCL-Mac.app/Contents/MacOS
+          cp -R build/Release/PCL-Mac.app PCL-Mac.app
+          zip -r PCL-Mac.zip PCL-Mac.app
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: PCL-Mac-App
+          path: PCL-Mac.zip
+          retention-days: 7
