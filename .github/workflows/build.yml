@@ -2,9 +2,9 @@ name: Build macOS App
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, master ]
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
@@ -29,15 +29,14 @@ jobs:
 
       - name: Build App (xcodebuild)
         run: |
-          # 自动查找 .xcodeproj 或 .xcworkspace
-          PROJECT=$(ls *.xcodeproj 2>/dev/null | head -1)
-          WORKSPACE=$(ls *.xcworkspace 2>/dev/null | head -1)
-          SCHEME=$(xcodebuild -list -json | python3 -c "import sys, json; d=json.load(sys.stdin); print((d.get('project',{}) or d.get('workspace',{}))['schemes'][0])")
+          PROJECT="PCL-Mac.xcodeproj"
+          SCHEME="PCL-Mac"
 
-          if [ -n "$WORKSPACE" ]; then
-            xcodebuild -workspace "$WORKSPACE" -scheme "$SCHEME" -configuration Release build CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO
-          else
+          if [ -d "$PROJECT" ]; then
             xcodebuild -project "$PROJECT" -scheme "$SCHEME" -configuration Release build CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO
+          else
+            echo "PCL-Mac.xcodeproj not found!"
+            exit 1
           fi
 
       - name: Archive build products
