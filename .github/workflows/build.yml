@@ -39,10 +39,24 @@ jobs:
             exit 1
           fi
 
+      - name: Find and copy .app to build/Release
+        run: |
+          mkdir -p build/Release
+          APP_PATH=$(find ~/Library/Developer/Xcode/DerivedData/ -type d -path "*/Build/Products/Release/PCL-Mac.app" | head -n 1)
+          if [ -d "$APP_PATH" ]; then
+            cp -R "$APP_PATH" build/Release/
+          else
+            echo "PCL-Mac.app not found!"
+            exit 1
+          fi
+
+      - name: Zip PCL-Mac.app
+        run: |
+          cd build/Release
+          zip -r PCL-Mac.zip PCL-Mac.app
+
       - name: Archive build products
         uses: actions/upload-artifact@v4
         with:
-          name: macOS-App-Build
-          path: |
-            ~/Library/Developer/Xcode/DerivedData/**/Build/Products/Release/*.app
-            build/Release/*.app
+          name: PCL-Mac
+          path: build/Release/PCL-Mac.zip
