@@ -23,7 +23,7 @@ struct ContentView: View {
                 gradient: Gradient(colors: [Color(hex: 0xC8DCF4), Color(hex: 0xB7CBE3)]),
                 center: .center,
                 startRadius: 0,
-                endRadius: 1000
+                endRadius: 410
             )
         )
     }

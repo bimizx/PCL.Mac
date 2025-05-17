@@ -22,10 +22,10 @@ struct TitleBar: View {
         .frame(maxWidth: .infinity, maxHeight: 47)
         .background(
             RadialGradient(
-                gradient: Gradient(colors: [Color(hex: 0x0F6AC4), Color(hex: 0x1177DC)]),
+                gradient: Gradient(colors: [Color(hex: 0x1177DC), Color(hex: 0x0F6AC4)]),
                 center: .center,
                 startRadius: 0,
-                endRadius: 100
+                endRadius: 410
             )
         )
     }

@@ -31,6 +31,8 @@ struct WindowAccessor: NSViewRepresentable {
                 window.standardWindowButton(.miniaturizeButton)?.isHidden = true
                 window.standardWindowButton(.zoomButton)?.isHidden = true
                 window.isMovableByWindowBackground = true
+                window.setContentSize(NSSize(width: 815, height: 465))
+                window.styleMask.remove(.resizable)
             }
         }
         return nsView
