@@ -6,8 +6,19 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXContainerItemProxy section */
+		ECA5D8E02DD99A4C006C58F7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = EC9EAEC12DD85E48006CEDCC /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = EC9EAEC82DD85E48006CEDCC;
+			remoteInfo = "PCL-Mac";
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		EC9EAEC92DD85E48006CEDCC /* PCL-Mac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "PCL-Mac.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		ECA5D8DC2DD99A4C006C58F7 /* PCL-MacTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "PCL-MacTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -16,10 +27,22 @@
 			path = "PCL-Mac";
 			sourceTree = "<group>";
 		};
+		ECA5D8DD2DD99A4C006C58F7 /* PCL-MacTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "PCL-MacTests";
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		EC9EAEC62DD85E48006CEDCC /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		ECA5D8D92DD99A4C006C58F7 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -33,6 +56,7 @@
 			isa = PBXGroup;
 			children = (
 				EC9EAECB2DD85E48006CEDCC /* PCL-Mac */,
+				ECA5D8DD2DD99A4C006C58F7 /* PCL-MacTests */,
 				EC9EAECA2DD85E48006CEDCC /* Products */,
 			);
 			sourceTree = "<group>";
@@ -41,6 +65,7 @@
 			isa = PBXGroup;
 			children = (
 				EC9EAEC92DD85E48006CEDCC /* PCL-Mac.app */,
+				ECA5D8DC2DD99A4C006C58F7 /* PCL-MacTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -70,6 +95,29 @@
 			productReference = EC9EAEC92DD85E48006CEDCC /* PCL-Mac.app */;
 			productType = "com.apple.product-type.application";
 		};
+		ECA5D8DB2DD99A4C006C58F7 /* PCL-MacTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = ECA5D8E22DD99A4C006C58F7 /* Build configuration list for PBXNativeTarget "PCL-MacTests" */;
+			buildPhases = (
+				ECA5D8D82DD99A4C006C58F7 /* Sources */,
+				ECA5D8D92DD99A4C006C58F7 /* Frameworks */,
+				ECA5D8DA2DD99A4C006C58F7 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				ECA5D8E12DD99A4C006C58F7 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				ECA5D8DD2DD99A4C006C58F7 /* PCL-MacTests */,
+			);
+			name = "PCL-MacTests";
+			packageProductDependencies = (
+			);
+			productName = "PCL-MacTests";
+			productReference = ECA5D8DC2DD99A4C006C58F7 /* PCL-MacTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -82,6 +130,10 @@
 				TargetAttributes = {
 					EC9EAEC82DD85E48006CEDCC = {
 						CreatedOnToolsVersion = 16.2;
+					};
+					ECA5D8DB2DD99A4C006C58F7 = {
+						CreatedOnToolsVersion = 16.2;
+						TestTargetID = EC9EAEC82DD85E48006CEDCC;
 					};
 				};
 			};
@@ -101,12 +153,20 @@
 			projectRoot = "";
 			targets = (
 				EC9EAEC82DD85E48006CEDCC /* PCL-Mac */,
+				ECA5D8DB2DD99A4C006C58F7 /* PCL-MacTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		EC9EAEC72DD85E48006CEDCC /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		ECA5D8DA2DD99A4C006C58F7 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -123,7 +183,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		ECA5D8D82DD99A4C006C58F7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		ECA5D8E12DD99A4C006C58F7 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = EC9EAEC82DD85E48006CEDCC /* PCL-Mac */;
+			targetProxy = ECA5D8E02DD99A4C006C58F7 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		EC9EAED62DD85E49006CEDCC /* Debug */ = {
@@ -308,6 +383,38 @@
 			};
 			name = Release;
 		};
+		ECA5D8E32DD99A4C006C58F7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "io.github.pcl-communtiy.PCL-MacTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PCL-Mac.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/PCL-Mac";
+			};
+			name = Debug;
+		};
+		ECA5D8E42DD99A4C006C58F7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "io.github.pcl-communtiy.PCL-MacTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PCL-Mac.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/PCL-Mac";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -325,6 +432,15 @@
 			buildConfigurations = (
 				EC9EAED92DD85E49006CEDCC /* Debug */,
 				EC9EAEDA2DD85E49006CEDCC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		ECA5D8E22DD99A4C006C58F7 /* Build configuration list for PBXNativeTarget "PCL-MacTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				ECA5D8E32DD99A4C006C58F7 /* Debug */,
+				ECA5D8E42DD99A4C006C58F7 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
