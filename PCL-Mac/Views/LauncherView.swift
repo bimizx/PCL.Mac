@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct MainView: View {
+struct LauncherView: View {
     var body: some View {
         VStack {
             Spacer()

@@ -67,8 +67,11 @@ struct TitleBar: View {
                             currentPage = .download
                         }
                     Spacer()
-                    MenuItemButton(page: .main, parent: self)
+                    MenuItemButton(page: .launcher, parent: self)
                     MenuItemButton(page: .download, parent: self)
+                    MenuItemButton(page: .multiplayer, parent: self)
+                    MenuItemButton(page: .settings, parent: self)
+                    MenuItemButton(page: .others, parent: self)
                     Spacer()
                     WindowControlButton.Miniaturize
                     WindowControlButton.Close
@@ -91,19 +94,56 @@ struct TitleBar: View {
 struct MenuItemButton: View {
     let page: Page
     let parent: TitleBar
+    var icon: Image?
     @State private var isHovered = false
     
     var body: some View {
-        RoundedRectangle(cornerRadius: 25)
-            .frame(width: 75, height: 27)
-            .foregroundStyle(parent.currentPage == page ? .white : (isHovered ? Color(hex: 0x3C8CDF) : .clear))
-            .animation(.easeInOut(duration: 0.2), value: isHovered)
-            .animation(.easeInOut(duration: 0.2), value: parent.currentPage == page)
-            .onTapGesture {
-                parent.currentPage = page
+        ZStack {
+            RoundedRectangle(cornerRadius: 25)
+                .foregroundStyle(parent.currentPage == page ? .white : (isHovered ? Color(hex: 0x3C8CDF) : .clear))
+            
+            HStack {
+                getImage()
+                    .interpolation(.high)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 16, height: 16)
+                    .colorMultiply(parent.currentPage == page ? Color(hex: 0x1269E4) : .white)
+                    .position(x: 17, y: 13)
+                Text(getText())
+                    .foregroundStyle(parent.currentPage == page ? Color(hex: 0x1269E4) : .white)
+                    .position(x: 9, y: 13)
             }
-            .onHover { hover in
-                isHovered = hover
-            }
+        }
+        .frame(width: 75, height: 27)
+        .animation(.easeInOut(duration: 0.2), value: isHovered)
+        .animation(.easeInOut(duration: 0.2), value: parent.currentPage == page)
+        .onTapGesture {
+            parent.currentPage = page
+        }
+        .onHover { hover in
+            isHovered = hover
+        }
+    }
+    
+    private func getImage() -> Image {
+        let key = switch (page) {
+        case .launcher: "LaunchItem"
+        case .download: "DownloadItem"
+        case .multiplayer: "MultiplayerItem"
+        case .settings: "SettingsItem"
+        case .others: "OthersItem"
+        }
+        return Image(key)
+    }
+    
+    private func getText() -> String {
+        return switch (page) {
+        case .launcher: "启动"
+        case .download: "下载"
+        case .multiplayer: "联机"
+        case .settings: "设置"
+        case .others: "更多"
+        }
     }
 }

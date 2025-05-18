@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State private var currentPage: Page = .main
+    @State private var currentPage: Page = .launcher
     
     var body: some View {
         VStack(spacing: 0) {
@@ -30,9 +30,11 @@ struct ContentView: View {
     private func createViewFromPage() -> some View {
         Group {
             switch (currentPage) {
-            case .main: MainView()
+            case .launcher: LauncherView()
             case .download: DownloadView()
-            default: MainView()
+            case .multiplayer: MultiplayerView()
+            case .settings: SettingsView()
+            case .others: OthersView()
             }
         }
     }
@@ -43,5 +45,5 @@ struct ContentView: View {
 }
 
 enum Page {
-    case main, download, multiplayer, settings, others;
+    case launcher, download, multiplayer, settings, others;
 }
