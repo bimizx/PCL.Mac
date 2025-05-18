@@ -12,6 +12,14 @@ import PCL_Mac
 struct PCL_MacTests {
 
     @Test func example() async throws {
-        print(JavaEntity.of(URL(fileURLWithPath: "/usr/bin/java")))
+        let javaEntities = try await JavaSearch.search()
+        print("共找到 \(javaEntities.count) 个 Java")
+        javaEntities.forEach { javaEntity in
+            print("----------------")
+            print("路径: \(javaEntity.executableUrl!)")
+            print("版本: \(javaEntity.displayVersion ?? "不知道")")
+            print("架构: \(javaEntity.arch)")
+            print("运行方式: \(javaEntity.callMethod)")
+        }
     }
 }

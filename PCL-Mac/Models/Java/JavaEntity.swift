@@ -10,11 +10,11 @@ import Foundation
 public struct JavaEntity {
     static let Error = JavaEntity(arch: .unknown, version: nil, displayVersion: nil, executableUrl: nil, callMethod: .incompatible)
     
-    let arch: ExecArchitectury
-    let version: Int?
-    let displayVersion: String?
-    let executableUrl: URL?
-    let callMethod: CallMethod
+    public let arch: ExecArchitectury
+    public let version: Int?
+    public let displayVersion: String?
+    public let executableUrl: URL?
+    public let callMethod: CallMethod
     
     public static func of(_ executableUrl: URL) -> JavaEntity {
         guard FileManager.default.fileExists(atPath: executableUrl.path) else {
