@@ -21,9 +21,11 @@ struct WindowControlButton: View {
     var body: some View {
         VStack {
             Image(systemName: systemName)
+                .renderingMode(.template)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 13)
+                .foregroundStyle(.white)
                 .bold()
                 .background(
                     RoundedRectangle(cornerRadius: 15)

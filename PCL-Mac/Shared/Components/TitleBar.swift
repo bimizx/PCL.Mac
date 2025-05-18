@@ -107,11 +107,12 @@ struct MenuItemButton: View {
             
             HStack {
                 getImage()
+                    .renderingMode(.template)
                     .interpolation(.high)
                     .resizable()
+                    .foregroundStyle(parent.currentPage == page ? Color(hex: 0x1269E4) : .white)
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 16, height: 16)
-                    .colorMultiply(parent.currentPage == page ? Color(hex: 0x1269E4) : .white)
                     .position(x: 17, y: 13)
                 Text(getText())
                     .foregroundStyle(parent.currentPage == page ? Color(hex: 0x1269E4) : .white)
