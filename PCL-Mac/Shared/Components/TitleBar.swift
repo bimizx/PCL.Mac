@@ -66,6 +66,8 @@ struct TitleBar: View {
                         .onTapGesture {
                             currentPage = .download
                         }
+                    Tag(text: "Mac", color: .white)
+                        .foregroundStyle(Color(hex: 0x0B5AC9))
                     Spacer()
                     MenuItemButton(page: .launcher, parent: self)
                     MenuItemButton(page: .download, parent: self)
@@ -144,6 +146,22 @@ struct MenuItemButton: View {
         case .multiplayer: "联机"
         case .settings: "设置"
         case .others: "更多"
+        }
+    }
+}
+
+struct Tag: View {
+    let text: String
+    let color: Color
+    
+    var body: some View {
+        ZStack {
+            Text(text)
+                .background(
+                    RoundedRectangle(cornerRadius: 5)
+                        .fill(color)
+                        .frame(width: 32, height: 21)
+                )
         }
     }
 }
