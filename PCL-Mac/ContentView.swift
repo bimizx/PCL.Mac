@@ -14,6 +14,7 @@ struct ContentView: View {
         VStack(spacing: 0) {
             TitleBar(currentPage: $currentPage)
             createViewFromPage()
+                .foregroundStyle(.black)
                 .frame(minWidth: 815, minHeight: 418)
         }
         .ignoresSafeArea(.container, edges: .top)

@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import AppKit
 
 struct DraggableArea<Content: View>: NSViewRepresentable {
     let content: () -> Content
@@ -31,6 +30,12 @@ class DraggableNSHostingView<Content: View>: NSHostingView<Content> {
     override func mouseDragged(with event: NSEvent) {
         guard let window = self.window,
               let mouseDownPointInWindow = mouseDownPointInWindow else { return }
+        
+        if mouseDownPointInWindow.distance(to: event.locationInWindow) <= 1 {
+            window.mouseDown(with: event)
+            window.mouseUp(with: event)
+            return
+        }
         let mouseOnScreen = NSEvent.mouseLocation
         let newOrigin = NSPoint(x: mouseOnScreen.x - mouseDownPointInWindow.x,
                                 y: mouseOnScreen.y - mouseDownPointInWindow.y)
@@ -50,12 +55,8 @@ struct TitleBar: View {
         VStack {
             ZStack {
                 DraggableArea {
-                    RadialGradient(
-                        gradient: Gradient(colors: [Color(hex: 0x1177DC), Color(hex: 0x0F6AC4)]),
-                        center: .center,
-                        startRadius: 0,
-                        endRadius: 410
-                    )
+                    Spacer()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
                 HStack {
                     Image("TitleLogo")
