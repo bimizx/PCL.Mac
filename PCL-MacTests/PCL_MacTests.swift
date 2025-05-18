@@ -12,8 +12,9 @@ import PCL_Mac
 struct PCL_MacTests {
 
     @Test func example() async throws {
+        let before = Date().timeIntervalSince1970
         let javaEntities = try await JavaSearch.search()
-        print("共找到 \(javaEntities.count) 个 Java")
+        print("共找到 \(javaEntities.count) 个 Java, 耗时\(Int64((Date().timeIntervalSince1970 - before) * 1000))ms")
         javaEntities.forEach { javaEntity in
             print("----------------")
             print("路径: \(javaEntity.executableUrl!)")

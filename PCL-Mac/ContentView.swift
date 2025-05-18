@@ -12,7 +12,7 @@ struct ContentView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            TitleBar(currentPage: $currentPage)
+            TitleBarComponent(currentPage: $currentPage)
             createViewFromPage()
                 .foregroundStyle(.black)
                 .frame(minWidth: 815, minHeight: 418)

@@ -47,7 +47,7 @@ class DraggableNSHostingView<Content: View>: NSHostingView<Content> {
     }
 }
 
-struct TitleBar: View {
+struct TitleBarComponent: View {
     @State private var initialWindowOrigin: CGPoint?
     @Binding var currentPage: Page
     
@@ -96,7 +96,7 @@ struct TitleBar: View {
 
 struct MenuItemButton: View {
     let page: Page
-    let parent: TitleBar
+    let parent: TitleBarComponent
     var icon: Image?
     @State private var isHovered = false
     
