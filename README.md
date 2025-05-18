@@ -10,3 +10,7 @@
 ## 测试
 
 项目的 [Actions](https://github.com/PCL-Community/PCL-Mac/actions) 中有测试版 App，可自行下载
+
+## 兼容性
+
+需要 **macOS 13.0+** 才能运行本 App。~~除非其他系统强兼 SwiftUI~~
