@@ -16,11 +16,11 @@ struct MyButtonComponent: View {
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 4)
-                .stroke(isHovered ? Color(hex: 0x1370F3) : Color(hex: 0x000000, alpha: 0.7), lineWidth: 1.3)
+                .stroke(isHovered ? Color(hex: 0x1370F3) : Color(hex: 0x343D4A), lineWidth: 1.3)
             RoundedRectangle(cornerRadius: 6)
                 .foregroundStyle(Color(hex: 0xFFFFFF, alpha: isHovered ? 0.5 : 0.3))
             Text(text)
-                .foregroundStyle(isHovered ? Color(hex: 0x1370F3) : Color(hex: 0x000000, alpha: 0.7))
+                .foregroundStyle(isHovered ? Color(hex: 0x1370F3) : Color(hex: 0x343D4A))
         }
         .onHover {
             isHovered = $0

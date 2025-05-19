@@ -26,8 +26,9 @@ struct SettingsView: View {
                             }
                         }
                     }
-                    .frame(height: 45)
+                    .frame(height: 40)
                     .padding()
+                    .padding(.bottom, -23)
                     MyButtonComponent(text: "选择自定义Java") {
                         let panel = NSOpenPanel()
                         panel.allowsMultipleSelection = false
@@ -53,8 +54,9 @@ struct SettingsView: View {
                             }
                         }
                     }
-                    .frame(height: 45)
+                    .frame(height: 40)
                     .padding()
+                    .padding(.bottom, -23)
                     MyCardComponent(title: "Java 列表") {
                         VStack {
                             Text("搜索耗时: \(dataManager.lastTimeUsed)ms")
