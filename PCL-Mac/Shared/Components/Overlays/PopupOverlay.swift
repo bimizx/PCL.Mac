@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct PopupOverlay: View {
+struct PopupOverlay: View, Identifiable, Equatable {
     private let Width: CGFloat = 560
     private let Height: CGFloat = 280
     
@@ -15,10 +15,16 @@ struct PopupOverlay: View {
     public let content: String
     public let buttons: [PopupButton]
     
+    public let id: UUID = UUID()
+    
     public init(_ title: String, _ content: String, _ buttons: [PopupButton]) {
         self.title = title
         self.content = content
         self.buttons = buttons
+    }
+    
+    public static func == (_ var1: PopupOverlay, _ var2: PopupOverlay) -> Bool {
+        return var1.id == var2.id
     }
     
     var body: some View {

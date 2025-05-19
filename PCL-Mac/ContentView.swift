@@ -29,21 +29,28 @@ struct ContentView: View {
                 )
             )
             if let currentPopup = DataManager.shared.currentPopup {
-                Rectangle()
-                    .fill(Color(hex: 0x000000, alpha: 0.7))
-                currentPopup
-                    .padding()
-                VStack {
-                    TitleBarComponent(currentPage: .constant(currentPage))
-                    Spacer()
+                Group {
+                    Rectangle()
+                        .fill(Color(hex: 0x000000, alpha: 0.7))
+                        .opacity(dataManager.currentPopup != nil ? 1 : 0)
+                    currentPopup
+                        .padding()
+                        .transition(.opacity)
+                    VStack {
+                        TitleBarComponent(currentPage: .constant(currentPage))
+                        Spacer()
+                    }
                 }
+                .animation(.easeInOut(duration: 0.2), value: dataManager.currentPopup)
             }
         }
         .onAppear {
             ContentView.setPopup(
                 PopupOverlay("Minecraft 出现错误", "错就发报告\n错不起就别问", [
-                    PopupButton(text: "截图扔到Q群，然后坐和被骂"),
-                    PopupButton(text: "关闭")
+                    PopupButton(text: "截图扔到Q群，然后坐和被骂", color: Color(hex: 0xC00606)) {
+                        NSApplication.shared.terminate(nil)
+                    },
+                    .Close
                 ])
             )
         }
@@ -61,7 +68,7 @@ struct ContentView: View {
         }
     }
     
-    static func setPopup(_ popup: PopupOverlay) {
+    static func setPopup(_ popup: PopupOverlay?) {
         DataManager.shared.currentPopup = popup
     }
 }
