@@ -20,17 +20,17 @@ public struct JavaVirtualMachine: Identifiable {
             return _isError ?? false
         }
     }
-    public var isCustom: Bool {
+    public var isAddedByUser: Bool {
         get {
-            return _isCustom ?? false
+            return _isAddedByUser ?? false
         }
     }
     private var _isError: Bool?
-    private var _isCustom: Bool?
+    private var _isAddedByUser: Bool?
     
     public let id = UUID()
     
-    public static func of(_ executableUrl: URL, _ isCustom: Bool? = nil) -> JavaVirtualMachine {
+    public static func of(_ executableUrl: URL, _ addedByUser: Bool? = nil) -> JavaVirtualMachine {
         guard FileManager.default.fileExists(atPath: executableUrl.path) else {
             err("\(executableUrl) not found!")
             return Error
@@ -63,7 +63,7 @@ public struct JavaVirtualMachine: Identifiable {
         } else {
             err("未找到 \(executableUrl.path()) 对应的版本文件")
         }
-        return JavaVirtualMachine(arch: arch, version: version, displayVersion: displayVersion, executableUrl: executableUrl, callMethod: callMethod ?? .incompatible, _isCustom: isCustom)
+        return JavaVirtualMachine(arch: arch, version: version, displayVersion: displayVersion, executableUrl: executableUrl, callMethod: callMethod ?? .incompatible, _isAddedByUser: addedByUser)
     }
     
     private static func getArchOfFile(_ executableUrl: URL) -> ExecArchitectury {

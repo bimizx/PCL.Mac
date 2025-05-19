@@ -29,7 +29,7 @@ struct SettingsView: View {
                     .frame(height: 40)
                     .padding()
                     .padding(.bottom, -23)
-                    MyButtonComponent(text: "选择自定义Java") {
+                    MyButtonComponent(text: "手动添加Java") {
                         let panel = NSOpenPanel()
                         panel.allowsMultipleSelection = false
                         panel.canChooseFiles = true
@@ -39,9 +39,9 @@ struct SettingsView: View {
                             let url = panel.url!
                             if url.lastPathComponent == "java" {
                                 if dataManager.javaVirtualMachines.filter({ $0.executableUrl == url }).isEmpty {
-                                    LocalStorage.shared.customJVMs.append(url)
                                     let jvm = JavaVirtualMachine.of(url, true)
                                     if !jvm.isError {
+                                        LocalStorage.shared.userAddedJVMPaths.append(url)
                                         dataManager.javaVirtualMachines.append(jvm)
                                     } else {
                                         // 错误
