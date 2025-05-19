@@ -7,10 +7,21 @@
 
 import SwiftUI
 
-struct PopupButton: View {
+struct PopupButton: View, Identifiable {
+    let id = UUID()
+    let text: String
+    
     var body: some View {
         ZStack {
-            // 笑死，没截图根本不知道怎么写
+            Text(text)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 5)
+                        .stroke(.black)
+                        .frame(height: 30)
+                        .padding(.leading, -10)
+                        .padding(.trailing, -10)
+                        .frame(minWidth: 0, maxWidth: .infinity)
+                )
         }
     }
 }
