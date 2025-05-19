@@ -7,13 +7,13 @@
 
 import SwiftUI
 
-struct JavaEntityComponent: View {
-    let javaEntity: JavaVirtualMachine
+struct JavaComponent: View {
+    let jvm: JavaVirtualMachine
     
     var body: some View {
         HStack {
             VStack {
-                Text("Java \(javaEntity.version) (\(javaEntity.displayVersion)) \(javaEntity.arch) 运行方式: \(javaEntity.callMethod.getDisplayName() + (javaEntity.isAddedByUser ? "(自定义)" : ""))\n\(javaEntity.executableUrl.path())")
+                Text("Java \(jvm.version) (\(jvm.displayVersion)) \(jvm.arch) 运行方式: \(jvm.callMethod.getDisplayName() + (jvm.isAddedByUser ? "(自定义)" : ""))\n\(jvm.executableUrl.path())")
             }
             Spacer()
         }

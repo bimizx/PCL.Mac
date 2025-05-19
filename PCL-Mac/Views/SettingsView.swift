@@ -62,7 +62,7 @@ struct SettingsView: View {
                             Text("搜索耗时: \(dataManager.lastTimeUsed)ms")
                                 .font(.system(size: 14))
                             ForEach(dataManager.javaVirtualMachines) { javaEntity in
-                                JavaEntityComponent(javaEntity: javaEntity)
+                                JavaComponent(jvm: javaEntity)
                             }
                         }
                     }
