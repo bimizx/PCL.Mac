@@ -19,7 +19,7 @@ struct MyCardComponent<Content: View>: View {
                 HStack {
                     Text(title)
                         .font(.system(size: 16))
-                        .foregroundStyle(isHovered ? Color(hex: 0x0B5BcB) : .black)
+                        .foregroundStyle(isHovered ? Color(hex: 0x0B5BCB) : .black)
                     Spacer()
                     Image("FoldController")
                         .resizable()
@@ -27,7 +27,7 @@ struct MyCardComponent<Content: View>: View {
                         .frame(width: 20, height: 20)
                         .offset(x: -8, y: 4)
                         .rotationEffect(.degrees(isUnfolded ? 180 : 0), anchor: .center)
-                        .foregroundStyle(isHovered ? Color(hex: 0x0B5BcB) : .black)
+                        .foregroundStyle(isHovered ? Color(hex: 0x0B5BCB) : .black)
                 }
                 Color.clear
                     .frame(height: 20)
