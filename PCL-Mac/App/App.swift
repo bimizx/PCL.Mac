@@ -9,16 +9,7 @@ import SwiftUI
 
 @main
 struct PCL_MacApp: App {
-    init() {
-        print("正在初始化 Java 列表")
-        Task {
-            do {
-                try await JavaSearch.searchAndSet()
-            } catch {
-                print("无法初始化 Java 列表: \(error)")
-            }
-        }
-    }
+    @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     
     var body: some Scene {
         WindowGroup {

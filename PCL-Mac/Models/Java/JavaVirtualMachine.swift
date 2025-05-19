@@ -8,17 +8,29 @@
 import Foundation
 
 public struct JavaVirtualMachine: Identifiable {
-    static let Error = JavaVirtualMachine(arch: .unknown, version: -1, displayVersion: "错误", executableUrl: nil, callMethod: .incompatible)
+    static let Error = JavaVirtualMachine(arch: .unknown, version: -1, displayVersion: "错误", executableUrl: URL(fileURLWithPath: "Error"), callMethod: .incompatible, _isError: true)
     
     public let arch: ExecArchitectury
     public var version: Int
     public var displayVersion: String
-    public let executableUrl: URL?
+    public let executableUrl: URL
     public let callMethod: CallMethod
+    public var isError: Bool {
+        get {
+            return _isError ?? false
+        }
+    }
+    public var isCustom: Bool {
+        get {
+            return _isCustom ?? false
+        }
+    }
+    private var _isError: Bool?
+    private var _isCustom: Bool?
     
     public let id = UUID()
     
-    public static func of(_ executableUrl: URL) -> JavaVirtualMachine {
+    public static func of(_ executableUrl: URL, _ isCustom: Bool? = nil) -> JavaVirtualMachine {
         guard FileManager.default.fileExists(atPath: executableUrl.path) else {
             print("\(executableUrl) not found!")
             return Error
@@ -41,10 +53,12 @@ public struct JavaVirtualMachine: Identifiable {
         var displayVersion: String = "未知"
         if FileManager.default.fileExists(atPath: releaseUrl.path) {
             let release = PropertiesParser.parse(fileUrl: releaseUrl)
-            displayVersion = release["JAVA_VERSION"]!
-            version = Int(displayVersion.split(separator: ".")[displayVersion.starts(with: "1.") ? 1 : 0])!
+            if let javaVersion = release["JAVA_VERSION"] {
+                displayVersion = javaVersion
+                version = Int(displayVersion.split(separator: ".")[displayVersion.starts(with: "1.") ? 1 : 0])!
+            }
         }
-        return JavaVirtualMachine(arch: arch, version: version, displayVersion: displayVersion, executableUrl: executableUrl, callMethod: callMethod ?? .incompatible)
+        return JavaVirtualMachine(arch: arch, version: version, displayVersion: displayVersion, executableUrl: executableUrl, callMethod: callMethod ?? .incompatible, _isCustom: isCustom)
     }
     
     private static func getArchOfFile(_ executableUrl: URL) -> ExecArchitectury {

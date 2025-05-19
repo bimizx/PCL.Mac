@@ -13,7 +13,7 @@ struct JavaEntityComponent: View {
     var body: some View {
         HStack {
             VStack {
-                Text("Java \(javaEntity.version) (\(javaEntity.displayVersion)) \(javaEntity.arch) 运行方式: \(javaEntity.callMethod.getDisplayName())\n\(javaEntity.executableUrl!.path())")
+                Text("Java \(javaEntity.version) (\(javaEntity.displayVersion)) \(javaEntity.arch) 运行方式: \(javaEntity.callMethod.getDisplayName() + (javaEntity.isCustom ? "(自定义)" : ""))\n\(javaEntity.executableUrl.path())")
             }
             Spacer()
         }

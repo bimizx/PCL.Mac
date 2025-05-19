@@ -22,7 +22,7 @@ public class JavaSearch {
         let before = Date().timeIntervalSince1970
         javaVirtualMachines = try await search()
         lastTimeUsed = Int((Date().timeIntervalSince1970 - before) * 1000)
-        print("搜索Java耗时\(lastTimeUsed)ms")
+        log("搜索 Java 耗时 \(lastTimeUsed)ms")
         highestVersion = javaVirtualMachines.sorted { jvm1, jvm2 in
             return jvm1.version > jvm2.version
         }[0].version
@@ -33,7 +33,13 @@ public class JavaSearch {
                 javaVirtualMachines[i].displayVersion = String(highestVersion)
             }
         }
+        loadCustomJVMs()
         await updateData()
+    }
+    
+    private static func loadCustomJVMs() {
+        LocalStorage.shared.customJVMs.forEach{ javaVirtualMachines.append(JavaVirtualMachine.of($0, true)) }
+        log("加载了 \(LocalStorage.shared.customJVMs.count) 个自定义 Java")
     }
     
     public static func search() async throws -> [JavaVirtualMachine] {

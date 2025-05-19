@@ -28,6 +28,33 @@ struct SettingsView: View {
                     }
                     .frame(height: 45)
                     .padding()
+                    MyButtonComponent(text: "选择自定义Java") {
+                        let panel = NSOpenPanel()
+                        panel.allowsMultipleSelection = false
+                        panel.canChooseFiles = true
+                        panel.canChooseDirectories = false
+                        
+                        if panel.runModal() == .OK {
+                            let url = panel.url!
+                            if url.lastPathComponent == "java" {
+                                if dataManager.javaVirtualMachines.filter({ $0.executableUrl == url }).isEmpty {
+                                    LocalStorage.shared.customJVMs.append(url)
+                                    let jvm = JavaVirtualMachine.of(url, true)
+                                    if !jvm.isError {
+                                        dataManager.javaVirtualMachines.append(jvm)
+                                    } else {
+                                        // 错误
+                                    }
+                                } else {
+                                    // 重复
+                                }
+                            } else {
+                                // 可执行文件不正确
+                            }
+                        }
+                    }
+                    .frame(height: 45)
+                    .padding()
                     MyCardComponent(title: "Java 列表") {
                         VStack {
                             Text("搜索耗时: \(dataManager.lastTimeUsed)ms")
