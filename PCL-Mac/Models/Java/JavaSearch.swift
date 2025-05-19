@@ -8,24 +8,31 @@
 import Foundation
 
 public class JavaSearch {
-    public static var JavaVirtualMachines: [JavaVirtualMachine] = []
-    public static var lastTimeUsed: Int = 0
     public static var highestVersion: Int!
+    private static var javaVirtualMachines: [JavaVirtualMachine] = []
+    private static var lastTimeUsed: Int = 0
+    
+    @MainActor
+    public static func updateData() {
+        DataManager.shared.javaVirtualMachines = javaVirtualMachines
+        DataManager.shared.lastTimeUsed = lastTimeUsed
+    }
     
     public static func searchAndSet() async throws {
         let before = Date().timeIntervalSince1970
-        JavaVirtualMachines = try await search()
+        javaVirtualMachines = try await search()
         lastTimeUsed = Int((Date().timeIntervalSince1970 - before) * 1000)
-        highestVersion = JavaVirtualMachines.sorted { jvm1, jvm2 in
+        highestVersion = javaVirtualMachines.sorted { jvm1, jvm2 in
             return jvm1.version > jvm2.version
         }[0].version
         
-        for i in 0..<JavaVirtualMachines.count {
-            if JavaVirtualMachines[i].version == 0 {
-                JavaVirtualMachines[i].version = highestVersion
-                JavaVirtualMachines[i].displayVersion = String(highestVersion)
+        for i in 0..<javaVirtualMachines.count {
+            if javaVirtualMachines[i].version == 0 {
+                javaVirtualMachines[i].version = highestVersion
+                javaVirtualMachines[i].displayVersion = String(highestVersion)
             }
         }
+        await updateData()
     }
     
     public static func search() async throws -> [JavaVirtualMachine] {
