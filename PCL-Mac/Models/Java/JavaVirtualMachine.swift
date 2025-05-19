@@ -32,10 +32,11 @@ public struct JavaVirtualMachine: Identifiable {
     
     public static func of(_ executableUrl: URL, _ isCustom: Bool? = nil) -> JavaVirtualMachine {
         guard FileManager.default.fileExists(atPath: executableUrl.path) else {
-            print("\(executableUrl) not found!")
+            err("\(executableUrl) not found!")
             return Error
         }
         guard executableUrl.isFileURL else {
+            err("\(executableUrl.path()) 不是文件!")
             return Error
         }
         
@@ -56,7 +57,11 @@ public struct JavaVirtualMachine: Identifiable {
             if let javaVersion = release["JAVA_VERSION"] {
                 displayVersion = javaVersion
                 version = Int(displayVersion.split(separator: ".")[displayVersion.starts(with: "1.") ? 1 : 0])!
+            } else {
+                err("加载 \(executableUrl.path()) 时出现错误: 未找到键 JAVA_VERSION 对应的值")
             }
+        } else {
+            err("未找到 \(executableUrl.path()) 对应的版本文件")
         }
         return JavaVirtualMachine(arch: arch, version: version, displayVersion: displayVersion, executableUrl: executableUrl, callMethod: callMethod ?? .incompatible, _isCustom: isCustom)
     }
