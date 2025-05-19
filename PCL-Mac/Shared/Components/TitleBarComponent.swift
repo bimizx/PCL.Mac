@@ -69,6 +69,7 @@ struct TitleBarComponent: View {
                         }
                     Tag(text: "Mac", color: .white)
                         .foregroundStyle(Color(hex: 0x0B5AC9))
+                        .padding(.leading, 10)
                     Spacer()
                     MenuItemButton(page: .launcher, parent: self)
                     MenuItemButton(page: .download, parent: self)
