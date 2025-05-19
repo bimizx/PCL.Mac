@@ -25,13 +25,15 @@ jobs:
             pod install
           fi
 
-      - name: Build App (xcodebuild)
+      - name: Build Universal Binary (xcodebuild)
         run: |
           PROJECT="PCL-Mac.xcodeproj"
           SCHEME="PCL-Mac"
 
           if [ -d "$PROJECT" ]; then
-            xcodebuild -project "$PROJECT" -scheme "$SCHEME" -configuration Release build CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO
+            xcodebuild -project "$PROJECT" -scheme "$SCHEME" -configuration Release \
+              ARCHS="arm64 x86_64" ONLY_ACTIVE_ARCH=NO \
+              CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO build
           else
             echo "PCL-Mac.xcodeproj not found!"
             exit 1
@@ -47,6 +49,10 @@ jobs:
             echo "PCL-Mac.app not found!"
             exit 1
           fi
+
+      - name: Verify Universal Binary
+        run: |
+          file build/Release/PCL-Mac.app/Contents/MacOS/PCL-Mac
 
       - name: Zip PCL-Mac.app
         run: |
