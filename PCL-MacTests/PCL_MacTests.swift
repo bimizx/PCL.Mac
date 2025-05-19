@@ -12,6 +12,9 @@ import PCL_Mac
 struct PCL_MacTests {
 
     @Test func example() async throws {
-        print(Bundle.main.bundleURL)
+        MinecraftDownloader.getJson("1.21") { data in
+            print(data)
+        }
+        try? await Task.sleep(nanoseconds: 2000000000)
     }
 }
