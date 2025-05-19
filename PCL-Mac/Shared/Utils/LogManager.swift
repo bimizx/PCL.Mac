@@ -26,10 +26,11 @@ actor LogStore {
         Task {
             do {
                 try await FileManager.default.writeLog(content)
-                print("[LOG] 日志保存成功")
+                log("日志保存成功")
             } catch {
-                print("[ERR] 日志保存失败: \(error)")
+                err("日志保存失败: \(error)")
             }
+            log("已触发进程终止")
             await NSApp.reply(toApplicationShouldTerminate: true)
         }
     }

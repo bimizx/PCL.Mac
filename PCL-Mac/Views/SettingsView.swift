@@ -14,7 +14,7 @@ struct SettingsView: View {
         HStack {
             Rectangle()
                 .fill(.white)
-                .frame(width: 200)
+                .frame(width: 120)
             ScrollView(.vertical, showsIndicators: true) {
                 VStack {
                     MyButtonComponent(text: "刷新Java列表") {
