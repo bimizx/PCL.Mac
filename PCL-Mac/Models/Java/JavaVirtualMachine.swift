@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct JavaVirtualMachine: Identifiable {
+public struct JavaVirtualMachine: Identifiable, Equatable {
     static let Error = JavaVirtualMachine(arch: .unknown, version: -1, displayVersion: "错误", executableUrl: URL(fileURLWithPath: "Error"), callMethod: .incompatible, _isError: true)
     
     public let arch: ExecArchitectury
@@ -100,6 +100,10 @@ public struct JavaVirtualMachine: Identifiable {
         case 0x100000C: return .arm64
         default: return .unknown
         }
+    }
+    
+    public static func == (jvm1: JavaVirtualMachine, jvm2: JavaVirtualMachine) -> Bool {
+        return jvm1.executableUrl == jvm2.executableUrl
     }
 }
 

@@ -64,6 +64,7 @@ struct SettingsView: View {
                             ForEach(dataManager.javaVirtualMachines) { javaEntity in
                                 JavaComponent(jvm: javaEntity)
                             }
+                            .animation(.easeInOut(duration: 0.2), value: dataManager.javaVirtualMachines)
                         }
                     }
                     .padding()
