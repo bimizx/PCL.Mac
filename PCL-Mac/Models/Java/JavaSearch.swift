@@ -22,6 +22,7 @@ public class JavaSearch {
         let before = Date().timeIntervalSince1970
         javaVirtualMachines = try await search()
         lastTimeUsed = Int((Date().timeIntervalSince1970 - before) * 1000)
+        print("搜索Java耗时\(lastTimeUsed)ms")
         highestVersion = javaVirtualMachines.sorted { jvm1, jvm2 in
             return jvm1.version > jvm2.version
         }[0].version
