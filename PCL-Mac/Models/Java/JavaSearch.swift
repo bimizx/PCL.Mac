@@ -8,7 +8,27 @@
 import Foundation
 
 public class JavaSearch {
-    public static func search() async throws -> [JavaEntity] {
+    public static var JavaVirtualMachines: [JavaVirtualMachine] = []
+    public static var lastTimeUsed: Int = 0
+    public static var highestVersion: Int!
+    
+    public static func searchAndSet() async throws {
+        let before = Date().timeIntervalSince1970
+        JavaVirtualMachines = try await search()
+        lastTimeUsed = Int((Date().timeIntervalSince1970 - before) * 1000)
+        highestVersion = JavaVirtualMachines.sorted { jvm1, jvm2 in
+            return jvm1.version > jvm2.version
+        }[0].version
+        
+        for i in 0..<JavaVirtualMachines.count {
+            if JavaVirtualMachines[i].version == 0 {
+                JavaVirtualMachines[i].version = highestVersion
+                JavaVirtualMachines[i].displayVersion = String(highestVersion)
+            }
+        }
+    }
+    
+    public static func search() async throws -> [JavaVirtualMachine] {
         var dirs: [String] = []
         dirs.append("/usr/bin")
         let jvmDirsRanges = [
@@ -27,7 +47,7 @@ public class JavaSearch {
                 dirs.append(contentsOf: jvmFolders)
             } catch { }
         }
-        return dirs.map { JavaEntity.of(URL(fileURLWithPath: $0.replacingOccurrences(of: "~", with: FileManager.default.homeDirectoryForCurrentUser.path)).appending(path: "java")) }
+        return dirs.map { JavaVirtualMachine.of(URL(fileURLWithPath: $0.replacingOccurrences(of: "~", with: FileManager.default.homeDirectoryForCurrentUser.path)).appending(path: "java")) }
     }
     
     private static func isValidJvmDirectory(_ path: URL) -> Bool {

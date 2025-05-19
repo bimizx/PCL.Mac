@@ -7,16 +7,18 @@
 
 import Foundation
 
-public struct JavaEntity {
-    static let Error = JavaEntity(arch: .unknown, version: nil, displayVersion: nil, executableUrl: nil, callMethod: .incompatible)
+public struct JavaVirtualMachine: Identifiable {
+    static let Error = JavaVirtualMachine(arch: .unknown, version: -1, displayVersion: "错误", executableUrl: nil, callMethod: .incompatible)
     
     public let arch: ExecArchitectury
-    public let version: Int?
-    public let displayVersion: String?
+    public var version: Int
+    public var displayVersion: String
     public let executableUrl: URL?
     public let callMethod: CallMethod
     
-    public static func of(_ executableUrl: URL) -> JavaEntity {
+    public let id = UUID()
+    
+    public static func of(_ executableUrl: URL) -> JavaVirtualMachine {
         guard FileManager.default.fileExists(atPath: executableUrl.path) else {
             print("\(executableUrl) not found!")
             return Error
@@ -35,14 +37,14 @@ public struct JavaEntity {
             callMethod = .incompatible
         }
         let releaseUrl = executableUrl.parent().parent().appending(path: "release")
-        var version: Int? = nil
-        var displayVersion: String? = nil
+        var version: Int = 0
+        var displayVersion: String = "未知"
         if FileManager.default.fileExists(atPath: releaseUrl.path) {
             let release = PropertiesParser.parse(fileUrl: releaseUrl)
-            displayVersion = release["JAVA_VERSION"]
-            version = Int(displayVersion!.split(separator: ".")[displayVersion!.starts(with: "1.") ? 1 : 0])
+            displayVersion = release["JAVA_VERSION"]!
+            version = Int(displayVersion.split(separator: ".")[displayVersion.starts(with: "1.") ? 1 : 0])!
         }
-        return JavaEntity(arch: arch, version: version, displayVersion: displayVersion, executableUrl: executableUrl, callMethod: callMethod ?? .incompatible)
+        return JavaVirtualMachine(arch: arch, version: version, displayVersion: displayVersion, executableUrl: executableUrl, callMethod: callMethod ?? .incompatible)
     }
     
     private static func getArchOfFile(_ executableUrl: URL) -> ExecArchitectury {
@@ -104,4 +106,11 @@ public enum ExecArchitectury {
 
 public enum CallMethod {
     case direct, transition, incompatible
+    func getDisplayName() -> String {
+        switch self {
+        case .direct: "直接运行"
+        case .transition: "转译"
+        case .incompatible: "不兼容"
+        }
+    }
 }

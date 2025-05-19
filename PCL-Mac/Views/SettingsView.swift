@@ -9,17 +9,34 @@ import SwiftUI
 
 struct SettingsView: View {
     var body: some View {
-        VStack {
-            MyCardComponent(title: "测试卡片") {
+        HStack {
+            Rectangle()
+                .fill(.white)
+                .frame(width: 200)
+            ScrollView(.vertical, showsIndicators: true) {
                 VStack {
-                    Text("文本1")
-                    Button("按钮1") {
-                        
+                    MyCardComponent(title: "Java 列表") {
+                        VStack {
+                            Text("搜索耗时: \(JavaSearch.lastTimeUsed)ms")
+                                .font(.system(size: 14))
+                            ForEach(JavaSearch.JavaVirtualMachines) { javaEntity in
+                                JavaEntityComponent(javaEntity: javaEntity)
+                            }
+                        }
                     }
+                    .padding()
+                    .foregroundStyle(.black)
                 }
             }
-            .frame(width: 400)
-            .foregroundStyle(.black)
+        }
+        .onAppear {
+            if JavaSearch.JavaVirtualMachines.isEmpty {
+                Task {
+                    do {
+                        try await JavaSearch.searchAndSet()
+                    } catch { }
+                }
+            }
         }
     }
 }
