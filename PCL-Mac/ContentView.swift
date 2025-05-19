@@ -11,21 +11,26 @@ struct ContentView: View {
     @State private var currentPage: Page = .launcher
     
     var body: some View {
-        VStack(spacing: 0) {
-            TitleBarComponent(currentPage: $currentPage)
-            createViewFromPage()
-                .foregroundStyle(.black)
-                .frame(minWidth: 815, minHeight: 418)
-        }
-        .ignoresSafeArea(.container, edges: .top)
-        .background(
-            RadialGradient(
-                gradient: Gradient(colors: [Color(hex: 0xC8DCF4), Color(hex: 0xB7CBE3)]),
-                center: .center,
-                startRadius: 0,
-                endRadius: 410
+        ZStack {
+            VStack(spacing: 0) {
+                TitleBarComponent(currentPage: $currentPage)
+                createViewFromPage()
+                    .foregroundStyle(.black)
+                    .frame(minWidth: 815, minHeight: 418)
+            }
+            .ignoresSafeArea(.container, edges: .top)
+            .background(
+                RadialGradient(
+                    gradient: Gradient(colors: [Color(hex: 0xC8DCF4), Color(hex: 0xB7CBE3)]),
+                    center: .center,
+                    startRadius: 0,
+                    endRadius: 410
+                )
             )
-        )
+            if let currentPopup = DataManager.shared.currentPopup {
+                currentPopup
+            }
+        }
     }
     
     private func createViewFromPage() -> some View {
@@ -38,6 +43,10 @@ struct ContentView: View {
             case .others: OthersView()
             }
         }
+    }
+    
+    static func setPopup() {
+        
     }
 }
 
