@@ -32,16 +32,16 @@ struct ContentView: View {
                 Group {
                     Rectangle()
                         .fill(Color(hex: 0x000000, alpha: 0.7))
-                        .opacity(dataManager.currentPopup != nil ? 1 : 0)
+                        .opacity(dataManager.showPopup ? 1 : 0)
                     currentPopup
                         .padding()
-                        .transition(.opacity)
+                        .opacity(dataManager.showPopup ? 1 : 0)
                     VStack {
                         TitleBarComponent(currentPage: .constant(currentPage))
                         Spacer()
                     }
                 }
-                .animation(.easeInOut(duration: 0.2), value: dataManager.currentPopup)
+                .animation(.easeInOut(duration: 0.1), value: dataManager.showPopup)
             }
         }
         .onAppear {
@@ -70,6 +70,7 @@ struct ContentView: View {
     
     static func setPopup(_ popup: PopupOverlay?) {
         DataManager.shared.currentPopup = popup
+        DataManager.shared.showPopup = true
     }
 }
 

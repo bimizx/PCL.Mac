@@ -35,9 +35,7 @@ struct PopupButton: View, Identifiable {
                                     self.isHovered = hovering
                                 }
                                 .onTapGesture {
-                                    withAnimation(.easeInOut(duration: 0.2)) {
-                                        self.onClick()
-                                    }
+                                    self.onClick()
                                 }
                         )
                         .frame(height: 30)
@@ -49,10 +47,13 @@ struct PopupButton: View, Identifiable {
     }
     
     static let Close = PopupButton(text: "关闭") {
-        DataManager.shared.currentPopup = nil
+        withAnimation(.easeInOut(duration: 0.1)) {
+            DataManager.shared.showPopup = false
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            DataManager.shared.currentPopup = nil
+        }
     }
     
-    static let Ok = PopupButton(text: "好的") {
-        DataManager.shared.currentPopup = nil
-    }
+    static let Ok = PopupButton(text: "好的", onClick: Close.onClick)
 }

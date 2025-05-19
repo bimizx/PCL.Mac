@@ -13,6 +13,7 @@ class DataManager: ObservableObject {
     
     @Published var javaVirtualMachines: [JavaVirtualMachine] = []
     @Published var lastTimeUsed: Int = 0
+    @Published var showPopup: Bool = false
     @Published var currentPopup: PopupOverlay?
     
     private init() {}
