@@ -18,7 +18,7 @@ struct MyCardComponent<Content: View>: View {
             ZStack {
                 HStack {
                     Text(title)
-                        .font(.system(size: 16))
+                        .font(.system(size: 14))
                         .foregroundStyle(isHovered ? Color(hex: 0x0B5BCB) : .black)
                     Spacer()
                     Image("FoldController")
@@ -55,6 +55,34 @@ struct MyCardComponent<Content: View>: View {
         .animation(
             .spring(response: 0.2, dampingFraction: 1),
             value: isUnfolded
+        )
+        .animation(.easeInOut(duration: 0.2), value: isHovered)
+        .onHover { hover in
+            isHovered = hover
+        }
+    }
+}
+
+struct StaticMyCardComponent<Content: View>: View {
+    let title: String
+    let content: () -> Content
+    @State private var isHovered: Bool = false
+    
+    var body: some View {
+        VStack {
+            HStack {
+                Text(title)
+                    .font(.system(size: 14))
+                    .foregroundStyle(isHovered ? Color(hex: 0x0B5BCB) : .black)
+                Spacer()
+            }
+            content()
+        }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 8)
+                .fill(.white)
+                .shadow(color: isHovered ? Color(hex: 0x0B5BcB) : .gray, radius: isHovered ? 2 : 2, x: 0.5, y: 0.5)
         )
         .animation(.easeInOut(duration: 0.2), value: isHovered)
         .onHover { hover in
