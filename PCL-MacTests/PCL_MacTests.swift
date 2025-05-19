@@ -12,9 +12,15 @@ import PCL_Mac
 struct PCL_MacTests {
 
     @Test func example() async throws {
-        MinecraftDownloader.getJson("1.21") { data in
-            print(data)
+        var isRunning = true
+        let version = "1.21"
+        let versionFolderUrl = URL(fileURLWithPath: "/Users/yizhimcqiu/PCL-Mac-minecraft/versions/\(version)")
+        
+        MinecraftDownloader.downloadJson(version, versionFolderUrl.appending(path: "\(version).json")) {
+            MinecraftDownloader.downloadHashResourceFiles(versionFolderUrl) {
+                isRunning = false
+            }
         }
-        try? await Task.sleep(nanoseconds: 2000000000)
+        while isRunning {}
     }
 }

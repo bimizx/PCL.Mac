@@ -21,9 +21,22 @@
 		ECA5D8DC2DD99A4C006C58F7 /* PCL-MacTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "PCL-MacTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		ECD256602DDBE69800A0F233 /* Exceptions for "PCL-Mac" folder in "PCL-Mac" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = EC9EAEC82DD85E48006CEDCC /* PCL-Mac */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		EC9EAECB2DD85E48006CEDCC /* PCL-Mac */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				ECD256602DDBE69800A0F233 /* Exceptions for "PCL-Mac" folder in "PCL-Mac" target */,
+			);
 			path = "PCL-Mac";
 			sourceTree = "<group>";
 		};
@@ -335,6 +348,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "PCL-Mac/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "PCL Mac";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.games";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
@@ -367,6 +381,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "PCL-Mac/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "PCL Mac";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.games";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
