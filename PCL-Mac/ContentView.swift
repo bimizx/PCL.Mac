@@ -44,18 +44,6 @@ struct ContentView: View {
                 .animation(.easeInOut(duration: 0.3), value: dataManager.showPopup)
             }
         }
-        .onAppear {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                ContentView.setPopup(
-                    PopupOverlay("Minecraft 出现错误", "错就发报告\n错不起就别问", [
-                        PopupButton(text: "截图扔到Q群，然后坐和被骂", color: Color(hex: 0xC00606)) {
-                            NSApplication.shared.terminate(nil)
-                        },
-                        .Close
-                    ])
-                )
-            }
-        }
     }
     
     private func createViewFromPage() -> some View {
