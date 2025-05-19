@@ -63,9 +63,11 @@ class Logger {
     }
     
     static func debug(_ message: String, _ caller: String) {
+#if DEBUG
         Task {
             await LogStore.shared.append(message, "DEBUG", caller)
         }
+#endif
     }
 }
 

@@ -18,7 +18,7 @@ public class MinecraftDownloader {
         URLSession.shared.dataTask(with: request) { data, response, error in
             if let httpResponse = response as? HTTPURLResponse {
                 if httpResponse.statusCode == 200 {
-                    log("200 OK GET \(url.path())")
+                    debug("200 OK GET \(url.path())")
                     if let data = data {
                         do {
                             try FileManager.default.createDirectory(
@@ -41,7 +41,7 @@ public class MinecraftDownloader {
                 }
             }
         }.resume()
-        log("向 \(url.absoluteString) 发送了请求")
+        debug("向 \(url.absoluteString) 发送了请求")
     }
     
     private static func getJson(_ sourceUrl: URL, _ saveUrl: URL, _ callback: @escaping ([String: Any], HTTPURLResponse) throws -> Void) {
@@ -124,9 +124,11 @@ public class MinecraftDownloader {
                 }
                 log("资源文件请求已全部发送完成")
                 
-                while leftObjects > 0 { }
-                log("下载完毕")
-                callback()
+                Task {
+                    while leftObjects > 0 {}
+                    log("下载完毕")
+                    callback()
+                }
             }
         }
     }
