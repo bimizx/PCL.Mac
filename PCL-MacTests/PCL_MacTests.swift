@@ -12,9 +12,13 @@ import PCL_Mac
 struct PCL_MacTests {
 
     @Test func example() async throws {
-        let version = "1.21"
-        let versionFolderUrl = URL(fileURLWithPath: "/Users/yizhimcqiu/PCL-Mac-minecraft/versions/\(version)")
-        let task = MinecraftDownloader.createTask(versionFolderUrl, version)
-        while !task.isCompleted {}
+        var isRunning: Bool = true
+        VersionManifest.fetchLatestData() { manifest in
+            manifest.versions.filter { $0.type == "release" }.forEach { version in
+                print(version.id)
+            }
+            isRunning = false
+        }
+        while isRunning {}
     }
 }

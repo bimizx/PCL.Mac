@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct DownloadView: View {
-    @StateObject private var currentTask: DownloadTask = MinecraftDownloader.createTask(URL(fileURLWithUserPath: "~/PCL-Mac-minecraft/versions/1.21"), "1.21")
+    @ObservedObject private var currentTask: DownloadTask = MinecraftDownloader.createTask(URL(fileURLWithUserPath: "~/PCL-Mac-minecraft/versions/1.21"), "1.21")
     
     var body: some View {
         VStack {

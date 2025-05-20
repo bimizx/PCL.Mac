@@ -94,17 +94,38 @@ public class MinecraftDownloader {
     
     public static func downloadJson(_ task: DownloadTask, _ callback: @escaping () -> Void) {
         let minecraftVersion = task.minecraftVersion
-        let saveUrl = task.versionUrl.appending(path: "\(minecraftVersion).json")
-        getJson(URL(string: "https://bmclapi2.bangbang93.com/version/\(minecraftVersion)/json")!, saveUrl) { json, response in
-            DispatchQueue.main.async {
-                task.remainingFiles -= 1
-            }
-            task.updateStage(.clientJar)
-            getBinary(URL(string: (json["downloads"] as! [String: [String: Any]])["client"]!["url"] as! String)!, saveUrl.parent().appending(path: "\(minecraftVersion).jar")) { _, _ in
+        let clientJsonUrl = task.versionUrl.appending(path: "\(minecraftVersion).json")
+        let onJsonDownloadSuccessfully: ([String: Any]) -> Void = { json in
+            let onJarDownloadSuccessfully: () -> Void = {
                 DispatchQueue.main.async {
                     task.remainingFiles -= 1
                 }
                 callback()
+            }
+            DispatchQueue.main.async {
+                task.remainingFiles -= 1
+            }
+            task.updateStage(.clientJar)
+            let clientJarUrl = clientJsonUrl.parent().appending(path: "\(minecraftVersion).jar")
+            if FileManager.default.fileExists(atPath: clientJarUrl.path()) {
+                onJarDownloadSuccessfully()
+                return
+            }
+            getBinary(URL(string: (json["downloads"] as! [String: [String: Any]])["client"]!["url"] as! String)!, clientJsonUrl.parent().appending(path: "\(minecraftVersion).jar")) { _, _ in
+                onJarDownloadSuccessfully()
+            }
+        }
+        
+        if FileManager.default.fileExists(atPath: clientJsonUrl.path()) {
+            if let data = try? Data(contentsOf: clientJsonUrl),
+               let jsonDictionary = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                onJsonDownloadSuccessfully(jsonDictionary)
+            } else {
+                err("无法获取客户端 JSON (\(clientJsonUrl.path())")
+            }
+        } else {
+            getJson(URL(string: "https://bmclapi2.bangbang93.com/version/\(minecraftVersion)/json")!, clientJsonUrl) { json, response in
+                onJsonDownloadSuccessfully(json)
             }
         }
     }
@@ -112,7 +133,7 @@ public class MinecraftDownloader {
     public static func downloadHashResourceFiles(_ task: DownloadTask, _ saveUrl: URL? = nil, _ callback: @escaping () -> Void) {
         let versionUrl = task.versionUrl
         if let data = try? Data(contentsOf: versionUrl.appending(path: "\(versionUrl.lastPathComponent).json")),
-           let jsonDictionary = try? JSONSerialization.jsonObject(with: data) as? [String: Any]{
+           let jsonDictionary = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
             let assetIndex: String = (jsonDictionary["assetIndex"] as! [String: Any])["id"] as! String
             let downloadIndexUrl: URL = URL(string: (jsonDictionary["assetIndex"] as! [String: Any])["url"] as! String)!
             
@@ -154,20 +175,60 @@ public class MinecraftDownloader {
                 
                 Task {
                     while leftObjects > 0 {}
-                    log("下载完毕")
+                    log("客户端散列资源下载完毕")
                     callback()
                 }
             }
         }
     }
     
+    public static func downloadLibraries(_ task: DownloadTask, _ saveUrl: URL? = nil, _ callback: @escaping () -> Void) {
+        let versionUrl = task.versionUrl
+        let librariesUrl = task.versionUrl.parent().parent().appending(path: "libraries")
+        if let data = try? Data(contentsOf: versionUrl.appending(path: "\(versionUrl.lastPathComponent).json")),
+           let jsonDictionary = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+            let libraries = jsonDictionary["libraries"] as! [[String: Any]]
+            DispatchQueue.main.async {
+                task.remainingFiles += libraries.count
+                task.totalFiles += libraries.count
+            }
+            var leftObjects = libraries.count
+            
+            for library in libraries {
+                let artifact = (library["downloads"] as! [String: [String: Any]])["artifact"]!
+                let path: URL = librariesUrl.appending(path: artifact["path"] as! String)
+                let downloadUrl: URL = URL(string: artifact["url"] as! String)!
+                
+                if FileManager.default.fileExists(atPath: path.path()) {
+                    log("\(downloadUrl.path()) 已存在，跳过")
+                    leftObjects -= 1
+                    DispatchQueue.main.async {
+                        task.remainingFiles -= 1
+                    }
+                }
+                
+                getBinary(downloadUrl, path) { _, _ in
+                    leftObjects -= 1
+                    DispatchQueue.main.async {
+                        task.remainingFiles -= 1
+                    }
+                }
+            }
+            while leftObjects > 0 {}
+            log("客户端依赖项下载完成")
+        }
+    }
+    
     public static func createTask(_ versionUrl: URL, _ minecraftVersion: String) -> DownloadTask {
         let task = DownloadTask(versionUrl: versionUrl, minecraftVersion: minecraftVersion) { task in
             task.updateStage(.clientJson)
-            MinecraftDownloader.downloadJson(task) {
+            downloadJson(task) {
                 task.updateStage(.clientIndex)
-                MinecraftDownloader.downloadHashResourceFiles(task) {
-                    task.complete()
+                downloadHashResourceFiles(task) {
+                    task.updateStage(.cliendLibraries)
+                    downloadLibraries(task) {
+                        task.complete()
+                    }
                 }
             }
         }
@@ -211,7 +272,7 @@ public class DownloadTask: ObservableObject {
 }
 
 public enum DownloadStage {
-    case before, clientJson, clientJar, clientIndex, clientResources, end
+    case before, clientJson, clientJar, clientIndex, clientResources, cliendLibraries, end
     public func getDisplayName() -> String {
         switch self {
         case .before: "未启动"
@@ -219,6 +280,7 @@ public enum DownloadStage {
         case .clientJar: "客户端本体"
         case .clientIndex: "客户端资源索引"
         case .clientResources: "客户端散列资源"
+        case .cliendLibraries: "客户端依赖项"
         case .end: "结束"
         }
     }
