@@ -15,7 +15,12 @@ public class MinecraftDownloader {
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         
-        URLSession.shared.dataTask(with: request) { data, response, error in
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error as? URLError {
+                warn("下载失败: \(error)，正在重试")
+                getBinary(sourceUrl, saveUrl, callback)
+                return
+            }
             if let httpResponse = response as? HTTPURLResponse {
                 if httpResponse.statusCode == 200 {
                     debug("200 OK GET \(url.path())")
@@ -40,7 +45,8 @@ public class MinecraftDownloader {
                     err("请求 \(url.absoluteString) 时出现错误: \(httpResponse.statusCode)")
                 }
             }
-        }.resume()
+        }
+        task.resume()
         debug("向 \(url.absoluteString) 发送了请求")
     }
     
@@ -86,14 +92,24 @@ public class MinecraftDownloader {
         getJson(sourceUrl, saveUrl) { _, __ in}
     }
     
-    public static func downloadJson(_ minecraftVersion: String, _ saveUrl: URL, _ callback: @escaping () -> Void) {
+    public static func downloadJson(_ task: DownloadTask, _ callback: @escaping () -> Void) {
+        let minecraftVersion = task.minecraftVersion
+        let saveUrl = task.versionUrl.appending(path: "\(minecraftVersion).json")
         getJson(URL(string: "https://bmclapi2.bangbang93.com/version/\(minecraftVersion)/json")!, saveUrl) { json, response in
-            getBinary(URL(string: (json["downloads"] as! [String: [String: Any]])["client"]!["url"] as! String)!, saveUrl.parent().appending(path: "\(minecraftVersion).jar"))
+            DispatchQueue.main.async {
+                task.remainingFiles -= 1
+            }
+            getBinary(URL(string: (json["downloads"] as! [String: [String: Any]])["client"]!["url"] as! String)!, saveUrl.parent().appending(path: "\(minecraftVersion).jar")) { _, _ in
+                DispatchQueue.main.async {
+                    task.remainingFiles -= 1
+                }
+            }
             callback()
         }
     }
     
-    public static func downloadHashResourceFiles(_ versionUrl: URL, _ saveUrl: URL? = nil, _ callback: @escaping () -> Void) {
+    public static func downloadHashResourceFiles(_ task: DownloadTask, _ saveUrl: URL? = nil, _ callback: @escaping () -> Void) {
+        let versionUrl = task.versionUrl
         if let data = try? Data(contentsOf: versionUrl.appending(path: "\(versionUrl.lastPathComponent).json")),
            let jsonDictionary = try? JSONSerialization.jsonObject(with: data) as? [String: Any]{
             let assetIndex: String = (jsonDictionary["assetIndex"] as! [String: Any])["id"] as! String
@@ -105,6 +121,10 @@ public class MinecraftDownloader {
             getJson(downloadIndexUrl, indexUrl) { json, _ in
                 let index = json as! [String: [String: [String: Any]]]
                 var leftObjects = index["objects"]!.keys.count
+                DispatchQueue.main.async {
+                    task.totalFiles += leftObjects
+                    task.remainingFiles += leftObjects
+                }
                 log("发现 \(leftObjects) 个文件")
                 
                 for (_, object) in index["objects"]! {
@@ -115,11 +135,17 @@ public class MinecraftDownloader {
                     if FileManager.default.fileExists(atPath: assetUrl.path()) {
                         log("\(downloadUrl.path()) 已存在，跳过")
                         leftObjects -= 1
+                        DispatchQueue.main.async {
+                            task.remainingFiles -= 1
+                        }
                         continue
                     }
                     
                     getBinary(downloadUrl, assetUrl) { _, _ in
                         leftObjects -= 1
+                        DispatchQueue.main.async {
+                            task.remainingFiles -= 1
+                        }
                     }
                 }
                 log("资源文件请求已全部发送完成")
@@ -132,4 +158,47 @@ public class MinecraftDownloader {
             }
         }
     }
+    
+    public static func createTask(_ versionUrl: URL, _ minecraftVersion: String) -> DownloadTask {
+        let task = DownloadTask(versionUrl: versionUrl, minecraftVersion: minecraftVersion) { task in
+            MinecraftDownloader.downloadJson(task) {
+                MinecraftDownloader.downloadHashResourceFiles(task) {
+                    task.complete()
+                }
+            }
+        }
+        
+        return task
+    }
+}
+
+public class DownloadTask: ObservableObject {
+    @Published public var stage: DownloadStage = .before
+    @Published public var remainingFiles: Int = 2
+    @Published public var totalFiles: Int = 2
+    @Published public var isCompleted: Bool = false
+    
+    public let versionUrl: URL
+    public let minecraftVersion: String
+    public let startTask: (DownloadTask) -> Void
+    
+    init(versionUrl: URL, minecraftVersion: String, startTask: @escaping (DownloadTask) -> Void) {
+        self.versionUrl = versionUrl
+        self.minecraftVersion = minecraftVersion
+        self.startTask = startTask
+    }
+    
+    public func complete() {
+        DispatchQueue.main.async {
+            self.isCompleted = true
+        }
+    }
+    
+    public func start() {
+        self.startTask(self)
+    }
+}
+
+public enum DownloadStage {
+    case before, clientJson, clientJar, clientIndex, clientResources, end
 }
