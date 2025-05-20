@@ -11,9 +11,25 @@ import PCL_Mac
 
 struct PCL_MacTests {
 
-    @Test func example() async throws {
-        let instance = MinecraftInstance(runningDirectory: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft/versions/1.21"), version: ReleaseMinecraftVersion.fromString("1.21")!)
-        instance.run()
+    @Test func runTest() async throws {
+        var isRunning = true
+        let version = "1.15"
+        let versionUrl = URL(fileURLWithUserPath: "~/PCL-Mac-minecraft/versions/\(version)")
+        MinecraftDownloader.createTask(versionUrl, version)
+        {
+            let instance = MinecraftInstance(runningDirectory: versionUrl, version: ReleaseMinecraftVersion.fromString(version)!)
+            instance.run()
+            isRunning = false
+        }.start()
+        
+        while isRunning {}
+    }
+    
+    @Test func loadClientManifestTest() async throws {
+        let handle = try FileHandle(forReadingFrom: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft/versions/1.21/1.21.json"))
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let manifest = try decoder.decode(ClientManifest.self, from: handle.readToEnd()!)
+        print(manifest.arguments.getAllowedGameArguments())
     }
 }
-

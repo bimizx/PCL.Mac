@@ -12,7 +12,7 @@ public class MinecraftInstance {
     public let version: any MinecraftVersion
     public var jvmUrl: URL?
     public var process: Process?
-    public let manifest: MinecraftManifest!
+    public let manifest: ClientManifest!
     
     public init(runningDirectory: URL, version: any MinecraftVersion, jvmUrl: URL? = nil) {
         self.runningDirectory = runningDirectory
@@ -23,7 +23,7 @@ public class MinecraftInstance {
             let handle = try FileHandle(forReadingFrom: runningDirectory.appending(path: runningDirectory.lastPathComponent + ".json"))
             let decoder = JSONDecoder()
             decoder.dateDecodingStrategy = .iso8601
-            self.manifest = try decoder.decode(MinecraftManifest.self, from: handle.readToEnd()!)
+            self.manifest = try decoder.decode(ClientManifest.self, from: handle.readToEnd()!)
         } catch {
             err("无法加载客户端 JSON: \(error)")
             self.manifest = nil

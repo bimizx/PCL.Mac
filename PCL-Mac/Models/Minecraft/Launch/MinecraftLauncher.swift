@@ -16,7 +16,6 @@ public class MinecraftLauncher {
         process.arguments!.append(contentsOf: buildJvmArguments(instance))
         process.arguments!.append(contentsOf: buildGameArguments(instance))
         process.currentDirectoryURL = instance.runningDirectory
-        debug(process.arguments!.joined(separator: " "))
         do {
             try process.run()
             process.waitUntilExit()
@@ -39,19 +38,23 @@ public class MinecraftLauncher {
     }
     
     private static func buildGameArguments(_ instance: MinecraftInstance) -> [String] {
-        return [
-            "--username", "PCL_Mac",
-            "--version", instance.version.getDisplayName(),
-            "--gameDir", instance.runningDirectory.path(),
-            "--assetsDir", instance.runningDirectory.parent().parent().appending(path: "assets").path(),
-            "--assetIndex", instance.manifest.assetIndex.id,
-            "--uuid", "a256e7ba1da830119b633a974279e906",
-            "--accessToken", "9856e9a933b5421cb6cf38f21553bd54",
-            "--clientId", "\"\\${clientid}\"",
-            "--xuid", "\"\\${auth_xuid}\"",
-            "--userType msa",
-            "--versionType", "PCL-Mac",
-            "--width", "854", "--height", "480"
+        let values: [String: String] = [
+            "auth_player_name": "PCL_Mac",
+            "version_name": instance.version.getDisplayName(),
+            "game_directory": instance.runningDirectory.path(),
+            "assets_root": instance.runningDirectory.parent().parent().appending(path: "assets").path(),
+            "assets_index_name": instance.manifest.assetIndex.id,
+            "auth_uuid": "a256e7ba1da830119b633a974279e906",
+            "auth_access_token": "9856e9a933b5421cb6cf38f21553bd54",
+            "user_type": "msa",
+            "version_type": "\"PCL Mac\""
         ]
+        
+        return instance.manifest.arguments.getAllowedGameArguments().map { arg in
+            let startIndex = arg.index(arg.startIndex, offsetBy: 2)
+            let endIndex = arg.index(arg.endIndex, offsetBy: -1)
+            let range = startIndex..<endIndex
+            return values[String(arg[range])] ?? arg
+        }
     }
 }
