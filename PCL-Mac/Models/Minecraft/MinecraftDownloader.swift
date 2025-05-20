@@ -99,12 +99,13 @@ public class MinecraftDownloader {
             DispatchQueue.main.async {
                 task.remainingFiles -= 1
             }
+            task.updateStage(.clientJar)
             getBinary(URL(string: (json["downloads"] as! [String: [String: Any]])["client"]!["url"] as! String)!, saveUrl.parent().appending(path: "\(minecraftVersion).jar")) { _, _ in
                 DispatchQueue.main.async {
                     task.remainingFiles -= 1
                 }
+                callback()
             }
-            callback()
         }
     }
     
@@ -119,6 +120,7 @@ public class MinecraftDownloader {
             let indexUrl = saveUrl.appending(path: "indexes").appending(path: "\(assetIndex).json")
             
             getJson(downloadIndexUrl, indexUrl) { json, _ in
+                task.updateStage(.clientResources)
                 let index = json as! [String: [String: [String: Any]]]
                 var leftObjects = index["objects"]!.keys.count
                 DispatchQueue.main.async {
@@ -161,7 +163,9 @@ public class MinecraftDownloader {
     
     public static func createTask(_ versionUrl: URL, _ minecraftVersion: String) -> DownloadTask {
         let task = DownloadTask(versionUrl: versionUrl, minecraftVersion: minecraftVersion) { task in
+            task.updateStage(.clientJson)
             MinecraftDownloader.downloadJson(task) {
+                task.updateStage(.clientIndex)
                 MinecraftDownloader.downloadHashResourceFiles(task) {
                     task.complete()
                 }
@@ -189,6 +193,7 @@ public class DownloadTask: ObservableObject {
     }
     
     public func complete() {
+        self.updateStage(.end)
         DispatchQueue.main.async {
             self.isCompleted = true
         }
@@ -197,8 +202,24 @@ public class DownloadTask: ObservableObject {
     public func start() {
         self.startTask(self)
     }
+    
+    public func updateStage(_ stage: DownloadStage) {
+        DispatchQueue.main.async {
+            self.stage = stage
+        }
+    }
 }
 
 public enum DownloadStage {
     case before, clientJson, clientJar, clientIndex, clientResources, end
+    public func getDisplayName() -> String {
+        switch self {
+        case .before: "未启动"
+        case .clientJson: "客户端 JSON 文件"
+        case .clientJar: "客户端本体"
+        case .clientIndex: "客户端资源索引"
+        case .clientResources: "客户端散列资源"
+        case .end: "结束"
+        }
+    }
 }
