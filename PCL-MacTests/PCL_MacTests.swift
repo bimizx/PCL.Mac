@@ -12,12 +12,8 @@ import PCL_Mac
 struct PCL_MacTests {
 
     @Test func example() async throws {
-        let handle = try FileHandle(forReadingFrom: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft/versions/1.21/1.21.json"))
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
-        
-        let data = try handle.readToEnd()!
-        let manifest = try decoder.decode(MinecraftManifest.self, from: data)
-        print(manifest)
+        let instance = MinecraftInstance(runningDirectory: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft/versions/1.21"), version: ReleaseMinecraftVersion.fromString("1.21")!)
+        instance.run()
     }
 }
+

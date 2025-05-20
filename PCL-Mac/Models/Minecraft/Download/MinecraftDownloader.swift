@@ -93,7 +93,7 @@ public class MinecraftDownloader {
     }
     
     public static func downloadJson(_ task: DownloadTask, _ callback: @escaping () -> Void) {
-        let minecraftVersion = task.minecraftVersion
+        let minecraftVersion = task.minecraftVersion.getDisplayName()
         let clientJsonUrl = task.versionUrl.appending(path: "\(minecraftVersion).json")
         let onJsonDownloadSuccessfully: (String) -> Void = { json in
             do {
@@ -140,65 +140,62 @@ public class MinecraftDownloader {
     
     public static func downloadHashResourceFiles(_ task: DownloadTask, _ saveUrl: URL? = nil, _ callback: @escaping () -> Void) {
         let versionUrl = task.versionUrl
-        if let data = try? Data(contentsOf: versionUrl.appending(path: "\(versionUrl.lastPathComponent).json")),
-           let jsonDictionary = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
-            let assetIndex: String = task.manifest!.assetIndex.id
-            let downloadIndexUrl: URL = URL(string: task.manifest!.assetIndex.url)!
+        let assetIndex: String = task.manifest!.assetIndex.id
+        let downloadIndexUrl: URL = URL(string: task.manifest!.assetIndex.url)!
+        
+        let saveUrl = saveUrl ?? versionUrl.parent().parent().appending(path: "assets")
+        let indexUrl = saveUrl.appending(path: "indexes").appending(path: "\(assetIndex).json")
+        
+        getJson(downloadIndexUrl, indexUrl) { dict, json, _ in
+            task.updateStage(.clientResources)
+            let index = dict as! [String: [String: [String: Any]]] // TODO 需要实现 Codable 结构体
+            var leftObjects = index["objects"]!.keys.count
+            DispatchQueue.main.async {
+                task.totalFiles += leftObjects
+                task.remainingFiles += leftObjects
+            }
+            log("发现 \(leftObjects) 个文件")
             
-            let saveUrl = saveUrl ?? versionUrl.parent().parent().appending(path: "assets")
-            let indexUrl = saveUrl.appending(path: "indexes").appending(path: "\(assetIndex).json")
-            
-            getJson(downloadIndexUrl, indexUrl) { dict, json, _ in
-                task.updateStage(.clientResources)
-                let index = dict as! [String: [String: [String: Any]]] // TODO 需要实现 Codable 结构体
-                var leftObjects = index["objects"]!.keys.count
-                DispatchQueue.main.async {
-                    task.totalFiles += leftObjects
-                    task.remainingFiles += leftObjects
-                }
-                log("发现 \(leftObjects) 个文件")
+            for (_, object) in index["objects"]! {
+                let hash: String = object["hash"] as! String
+                let assetUrl: URL = saveUrl.appending(path: "objects").appending(path: hash.prefix(2)).appending(path: hash)
+                let downloadUrl: URL = URL(string: "https://resources.download.minecraft.net")!.appending(path:hash.prefix(2)).appending(path: hash)
                 
-                for (_, object) in index["objects"]! {
-                    let hash: String = object["hash"] as! String
-                    let assetUrl: URL = saveUrl.appending(path: "objects").appending(path: hash.prefix(2)).appending(path: hash)
-                    let downloadUrl: URL = URL(string: "https://resources.download.minecraft.net")!.appending(path: hash.prefix(2)).appending(path: hash)
-                    
-                    if FileManager.default.fileExists(atPath: assetUrl.path()) {
-                        log("\(downloadUrl.path()) 已存在，跳过")
-                        leftObjects -= 1
-                        DispatchQueue.main.async {
-                            task.remainingFiles -= 1
-                        }
-                        continue
+                if FileManager.default.fileExists(atPath: assetUrl.path()) {
+                    log("\(downloadUrl.path()) 已存在，跳过")
+                    leftObjects -= 1
+                    DispatchQueue.main.async {
+                        task.remainingFiles -= 1
                     }
-                    
-                    getBinary(downloadUrl, assetUrl) { _, _ in
-                        leftObjects -= 1
-                        DispatchQueue.main.async {
-                            task.remainingFiles -= 1
-                        }
+                    continue
+                }
+                
+                getBinary(downloadUrl, assetUrl) { _, _ in
+                    leftObjects -= 1
+                    DispatchQueue.main.async {
+                        task.remainingFiles -= 1
                     }
                 }
-                log("资源文件请求已全部发送完成")
-                
-                Task {
-                    while leftObjects > 0 {}
-                    log("客户端散列资源下载完毕")
-                    callback()
-                }
+            }
+            log("资源文件请求已全部发送完成")
+            
+            Task {
+                while leftObjects > 0 {}
+                log("客户端散列资源下载完毕")
+                callback()
             }
         }
     }
     
     public static func downloadLibraries(_ task: DownloadTask, _ saveUrl: URL? = nil, _ callback: @escaping () -> Void) {
-        let versionUrl = task.versionUrl
         let librariesUrl = task.versionUrl.parent().parent().appending(path: "libraries")
-        let libraries = task.manifest!.libraries
+        let libraries = task.manifest!.getNeededLibrary()
         DispatchQueue.main.async {
             task.remainingFiles += libraries.count
             task.totalFiles += libraries.count
         }
         var leftObjects = libraries.count
+        debug(leftObjects)
         
         for library in libraries {
             let artifact = library.getArtifact()
@@ -211,6 +208,7 @@ public class MinecraftDownloader {
                 DispatchQueue.main.async {
                     task.remainingFiles -= 1
                 }
+                continue
             }
             
             getBinary(downloadUrl, path) { _, _ in
@@ -222,6 +220,7 @@ public class MinecraftDownloader {
         }
         while leftObjects > 0 {}
         log("客户端依赖项下载完成")
+        callback()
     }
     
     public static func createTask(_ versionUrl: URL, _ minecraftVersion: String) -> DownloadTask {
@@ -232,6 +231,13 @@ public class MinecraftDownloader {
                 downloadHashResourceFiles(task) {
                     task.updateStage(.cliendLibraries)
                     downloadLibraries(task) {
+                        do {
+                            try FileManager.default.copyItem(
+                                at: Constants.ApplicationResourcesUrl.appending(path: task.minecraftVersion as! ReleaseMinecraftVersion >= ReleaseMinecraftVersion.fromString("1.12.2")! ? "log4j2.xml" : "log4j2-1.12-.xml"),
+                                to: task.versionUrl.appending(path: "log4j2.xml"))
+                        } catch {
+                            err("无法拷贝 log4j2.xml: \(error)")
+                        }
                         task.complete()
                     }
                 }
@@ -251,16 +257,17 @@ public class DownloadTask: ObservableObject {
     public var manifest: MinecraftManifest?
     
     public let versionUrl: URL
-    public let minecraftVersion: String
+    public let minecraftVersion: any MinecraftVersion
     public let startTask: (DownloadTask) -> Void
     
     init(versionUrl: URL, minecraftVersion: String, startTask: @escaping (DownloadTask) -> Void) {
         self.versionUrl = versionUrl
-        self.minecraftVersion = minecraftVersion
+        self.minecraftVersion = ReleaseMinecraftVersion.fromString(minecraftVersion)!
         self.startTask = startTask
     }
     
     public func complete() {
+        log("下载任务完成")
         self.updateStage(.end)
         DispatchQueue.main.async {
             self.isCompleted = true

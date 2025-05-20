@@ -71,26 +71,26 @@ class Logger {
     }
 }
 
-func log(_ message: String, file: String = #file, line: Int = #line) {
+func log(_ message: Any, file: String = #file, line: Int = #line) {
     Task { @MainActor in
-        Logger.log(message, file.split(separator: "/").last! + ":" + String(line))
+        Logger.log(String(describing: message), file.split(separator: "/").last! + ":" + String(line))
     }
 }
 
-func warn(_ message: String, file: String = #file, line: Int = #line) {
+func warn(_ message: Any, file: String = #file, line: Int = #line) {
     Task { @MainActor in
-        Logger.warn(message, file.split(separator: "/").last! + ":" + String(line))
+        Logger.warn(String(describing: message), file.split(separator: "/").last! + ":" + String(line))
     }
 }
 
-func err(_ message: String, file: String = #file, line: Int = #line) {
+func err(_ message: Any, file: String = #file, line: Int = #line) {
     Task { @MainActor in
-        Logger.error(message, file.split(separator: "/").last! + ":" + String(line))
+        Logger.error(String(describing: message), file.split(separator: "/").last! + ":" + String(line))
     }
 }
 
-func debug(_ message: String, file: String = #file, line: Int = #line) {
+func debug(_ message: Any, file: String = #file, line: Int = #line) {
     Task { @MainActor in
-        Logger.debug(message, file.split(separator: "/").last! + ":" + String(line))
+        Logger.debug(String(describing: message), file.split(separator: "/").last! + ":" + String(line))
     }
 }

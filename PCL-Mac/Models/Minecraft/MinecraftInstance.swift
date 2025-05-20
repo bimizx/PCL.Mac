@@ -8,12 +8,30 @@
 import Foundation
 
 public class MinecraftInstance {
-    public let runningDirectoryUrl: URL
+    public let runningDirectory: URL
     public let version: any MinecraftVersion
+    public var jvmUrl: URL?
+    public var process: Process?
+    public let manifest: MinecraftManifest!
     
-    public init(runningDirectoryUrl: URL, version: any MinecraftVersion) {
-        self.runningDirectoryUrl = runningDirectoryUrl
+    public init(runningDirectory: URL, version: any MinecraftVersion, jvmUrl: URL? = nil) {
+        self.runningDirectory = runningDirectory
         self.version = version
+        self.jvmUrl = nil
+        
+        do {
+            let handle = try FileHandle(forReadingFrom: runningDirectory.appending(path: runningDirectory.lastPathComponent + ".json"))
+            let decoder = JSONDecoder()
+            decoder.dateDecodingStrategy = .iso8601
+            self.manifest = try decoder.decode(MinecraftManifest.self, from: handle.readToEnd()!)
+        } catch {
+            err("无法加载客户端 JSON: \(error)")
+            self.manifest = nil
+        }
+    }
+    
+    public func run() {
+        MinecraftLauncher.launch(self)
     }
 }
 
@@ -47,7 +65,7 @@ public final class ReleaseMinecraftVersion: MinecraftVersion {
     }
     
     public func getDisplayName() -> String {
-        return "\(major).\(minor).\(patch)"
+        return "\(major).\(minor)" + (patch == 0 ? "" : String(patch))
     }
     
     public static func ==(lhs: ReleaseMinecraftVersion, rhs: ReleaseMinecraftVersion) -> Bool {

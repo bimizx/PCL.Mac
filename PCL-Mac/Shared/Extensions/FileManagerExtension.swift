@@ -8,7 +8,7 @@
 import Foundation
 
 extension FileManager {
-    static let logURL = Bundle.main.bundleURL.appending(path: "Contents").appending(path: "Logs").appending(path: "app.log")
+    static let logURL = Constants.ApplicationLogUrl
     
     func writeLog(_ content: String) async throws {
         try await withCheckedThrowingContinuation { continuation in
