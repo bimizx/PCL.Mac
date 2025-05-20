@@ -12,13 +12,12 @@ import PCL_Mac
 struct PCL_MacTests {
 
     @Test func example() async throws {
-        var isRunning: Bool = true
-        VersionManifest.fetchLatestData() { manifest in
-            manifest.versions.filter { $0.type == "release" }.forEach { version in
-                print(version.id)
-            }
-            isRunning = false
-        }
-        while isRunning {}
+        let handle = try FileHandle(forReadingFrom: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft/versions/1.21/1.21.json"))
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        
+        let data = try handle.readToEnd()!
+        let manifest = try decoder.decode(MinecraftManifest.self, from: data)
+        print(manifest)
     }
 }

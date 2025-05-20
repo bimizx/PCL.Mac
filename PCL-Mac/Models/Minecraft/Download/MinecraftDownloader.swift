@@ -50,7 +50,7 @@ public class MinecraftDownloader {
         debug("向 \(url.absoluteString) 发送了请求")
     }
     
-    private static func getJson(_ sourceUrl: URL, _ saveUrl: URL, _ callback: @escaping ([String: Any], HTTPURLResponse) throws -> Void) {
+    private static func getJson(_ sourceUrl: URL, _ saveUrl: URL, _ callback: @escaping ([String: Any], String, HTTPURLResponse) throws -> Void) {
         let url = sourceUrl
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
@@ -71,7 +71,7 @@ public class MinecraftDownloader {
                             let handle = try FileHandle(forWritingTo: saveUrl)
                             try handle.write(contentsOf: Data(JsonUtils.formatJSON(result)!.utf8))
                             try handle.close()
-                            try callback(JSONSerialization.jsonObject(with: data) as! [String : Any], httpResponse)
+                            try callback(JSONSerialization.jsonObject(with: data) as! [String : Any], result, httpResponse)
                         } catch {
                             err("在写入文件时发生错误: \(error)")
                         }
@@ -89,13 +89,21 @@ public class MinecraftDownloader {
     }
     
     private static func getJson(_ sourceUrl: URL, _ saveUrl: URL) {
-        getJson(sourceUrl, saveUrl) { _, __ in}
+        getJson(sourceUrl, saveUrl) { _,_,_ in}
     }
     
     public static func downloadJson(_ task: DownloadTask, _ callback: @escaping () -> Void) {
         let minecraftVersion = task.minecraftVersion
         let clientJsonUrl = task.versionUrl.appending(path: "\(minecraftVersion).json")
-        let onJsonDownloadSuccessfully: ([String: Any]) -> Void = { json in
+        let onJsonDownloadSuccessfully: (String) -> Void = { json in
+            do {
+                let decoder = JSONDecoder()
+                decoder.dateDecodingStrategy = .iso8601
+                task.manifest = try decoder.decode(MinecraftManifest.self, from: json.data(using: .utf8)!)
+            } catch {
+                err("无法解析 JSON: \(error)")
+                return
+            }
             let onJarDownloadSuccessfully: () -> Void = {
                 DispatchQueue.main.async {
                     task.remainingFiles -= 1
@@ -111,20 +119,20 @@ public class MinecraftDownloader {
                 onJarDownloadSuccessfully()
                 return
             }
-            getBinary(URL(string: (json["downloads"] as! [String: [String: Any]])["client"]!["url"] as! String)!, clientJsonUrl.parent().appending(path: "\(minecraftVersion).jar")) { _, _ in
+            getBinary(URL(string: task.manifest!.downloads["client"]!.url)!, clientJsonUrl.parent().appending(path: "\(minecraftVersion).jar")) { _, _ in
                 onJarDownloadSuccessfully()
             }
         }
         
         if FileManager.default.fileExists(atPath: clientJsonUrl.path()) {
             if let data = try? Data(contentsOf: clientJsonUrl),
-               let jsonDictionary = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
-                onJsonDownloadSuccessfully(jsonDictionary)
+               let result = String(data: data, encoding: .utf8) {
+                onJsonDownloadSuccessfully(result)
             } else {
                 err("无法获取客户端 JSON (\(clientJsonUrl.path())")
             }
         } else {
-            getJson(URL(string: "https://bmclapi2.bangbang93.com/version/\(minecraftVersion)/json")!, clientJsonUrl) { json, response in
+            getJson(URL(string: "https://bmclapi2.bangbang93.com/version/\(minecraftVersion)/json")!, clientJsonUrl) { dict, json, response in
                 onJsonDownloadSuccessfully(json)
             }
         }
@@ -134,15 +142,15 @@ public class MinecraftDownloader {
         let versionUrl = task.versionUrl
         if let data = try? Data(contentsOf: versionUrl.appending(path: "\(versionUrl.lastPathComponent).json")),
            let jsonDictionary = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
-            let assetIndex: String = (jsonDictionary["assetIndex"] as! [String: Any])["id"] as! String
-            let downloadIndexUrl: URL = URL(string: (jsonDictionary["assetIndex"] as! [String: Any])["url"] as! String)!
+            let assetIndex: String = task.manifest!.assetIndex.id
+            let downloadIndexUrl: URL = URL(string: task.manifest!.assetIndex.url)!
             
             let saveUrl = saveUrl ?? versionUrl.parent().parent().appending(path: "assets")
             let indexUrl = saveUrl.appending(path: "indexes").appending(path: "\(assetIndex).json")
             
-            getJson(downloadIndexUrl, indexUrl) { json, _ in
+            getJson(downloadIndexUrl, indexUrl) { dict, json, _ in
                 task.updateStage(.clientResources)
-                let index = json as! [String: [String: [String: Any]]]
+                let index = dict as! [String: [String: [String: Any]]] // TODO 需要实现 Codable 结构体
                 var leftObjects = index["objects"]!.keys.count
                 DispatchQueue.main.async {
                     task.totalFiles += leftObjects
@@ -185,38 +193,35 @@ public class MinecraftDownloader {
     public static func downloadLibraries(_ task: DownloadTask, _ saveUrl: URL? = nil, _ callback: @escaping () -> Void) {
         let versionUrl = task.versionUrl
         let librariesUrl = task.versionUrl.parent().parent().appending(path: "libraries")
-        if let data = try? Data(contentsOf: versionUrl.appending(path: "\(versionUrl.lastPathComponent).json")),
-           let jsonDictionary = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
-            let libraries = jsonDictionary["libraries"] as! [[String: Any]]
-            DispatchQueue.main.async {
-                task.remainingFiles += libraries.count
-                task.totalFiles += libraries.count
-            }
-            var leftObjects = libraries.count
-            
-            for library in libraries {
-                let artifact = (library["downloads"] as! [String: [String: Any]])["artifact"]!
-                let path: URL = librariesUrl.appending(path: artifact["path"] as! String)
-                let downloadUrl: URL = URL(string: artifact["url"] as! String)!
-                
-                if FileManager.default.fileExists(atPath: path.path()) {
-                    log("\(downloadUrl.path()) 已存在，跳过")
-                    leftObjects -= 1
-                    DispatchQueue.main.async {
-                        task.remainingFiles -= 1
-                    }
-                }
-                
-                getBinary(downloadUrl, path) { _, _ in
-                    leftObjects -= 1
-                    DispatchQueue.main.async {
-                        task.remainingFiles -= 1
-                    }
-                }
-            }
-            while leftObjects > 0 {}
-            log("客户端依赖项下载完成")
+        let libraries = task.manifest!.libraries
+        DispatchQueue.main.async {
+            task.remainingFiles += libraries.count
+            task.totalFiles += libraries.count
         }
+        var leftObjects = libraries.count
+        
+        for library in libraries {
+            let artifact = library.getArtifact()
+            let path: URL = librariesUrl.appending(path: artifact.path)
+            let downloadUrl: URL = URL(string: artifact.url)!
+            
+            if FileManager.default.fileExists(atPath: path.path()) {
+                log("\(downloadUrl.path()) 已存在，跳过")
+                leftObjects -= 1
+                DispatchQueue.main.async {
+                    task.remainingFiles -= 1
+                }
+            }
+            
+            getBinary(downloadUrl, path) { _, _ in
+                leftObjects -= 1
+                DispatchQueue.main.async {
+                    task.remainingFiles -= 1
+                }
+            }
+        }
+        while leftObjects > 0 {}
+        log("客户端依赖项下载完成")
     }
     
     public static func createTask(_ versionUrl: URL, _ minecraftVersion: String) -> DownloadTask {
@@ -242,6 +247,8 @@ public class DownloadTask: ObservableObject {
     @Published public var remainingFiles: Int = 2
     @Published public var totalFiles: Int = 2
     @Published public var isCompleted: Bool = false
+    
+    public var manifest: MinecraftManifest?
     
     public let versionUrl: URL
     public let minecraftVersion: String
