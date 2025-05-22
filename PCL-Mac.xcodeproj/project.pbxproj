@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		EC01E7E82DDC3BEA006EF529 /* log4j2.xml in Resources */ = {isa = PBXBuildFile; fileRef = EC01E7E62DDC3BEA006EF529 /* log4j2.xml */; };
 		EC01E7E92DDC3BEA006EF529 /* log4j2-1.12-.xml in Resources */ = {isa = PBXBuildFile; fileRef = EC01E7E72DDC3BEA006EF529 /* log4j2-1.12-.xml */; };
+		EC84E7412DDD56E500524871 /* Zip in Frameworks */ = {isa = PBXBuildFile; productRef = EC84E7402DDD56E500524871 /* Zip */; };
+		EC84E7432DDD56EA00524871 /* Zip in Frameworks */ = {isa = PBXBuildFile; productRef = EC84E7422DDD56EA00524871 /* Zip */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -59,6 +61,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EC84E7412DDD56E500524871 /* Zip in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -66,6 +69,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EC84E7432DDD56EA00524871 /* Zip in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -81,12 +85,20 @@
 			path = Resources;
 			sourceTree = "<group>";
 		};
+		EC84E73F2DDD56E500524871 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		EC9EAEC02DD85E48006CEDCC = {
 			isa = PBXGroup;
 			children = (
 				EC01E7E52DDC3BD2006EF529 /* Resources */,
 				EC9EAECB2DD85E48006CEDCC /* PCL-Mac */,
 				ECA5D8DD2DD99A4C006C58F7 /* PCL-MacTests */,
+				EC84E73F2DDD56E500524871 /* Frameworks */,
 				EC9EAECA2DD85E48006CEDCC /* Products */,
 			);
 			sourceTree = "<group>";
@@ -120,6 +132,7 @@
 			);
 			name = "PCL-Mac";
 			packageProductDependencies = (
+				EC84E7402DDD56E500524871 /* Zip */,
 			);
 			productName = "PCL-Mac";
 			productReference = EC9EAEC92DD85E48006CEDCC /* PCL-Mac.app */;
@@ -143,6 +156,7 @@
 			);
 			name = "PCL-MacTests";
 			packageProductDependencies = (
+				EC84E7422DDD56EA00524871 /* Zip */,
 			);
 			productName = "PCL-MacTests";
 			productReference = ECA5D8DC2DD99A4C006C58F7 /* PCL-MacTests.xctest */;
@@ -177,6 +191,9 @@
 			);
 			mainGroup = EC9EAEC02DD85E48006CEDCC;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				EC84E6E12DDD560A00524871 /* XCRemoteSwiftPackageReference "Zip" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = EC9EAECA2DD85E48006CEDCC /* Products */;
 			projectDirPath = "";
@@ -480,6 +497,30 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		EC84E6E12DDD560A00524871 /* XCRemoteSwiftPackageReference "Zip" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/marmelroy/Zip.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.1.2;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		EC84E7402DDD56E500524871 /* Zip */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = EC84E6E12DDD560A00524871 /* XCRemoteSwiftPackageReference "Zip" */;
+			productName = Zip;
+		};
+		EC84E7422DDD56EA00524871 /* Zip */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = EC84E6E12DDD560A00524871 /* XCRemoteSwiftPackageReference "Zip" */;
+			productName = Zip;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = EC9EAEC12DD85E48006CEDCC /* Project object */;
 }

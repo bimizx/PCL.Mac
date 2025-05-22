@@ -6,6 +6,7 @@
 //
 
 import Cocoa
+import Zip
 
 class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -17,6 +18,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 err("无法初始化 Java 列表: \(error)")
             }
         }
+        Zip.addCustomFileExtension("jar")
     }
     
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {

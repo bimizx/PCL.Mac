@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Zip
 
 public class MinecraftDownloader {
     private init() {}
@@ -16,9 +17,7 @@ public class MinecraftDownloader {
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         
-        let semaphore = DispatchSemaphore(value: 0)
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
-            semaphore.signal()
             if let error = error as? URLError {
                 warn("下载失败: \(error)，正在重试")
                 getBinary(sourceUrl, saveUrl, callback)
@@ -50,7 +49,6 @@ public class MinecraftDownloader {
             }
         }
         task.resume()
-        semaphore.wait()
         debug("向 \(url.absoluteString) 发送了请求")
     }
     
@@ -59,13 +57,11 @@ public class MinecraftDownloader {
         let url = sourceUrl
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
-        let semaphore = DispatchSemaphore(value: 0)
         
         URLSession.shared.dataTask(with: request) { data, response, error in
-            semaphore.signal()
             if let httpResponse = response as? HTTPURLResponse {
                 if httpResponse.statusCode == 200 {
-                    log("200 OK GET \(url.path())")
+                    debug("200 OK GET \(url.path())")
                     if let data = data, let result = String(data: data, encoding: .utf8) {
                         do {
                             try FileManager.default.createDirectory(
@@ -88,15 +84,32 @@ public class MinecraftDownloader {
                 }
             }
         }.resume()
-        log("向 \(url.absoluteString) 发送了请求")
-        semaphore.wait()
+        debug("向 \(url.absoluteString) 发送了请求")
+    }
+    
+    // MARK: 下载客户端本体
+    public static func downloadClientJar(_ task: DownloadTask, _ callback: @escaping () -> Void) {
+        task.updateStage(.clientJar)
+        let clientJarUrl = task.versionUrl.appending(path: task.minecraftVersion.getDisplayName() + ".jar")
+        if FileManager.default.fileExists(atPath: clientJarUrl.path()) {
+            task.decrement()
+            callback()
+            return
+        }
+        
+        getBinary(URL(string: "https://bmclapi2.bangbang93.com/version/\(task.minecraftVersion.getDisplayName())/client")!, clientJarUrl) { _, _ in
+            task.decrement()
+            callback()
+        }
     }
     
     // MARK: 下载客户端清单
     public static func downloadClientManifest(_ task: DownloadTask, _ callback: @escaping () -> Void) {
+        debug("正在下载客户端清单")
         let minecraftVersion = task.minecraftVersion.getDisplayName()
         let clientJsonUrl = task.versionUrl.appending(path: "\(minecraftVersion).json")
         let onJsonDownloadSuccessfully: (String) -> Void = { json in
+            task.decrement()
             do {
                 let decoder = JSONDecoder()
                 decoder.dateDecodingStrategy = .iso8601
@@ -105,24 +118,7 @@ public class MinecraftDownloader {
                 err("无法解析 JSON: \(error)")
                 return
             }
-            let onJarDownloadSuccessfully: () -> Void = {
-                DispatchQueue.main.async {
-                    task.remainingFiles -= 1
-                }
-                callback()
-            }
-            DispatchQueue.main.async {
-                task.remainingFiles -= 1
-            }
-            task.updateStage(.clientJar)
-            let clientJarUrl = clientJsonUrl.parent().appending(path: "\(minecraftVersion).jar")
-            if FileManager.default.fileExists(atPath: clientJarUrl.path()) {
-                onJarDownloadSuccessfully()
-                return
-            }
-            getBinary(URL(string: task.manifest!.downloads["client"]!.url)!, clientJsonUrl.parent().appending(path: "\(minecraftVersion).jar")) { _, _ in
-                onJarDownloadSuccessfully()
-            }
+            downloadClientJar(task, callback)
         }
         
         if FileManager.default.fileExists(atPath: clientJsonUrl.path()) {
@@ -147,13 +143,14 @@ public class MinecraftDownloader {
         
         let saveUrl = saveUrl ?? versionUrl.parent().parent().appending(path: "assets")
         let indexUrl = saveUrl.appending(path: "indexes").appending(path: "\(assetIndex).json")
+        debug("正在获取散列资源索引")
         
         getJson(downloadIndexUrl, indexUrl) { dict, json, _ in
             task.updateStage(.clientResources)
             let index = dict as! [String: [String: [String: Any]]] // TODO 需要实现 Codable 结构体
             var leftObjects = index["objects"]!.keys.count
+            updateTotalFiles(task, leftObjects)
             DispatchQueue.main.async {
-                task.totalFiles += leftObjects
                 task.remainingFiles += leftObjects
             }
             log("发现 \(leftObjects) 个文件")
@@ -166,18 +163,14 @@ public class MinecraftDownloader {
                 if FileManager.default.fileExists(atPath: assetUrl.path()) {
                     log("\(downloadUrl.path()) 已存在，跳过")
                     leftObjects -= 1
-                    DispatchQueue.main.async {
-                        task.remainingFiles -= 1
-                    }
+                    task.decrement()
                     continue
                 }
                 
                 task.addOperation {
                     getBinary(downloadUrl, assetUrl) { _, _ in
-                       leftObjects -= 1
-                       DispatchQueue.main.async {
-                           task.remainingFiles -= 1
-                       }
+                        leftObjects -= 1
+                        task.decrement()
                    }
                 }
             }
@@ -194,13 +187,12 @@ public class MinecraftDownloader {
     // MARK: 下载依赖项
     public static func downloadLibraries(_ task: DownloadTask, _ saveUrl: URL? = nil, _ callback: @escaping () -> Void) {
         let librariesUrl = task.versionUrl.parent().parent().appending(path: "libraries")
-        let libraries = task.manifest!.getNeededLibrary()
+        let libraries = task.manifest!.getNeededLibraries()
         DispatchQueue.main.async {
             task.remainingFiles += libraries.count
-            task.totalFiles += libraries.count
         }
         var leftObjects = libraries.count
-        debug(leftObjects)
+        debug("本地库数量: \(leftObjects)")
         
         for library in libraries {
             let artifact = library.getArtifact()
@@ -210,23 +202,63 @@ public class MinecraftDownloader {
             if FileManager.default.fileExists(atPath: path.path()) {
                 log("\(downloadUrl.path()) 已存在，跳过")
                 leftObjects -= 1
-                DispatchQueue.main.async {
-                    task.remainingFiles -= 1
-                }
+                task.decrement()
                 continue
             }
             
             task.addOperation {
                 getBinary(downloadUrl, path) { _, _ in
                     leftObjects -= 1
-                    DispatchQueue.main.async {
-                        task.remainingFiles -= 1
-                    }
+                    task.decrement()
                 }
             }
         }
         while leftObjects > 0 {}
         log("客户端依赖项下载完成")
+        callback()
+    }
+    
+    // MARK: 下载本地库
+    public static func downloadNatives(_ task: DownloadTask, _ callback: @escaping () -> Void) {
+        let natives = task.manifest!.libraries.map { $0.getNativesArtifact() }.filter{ $0 != nil }.map { $0! }
+        let nativesUrl = task.versionUrl.appending(path: "natives")
+        var leftObjects = natives.count
+        
+        // MARK: 下载
+        for native in natives {
+            let saveUrl = task.versionUrl.parent().parent().appending(path: "libraries").appending(path: native.path)
+            
+            if FileManager.default.fileExists(atPath: saveUrl.path()) {
+                log(saveUrl.path() + "已存在，跳过")
+                leftObjects -= 1
+                task.decrement()
+            }
+            
+            task.addOperation {
+                getBinary(URL(string: native.url)!, saveUrl) {_, _ in
+                    leftObjects -= 1
+                    task.decrement()
+                    // MARK: 解压
+                    do {
+                        try Zip.unzipFile(saveUrl, destination: nativesUrl, overwrite: true, password: nil)
+                        // 只保留 dylib
+                        let fileManager = FileManager.default
+                        let contents = try fileManager.contentsOfDirectory(at: nativesUrl, includingPropertiesForKeys: nil)
+                        for fileURL in contents {
+                            if !fileURL.pathExtension.lowercased().hasSuffix("dylib") {
+                                try fileManager.removeItem(at: fileURL)
+                            }
+                        }
+                        debug("解压 \(native.url) 成功")
+                    } catch {
+                        err("无法解压本地库: \(error)")
+                    }
+                }
+            }
+        }
+        
+        while leftObjects > 0 { }
+        log("本地库下载完成")
         callback()
     }
     
@@ -245,18 +277,30 @@ public class MinecraftDownloader {
         }
     }
     
+    // MARK: 检测需要下载的文件数
+    private static func updateTotalFiles(_ task: DownloadTask, _ hashFilesCount: Int) {
+        DispatchQueue.main.async {
+            task.totalFiles = 2 + hashFilesCount + task.manifest!.getNeededLibraries().count + task.manifest!.getNeededNatives().count
+            task.remainingFiles = task.totalFiles! - 3
+        }
+    }
+    
     // MARK: 创建下载任务
     public static func createTask(_ versionUrl: URL, _ minecraftVersion: String, _ completeCallback: (() -> Void)? = nil) -> DownloadTask {
         let task = DownloadTask(versionUrl: versionUrl, minecraftVersion: minecraftVersion) { task in
-            task.updateStage(.clientJson)
-            downloadClientManifest(task) {
-                task.updateStage(.clientIndex)
-                downloadHashResourceFiles(task) {
-                    task.updateStage(.cliendLibraries)
-                    downloadLibraries(task) {
-                        copyLog4j2(task)
-                        task.complete()
-                        completeCallback?()
+            Task {
+                task.updateStage(.clientJson)
+                downloadClientManifest(task) {
+                    task.updateStage(.clientIndex)
+                    downloadHashResourceFiles(task) {
+                        task.updateStage(.cliendLibraries)
+                        downloadLibraries(task) {
+                            downloadNatives(task) {
+                                copyLog4j2(task)
+                                task.complete()
+                                completeCallback?()
+                            }
+                        }
                     }
                 }
             }
@@ -269,8 +313,9 @@ public class MinecraftDownloader {
 public class DownloadTask: ObservableObject {
     @Published public var stage: DownloadStage = .before
     @Published public var remainingFiles: Int = 2
-    @Published public var totalFiles: Int = 2
+    @Published public var totalFiles: Int?
     @Published public var isCompleted: Bool = false
+    @Published public var leftObjects: Int = 0
     
     public var manifest: ClientManifest?
     
@@ -291,6 +336,7 @@ public class DownloadTask: ObservableObject {
         log("下载任务完成")
         self.updateStage(.end)
         DispatchQueue.main.async {
+            self.remainingFiles = 0
             self.isCompleted = true
         }
     }
@@ -307,6 +353,12 @@ public class DownloadTask: ObservableObject {
     
     public func addOperation(_ operation: @escaping () -> Void) {
         self.downloadQueue.addOperation(BlockOperation(block: operation))
+    }
+    
+    public func decrement() {
+        DispatchQueue.main.async {
+            self.remainingFiles -= 1
+        }
     }
 }
 

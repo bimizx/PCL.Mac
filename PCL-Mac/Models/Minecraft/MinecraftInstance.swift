@@ -65,7 +65,7 @@ public final class ReleaseMinecraftVersion: MinecraftVersion {
     }
     
     public func getDisplayName() -> String {
-        return "\(major).\(minor)" + (patch == 0 ? "" : String(patch))
+        return "\(major).\(minor)" + (patch == 0 ? "" : ".\(patch)")
     }
     
     public static func ==(lhs: ReleaseMinecraftVersion, rhs: ReleaseMinecraftVersion) -> Bool {

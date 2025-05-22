@@ -51,22 +51,21 @@ public struct ClientManifest: Codable {
         
         public let downloads: Downloads
         public let rules: [Rule]?
-        public let natives: Natives
+        public let natives: Natives?
         
         public func getArtifact() -> Downloads.Artifact {
             return self.downloads.artifact
         }
         
-        public func getArtifactUrl() -> URL? {
-            if let key = natives.osx,
+        public func getNativesArtifact() -> Downloads.Artifact? {
+            if let key = natives?.osx,
                let classifiers = downloads.classifiers {
-                if let nativeArtifact: Downloads.Artifact = switch key {
+                let nativeArtifact: Downloads.Artifact? = switch key {
                 case "natives-osx": classifiers.nativesOsx
                 case "natives-macos": classifiers.nativesMacOS
                 default: nil
-                } {
-                    return URL(string: nativeArtifact.url)
                 }
+                return nativeArtifact
             }
             return nil
         }
@@ -88,10 +87,10 @@ public struct ClientManifest: Codable {
             
             public init(from decoder: Decoder) throws {
                 let container = try decoder.singleValueContainer()
-                if let string = try? container.decode(String.self) {
-                    self = .string(string)
+                if let list = try? container.decode([String].self) {
+                    self = .list(list)
                 } else {
-                    self = .list(try container.decode([String].self))
+                    self = .string(try container.decode(String.self))
                 }
             }
             
@@ -198,10 +197,32 @@ public struct ClientManifest: Codable {
             }
         }
         
-        public struct JvmArgument: Codable {
-            public struct RulesTag {
+        public enum JvmArgument: Codable {
+            case rules(RulesTag)
+            case string(String)
+            
+            public struct RulesTag: Codable {
                 public let rules: [Rule]
                 public let value: Value
+            }
+            
+            public init(from decoder: Decoder) throws {
+                let container = try decoder.singleValueContainer()
+                if let stringValue = try? container.decode(String.self) {
+                    self = .string(stringValue)
+                } else {
+                    self = .rules(try container.decode(RulesTag.self))
+                }
+            }
+            
+            public func encode(to encoder: Encoder) throws {
+                var container = encoder.singleValueContainer()
+                switch self {
+                case .string(let value):
+                    try container.encode(value)
+                case .rules(let value):
+                    try container.encode(value)
+                }
             }
         }
         
@@ -232,6 +253,31 @@ public struct ClientManifest: Codable {
             
             return arguments // 什么史山
         }
+        
+        public func getAllowedJVMArguments() -> [String] {
+            var arguments: [String] = []
+            
+            jvm.filter { jvmArgument in
+                switch jvmArgument {
+                case .rules(let rules):
+                    return rules.rules.allMatch { $0.match() }
+                default: return true
+                }
+            }.forEach { jvmArgument in
+                switch jvmArgument {
+                case .string(let string):
+                    arguments.append(string)
+                case .rules(let rules):
+                    switch rules.value {
+                    case .list(let list):
+                        arguments.append(contentsOf: list)
+                    case .string(let string):
+                        arguments.append(string)
+                    }
+                }
+            }
+            return arguments
+        }
     }
     
     public let arguments: Arguments
@@ -243,14 +289,24 @@ public struct ClientManifest: Codable {
     public let mainClass: String
     public let type: VersionType
     
-    public func getNeededLibrary() -> [Library] {
+    public func getNeededLibraries() -> [Library] {
         return self.libraries.filter { library in
             var isAllowed: Bool = true
             for rule in library.rules ?? [] {
-                isAllowed = isAllowed && rule.os?.match() ?? true
+                isAllowed = isAllowed && rule.os?.match() ?? true && rule.action != .disallow
             }
             return isAllowed
         }
+    }
+    
+    public func getNeededNatives() -> [Library.Downloads.Artifact] {
+        var result: [Library.Downloads.Artifact] = []
+        for library in self.getNeededLibraries() {
+            if let artifact = library.getNativesArtifact() {
+                result.append(artifact)
+            }
+        }
+        return result
     }
 }
 

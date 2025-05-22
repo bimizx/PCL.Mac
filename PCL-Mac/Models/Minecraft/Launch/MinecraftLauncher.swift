@@ -14,7 +14,9 @@ public class MinecraftLauncher {
         process.environment = ProcessInfo.processInfo.environment
         process.arguments = []
         process.arguments!.append(contentsOf: buildJvmArguments(instance))
+        process.arguments!.append(instance.manifest.mainClass)
         process.arguments!.append(contentsOf: buildGameArguments(instance))
+        debug(process.arguments!.joined(separator: " "))
         process.currentDirectoryURL = instance.runningDirectory
         do {
             try process.run()
@@ -25,16 +27,34 @@ public class MinecraftLauncher {
     }
     
     private static func buildJvmArguments(_ instance: MinecraftInstance) -> [String] {
-        return [
-            "-Dlog4j.configurationFile=\(instance.runningDirectory.appending(path: "log4j2.xml").path())",
-            "-XstartOnFirstThread",
-            "-cp", instance.manifest.getNeededLibrary().map { library in
-                return instance.runningDirectory.parent().parent().appending(path: "libraries")
-                    .appending(path: library.getArtifact().path).path()
-            }.joined(separator: ":") + ":" +
-            instance.runningDirectory.appending(path: instance.version.getDisplayName() + ".jar").path(),
-            instance.manifest.mainClass
+        let values: [String: String] = [
+            "natives_directory": instance.runningDirectory.appending(path: "natives").path(),
+            "launcher_name": "\"PCL Mac\"",
+            "launcher_version": "1.0.0",
+            "classpath": buildClasspath(instance)
         ]
+        
+        var args: [String] = [
+            "-Dorg.lwjgl.util.Debug=true"
+        ]
+        args.append(contentsOf: replaceTemplateStrings(instance.manifest.arguments.getAllowedJVMArguments(), with: values))
+        return args
+    }
+    
+    private static func buildClasspath(_ instance: MinecraftInstance) -> String {
+        var urls: [String] = []
+        
+        instance.manifest.getNeededLibraries().forEach { library in
+            urls.append(instance.runningDirectory.parent().parent().appending(path: "libraries").appending(path: library.getArtifact().path).path())
+        }
+        
+        instance.manifest.getNeededNatives().forEach { artifact in
+            urls.append(instance.runningDirectory.parent().parent().appending(path: "libraries").appending(path: artifact.path).path())
+        }
+        
+        urls.append(instance.runningDirectory.appending(path: instance.version.getDisplayName() + ".jar").path())
+        
+        return urls.joined(separator: ":")
     }
     
     private static func buildGameArguments(_ instance: MinecraftInstance) -> [String] {
@@ -50,11 +70,25 @@ public class MinecraftLauncher {
             "version_type": "\"PCL Mac\""
         ]
         
-        return instance.manifest.arguments.getAllowedGameArguments().map { arg in
-            let startIndex = arg.index(arg.startIndex, offsetBy: 2)
-            let endIndex = arg.index(arg.endIndex, offsetBy: -1)
-            let range = startIndex..<endIndex
-            return values[String(arg[range])] ?? arg
+//        return instance.manifest.arguments.getAllowedGameArguments().map { arg in
+//            let startIndex = arg.index(arg.startIndex, offsetBy: 2)
+//            let endIndex = arg.index(arg.endIndex, offsetBy: -1)
+//            let range = startIndex..<endIndex
+//            return values[String(arg[range])] ?? arg
+//        }
+        return replaceTemplateStrings(instance.manifest.arguments.getAllowedGameArguments(), with: values)
+    }
+    
+    private static func replaceTemplateStrings(_ strings: [String], with dict: [String: String]) -> [String] {
+        return strings.map { original in
+            var result = original
+            for (key, value) in dict {
+                result = result.replacingOccurrences(
+                    of: "${\(key)}",
+                    with: value
+                )
+            }
+            return result
         }
     }
 }
