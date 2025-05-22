@@ -11,7 +11,8 @@
 
 ## 简介
 
-> SwiftUI 重写的 macOS 版 PCL，追求更快、更好、更强。
+> SwiftUI 重写的 macOS 版 PCL，追求更快、更好、更强。<br>
+> 我们 macOS 也要有自己的启动器！
 
 ## 测试
 
