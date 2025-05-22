@@ -195,7 +195,11 @@ public class MinecraftDownloader {
         debug("本地库数量: \(leftObjects)")
         
         for library in libraries {
-            let artifact = library.getArtifact()
+            guard let artifact = library.getArtifact() else {
+                leftObjects -= 1
+                task.decrement()
+                continue
+            }
             let path: URL = librariesUrl.appending(path: artifact.path)
             let downloadUrl: URL = URL(string: artifact.url)!
             

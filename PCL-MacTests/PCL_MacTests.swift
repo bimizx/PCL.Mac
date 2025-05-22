@@ -23,12 +23,12 @@ struct PCL_MacTests {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
         let manifest = try decoder.decode(ClientManifest.self, from: handle.readToEnd()!)
-        print(manifest.arguments.getAllowedGameArguments())
+        print(manifest.getArguments().getAllowedGameArguments())
     }
     
     @Test func downloadTest() async throws {
         var isRunning = true
-        let version = "1.21.5"
+        let version = "1.9"
         let versionUrl = URL(fileURLWithUserPath: "~/PCL-Mac-minecraft/versions/\(version)")
         MinecraftDownloader.createTask(versionUrl, version) {
             isRunning = false

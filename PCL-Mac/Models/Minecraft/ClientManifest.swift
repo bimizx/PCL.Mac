@@ -41,7 +41,7 @@ public struct ClientManifest: Codable {
                 }
             }
             
-            public let artifact: Artifact
+            public let artifact: Artifact?
             public let classifiers: Classifiers?
         }
         
@@ -53,7 +53,7 @@ public struct ClientManifest: Codable {
         public let rules: [Rule]?
         public let natives: Natives?
         
-        public func getArtifact() -> Downloads.Artifact {
+        public func getArtifact() -> Downloads.Artifact? {
             return self.downloads.artifact
         }
         
@@ -280,7 +280,8 @@ public struct ClientManifest: Codable {
         }
     }
     
-    public let arguments: Arguments
+    public let arguments: Arguments?
+    public let minecraftArguments: String?
     public let assetIndex: AssetIndex
     public let assets: String
     public let downloads: [String: DownloadInfo]
@@ -307,6 +308,19 @@ public struct ClientManifest: Codable {
             }
         }
         return result
+    }
+    
+    public func getArguments() -> Arguments {
+        if let arguments = self.arguments {
+            return arguments
+        } else {
+            let minecraftArguments = self.minecraftArguments!
+            let gameArguments = minecraftArguments.split(separator: " ").map { minecraftArgument in
+                return Arguments.GameArgument.string(String(minecraftArgument))
+            }
+            
+            return Arguments(game: gameArguments, jvm: [])
+        }
     }
 }
 

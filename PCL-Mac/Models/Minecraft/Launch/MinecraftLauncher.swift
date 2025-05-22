@@ -37,7 +37,7 @@ public class MinecraftLauncher {
         var args: [String] = [
             "-Dorg.lwjgl.util.Debug=true"
         ]
-        args.append(contentsOf: replaceTemplateStrings(instance.manifest.arguments.getAllowedJVMArguments(), with: values))
+        args.append(contentsOf: replaceTemplateStrings(instance.manifest.getArguments().getAllowedJVMArguments(), with: values))
         return args
     }
     
@@ -45,7 +45,9 @@ public class MinecraftLauncher {
         var urls: [String] = []
         
         instance.manifest.getNeededLibraries().forEach { library in
-            urls.append(instance.runningDirectory.parent().parent().appending(path: "libraries").appending(path: library.getArtifact().path).path())
+            if let artifact = library.getArtifact() {
+                urls.append(instance.runningDirectory.parent().parent().appending(path: "libraries").appending(path: artifact.path).path())
+            }
         }
         
         instance.manifest.getNeededNatives().forEach { artifact in
@@ -76,7 +78,7 @@ public class MinecraftLauncher {
 //            let range = startIndex..<endIndex
 //            return values[String(arg[range])] ?? arg
 //        }
-        return replaceTemplateStrings(instance.manifest.arguments.getAllowedGameArguments(), with: values)
+        return replaceTemplateStrings(instance.manifest.getArguments().getAllowedGameArguments(), with: values)
     }
     
     private static func replaceTemplateStrings(_ strings: [String], with dict: [String: String]) -> [String] {
