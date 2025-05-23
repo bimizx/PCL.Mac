@@ -30,7 +30,7 @@ struct PCL_MacTests {
         var isRunning = true
         let version = "1.9"
         let versionUrl = URL(fileURLWithUserPath: "~/PCL-Mac-minecraft/versions/\(version)")
-        MinecraftDownloader.createTask(versionUrl, version) {
+        MinecraftInstaller.createTask(versionUrl, version) {
             isRunning = false
         }.start()
         while isRunning {}

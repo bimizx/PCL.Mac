@@ -8,7 +8,7 @@
 import Foundation
 import Zip
 
-public class MinecraftDownloader {
+public class MinecraftInstaller {
     private init() {}
     
     // MARK: 下载二进制和普通文件
@@ -88,7 +88,7 @@ public class MinecraftDownloader {
     }
     
     // MARK: 下载客户端本体
-    public static func downloadClientJar(_ task: DownloadTask, _ callback: @escaping () -> Void) {
+    public static func downloadClientJar(_ task: InstallTask, _ callback: @escaping () -> Void) {
         task.updateStage(.clientJar)
         let clientJarUrl = task.versionUrl.appending(path: task.minecraftVersion.getDisplayName() + ".jar")
         if FileManager.default.fileExists(atPath: clientJarUrl.path()) {
@@ -104,7 +104,7 @@ public class MinecraftDownloader {
     }
     
     // MARK: 下载客户端清单
-    public static func downloadClientManifest(_ task: DownloadTask, _ callback: @escaping () -> Void) {
+    public static func downloadClientManifest(_ task: InstallTask, _ callback: @escaping () -> Void) {
         debug("正在下载客户端清单")
         let minecraftVersion = task.minecraftVersion.getDisplayName()
         let clientJsonUrl = task.versionUrl.appending(path: "\(minecraftVersion).json")
@@ -136,7 +136,7 @@ public class MinecraftDownloader {
     }
     
     // MARK: 下载散列资源文件
-    public static func downloadHashResourceFiles(_ task: DownloadTask, _ saveUrl: URL? = nil, _ callback: @escaping () -> Void) {
+    public static func downloadHashResourceFiles(_ task: InstallTask, _ saveUrl: URL? = nil, _ callback: @escaping () -> Void) {
         let versionUrl = task.versionUrl
         let assetIndex: String = task.manifest!.assetIndex.id
         let downloadIndexUrl: URL = URL(string: task.manifest!.assetIndex.url)!
@@ -185,7 +185,7 @@ public class MinecraftDownloader {
     }
     
     // MARK: 下载依赖项
-    public static func downloadLibraries(_ task: DownloadTask, _ saveUrl: URL? = nil, _ callback: @escaping () -> Void) {
+    public static func downloadLibraries(_ task: InstallTask, _ saveUrl: URL? = nil, _ callback: @escaping () -> Void) {
         let librariesUrl = task.versionUrl.parent().parent().appending(path: "libraries")
         let libraries = task.manifest!.getNeededLibraries()
         DispatchQueue.main.async {
@@ -223,7 +223,7 @@ public class MinecraftDownloader {
     }
     
     // MARK: 下载本地库
-    public static func downloadNatives(_ task: DownloadTask, _ callback: @escaping () -> Void) {
+    public static func downloadNatives(_ task: InstallTask, _ callback: @escaping () -> Void) {
         let natives = task.manifest!.libraries.map { $0.getNativesArtifact() }.filter{ $0 != nil }.map { $0! }
         let nativesUrl = task.versionUrl.appending(path: "natives")
         var leftObjects = natives.count
@@ -267,7 +267,7 @@ public class MinecraftDownloader {
     }
     
     // MARK: 拷贝 log4j2.xml
-    public static func copyLog4j2(_ task: DownloadTask) {
+    public static func copyLog4j2(_ task: InstallTask) {
         let targetUrl: URL = task.versionUrl.appending(path: "log4j2.xml")
         if FileManager.default.fileExists(atPath: targetUrl.path()) {
             return
@@ -282,7 +282,7 @@ public class MinecraftDownloader {
     }
     
     // MARK: 检测需要下载的文件数
-    private static func updateTotalFiles(_ task: DownloadTask, _ hashFilesCount: Int) {
+    private static func updateTotalFiles(_ task: InstallTask, _ hashFilesCount: Int) {
         DispatchQueue.main.async {
             task.totalFiles = 2 + hashFilesCount + task.manifest!.getNeededLibraries().count + task.manifest!.getNeededNatives().count
             task.remainingFiles = task.totalFiles! - 3
@@ -290,8 +290,8 @@ public class MinecraftDownloader {
     }
     
     // MARK: 创建下载任务
-    public static func createTask(_ versionUrl: URL, _ minecraftVersion: String, _ completeCallback: (() -> Void)? = nil) -> DownloadTask {
-        let task = DownloadTask(versionUrl: versionUrl, minecraftVersion: minecraftVersion) { task in
+    public static func createTask(_ versionUrl: URL, _ minecraftVersion: String, _ completeCallback: (() -> Void)? = nil) -> InstallTask {
+        let task = InstallTask(versionUrl: versionUrl, minecraftVersion: minecraftVersion) { task in
             Task {
                 task.updateStage(.clientJson)
                 downloadClientManifest(task) {
@@ -314,8 +314,8 @@ public class MinecraftDownloader {
     }
 }
 
-public class DownloadTask: ObservableObject {
-    @Published public var stage: DownloadStage = .before
+public class InstallTask: ObservableObject {
+    @Published public var stage: InstallStage = .before
     @Published public var remainingFiles: Int = 2
     @Published public var totalFiles: Int?
     @Published public var isCompleted: Bool = false
@@ -325,10 +325,10 @@ public class DownloadTask: ObservableObject {
     
     public let versionUrl: URL
     public let minecraftVersion: any MinecraftVersion
-    public let startTask: (DownloadTask) -> Void
+    public let startTask: (InstallTask) -> Void
     public let downloadQueue: OperationQueue
     
-    init(versionUrl: URL, minecraftVersion: String, startTask: @escaping (DownloadTask) -> Void) {
+    init(versionUrl: URL, minecraftVersion: String, startTask: @escaping (InstallTask) -> Void) {
         self.versionUrl = versionUrl
         self.minecraftVersion = ReleaseMinecraftVersion.fromString(minecraftVersion)!
         self.startTask = startTask
@@ -349,7 +349,7 @@ public class DownloadTask: ObservableObject {
         self.startTask(self)
     }
     
-    public func updateStage(_ stage: DownloadStage) {
+    public func updateStage(_ stage: InstallStage) {
         DispatchQueue.main.async {
             self.stage = stage
         }
@@ -366,7 +366,7 @@ public class DownloadTask: ObservableObject {
     }
 }
 
-public enum DownloadStage {
+public enum InstallStage {
     case before, clientJson, clientJar, clientIndex, clientResources, cliendLibraries, natives, end
     public func getDisplayName() -> String {
         switch self {
@@ -382,7 +382,7 @@ public enum DownloadStage {
     }
 }
 
-public class DownloadOperation: Operation, @unchecked Sendable {
+public class InstallOperation: Operation, @unchecked Sendable {
     public let task: () -> Void
     
     public init(task: @escaping () -> Void) {
