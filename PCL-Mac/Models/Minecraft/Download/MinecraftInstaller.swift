@@ -192,7 +192,7 @@ public class MinecraftInstaller {
                 continue
             }
             let path: URL = librariesUrl.appending(path: artifact.path)
-            let downloadUrl: URL = URL(string: artifact.url)!
+            let downloadUrl: URL = replaceLibrariesDownloadURL(library.name, URL(string: artifact.url)!)
             
             if FileManager.default.fileExists(atPath: path.path()) {
                 log("\(downloadUrl.path()) 已存在，跳过")
@@ -238,14 +238,6 @@ public class MinecraftInstaller {
                     // MARK: 解压
                     do {
                         try Zip.unzipFile(saveUrl, destination: nativesUrl, overwrite: true, password: nil)
-                        // 只保留 dylib
-                        let fileManager = FileManager.default
-                        let contents = try fileManager.contentsOfDirectory(at: nativesUrl, includingPropertiesForKeys: nil)
-                        for fileURL in contents {
-                            if !fileURL.pathExtension.lowercased().hasSuffix("dylib") {
-                                try fileManager.removeItem(at: fileURL)
-                            }
-                        }
                         debug("解压 \(native.path) 成功")
                     } catch {
                         err("无法解压本地库: \(error)")
@@ -255,31 +247,93 @@ public class MinecraftInstaller {
             }
         }
         group.notify(queue: .main) {
+            do {
+                moveDylibsToRoot(nativesUrl)
+                // 只保留 dylib
+                let fileManager = FileManager.default
+                let contents = try fileManager.contentsOfDirectory(at: nativesUrl, includingPropertiesForKeys: nil)
+                for fileURL in contents {
+                    if !fileURL.pathExtension.lowercased().hasSuffix("dylib") {
+                        try fileManager.removeItem(at: fileURL)
+                    }
+                }
+            } catch {
+                err("清理时发生错误: \(error.localizedDescription)")
+            }
             log("本地库下载完成")
             callback()
         }
     }
     
-    // MARK: 替换下载链接中的架构和版本
+    // MARK: 移动所有 dylib 到根部
+    private static func moveDylibsToRoot(_ directoryUrl: URL) {
+        let fileManager = FileManager.default
+        guard let enumerator = fileManager.enumerator(
+            at: directoryUrl,includingPropertiesForKeys: [.isDirectoryKey],
+            options: [.skipsHiddenFiles]
+        ) else { return }
+        
+        for case let fileURL as URL in enumerator {
+            guard fileURL.pathExtension == "dylib",
+                  let resourceValues = try? fileURL.resourceValues(forKeys: [.isDirectoryKey]),
+                  !resourceValues.isDirectory! else { continue }
+            do {
+                let destinationURL = directoryUrl.appendingPathComponent(fileURL.lastPathComponent)
+                if fileManager.fileExists(atPath: destinationURL.path) {
+                    try fileManager.removeItem(at: destinationURL)
+                }
+                try fileManager.moveItem(at: fileURL, to: destinationURL)
+            } catch {
+                err("无法拷贝 dylib: \(error.localizedDescription) \(fileURL.path()) -> \(directoryUrl.path())")
+            }
+        }
+    }
+
+    
+    // MARK: 替换本地库下载链接中的架构和版本
     private static func replaceNativesDownloadURL(_ name: String, _ downloadUrl: URL) -> URL {
+        // return downloadUrl
         let splitted: [String] = name.split(separator: ":").map(String.init)
         let groupId: String = splitted[0]
         let artifactId: String = splitted[1]
+        var version: String = splitted[2]
         
         if groupId != "org.lwjgl" {
             return downloadUrl
         }
         
-        var url: URL!
+        var url: URL = downloadUrl
+        if version == "3.2.1" {
+            version = "3.3.1"
+        }
         if ExecArchitectury.SystemArch == .arm64 {
-            url = URL(string: "https://libraries.minecraft.net/org/lwjgl/\(artifactId)/3.3.3/\(artifactId)-3.3.3-natives-macos-arm64.jar")!
+            url = URL(string: "https://libraries.minecraft.net/org/lwjgl/\(artifactId)/\(version)/\(artifactId)-\(version)-natives-macos-arm64.jar")!
         } else {
-            url = URL(string: "https://libraries.minecraft.net/org/lwjgl/\(artifactId)/3.3.3/\(artifactId)-3.3.3-natives-macos-patch.jar")!
+            url = URL(string: "https://libraries.minecraft.net/org/lwjgl/\(artifactId)/\(version)/\(artifactId)-\(version)-natives-macos-patch.jar")!
         }
         
         log("将 \(downloadUrl.path()) 替换为 \(url.path())")
         
-        return url!
+        return url
+    }
+    
+    // MARK: 替换依赖项下载链接中的架构和版本
+    private static func replaceLibrariesDownloadURL(_ name: String, _ downloadUrl: URL) -> URL {
+        // return downloadUrl
+        let splitted: [String] = name.split(separator: ":").map(String.init)
+        let groupId: String = splitted[0]
+        let artifactId: String = splitted[1]
+        var version: String = splitted[2]
+        
+        if groupId != "org.lwjgl" {
+            return downloadUrl
+        }
+        
+        if version == "3.2.1" {
+            version = "3.3.1"
+        }
+        
+        return URL(string: "https://libraries.minecraft.net/org/lwjgl/\(artifactId)/\(version)/\(artifactId)-\(version).jar")!
     }
     
     // MARK: 拷贝 log4j2.xml

@@ -35,13 +35,16 @@ public class MinecraftLauncher {
         ]
         
         var args: [String] = [
+            // "-javaagent:\(Constants.ApplicationResourcesUrl.appending(path: "compat-agent.jar").path())"
         ]
         args.append(contentsOf: replaceTemplateStrings(instance.manifest.getArguments().getAllowedJVMArguments(), with: values))
         return args//.map { $0.contains(" ") ? "\"\($0)\"" : $0 }
     }
     
     private static func buildClasspath(_ instance: MinecraftInstance) -> String {
-        var urls: [String] = []
+        var urls: [String] = [
+            
+        ]
         
         instance.manifest.getNeededLibraries().forEach { library in
             if let artifact = library.getArtifact() {
@@ -74,13 +77,6 @@ public class MinecraftLauncher {
             "user_type": "msa",
             "version_type": "\"PCL Mac\""
         ]
-        
-//        return instance.manifest.arguments.getAllowedGameArguments().map { arg in
-//            let startIndex = arg.index(arg.startIndex, offsetBy: 2)
-//            let endIndex = arg.index(arg.endIndex, offsetBy: -1)
-//            let range = startIndex..<endIndex
-//            return values[String(arg[range])] ?? arg
-//        }
         return replaceTemplateStrings(instance.manifest.getArguments().getAllowedGameArguments(), with: values)
     }
     

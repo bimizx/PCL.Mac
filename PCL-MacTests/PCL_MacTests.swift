@@ -12,7 +12,7 @@ import PCL_Mac
 struct PCL_MacTests {
 
     @Test func runTest() async throws {
-        let version = "1.18"
+        let version = "1.15"
         let versionUrl = URL(fileURLWithUserPath: "~/PCL-Mac-minecraft/versions/\(version)")
         let instance = MinecraftInstance(runningDirectory: versionUrl, version: ReleaseMinecraftVersion.fromString(version)!, MinecraftConfig(name: "Test", javaPath: "/usr/bin/java"))
         instance!.run()
@@ -28,7 +28,7 @@ struct PCL_MacTests {
     
     @Test func downloadTest() async throws {
         var isRunning = true
-        let version = "1.18"
+        let version = "1.15"
         let versionUrl = URL(fileURLWithUserPath: "~/PCL-Mac-minecraft/versions/\(version)")
         MinecraftInstaller.createTask(versionUrl, version) {
             isRunning = false
