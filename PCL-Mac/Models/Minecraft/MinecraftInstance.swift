@@ -10,23 +10,54 @@ import Foundation
 public class MinecraftInstance {
     public let runningDirectory: URL
     public let version: any MinecraftVersion
-    public var jvmUrl: URL?
     public var process: Process?
     public let manifest: ClientManifest!
+    public let config: MinecraftConfig
     
-    public init(runningDirectory: URL, version: any MinecraftVersion, jvmUrl: URL? = nil) {
+    public init?(runningDirectory: URL, version: any MinecraftVersion, _ config: MinecraftConfig? = nil) {
         self.runningDirectory = runningDirectory
         self.version = version
-        self.jvmUrl = nil
         
         do {
             let handle = try FileHandle(forReadingFrom: runningDirectory.appending(path: runningDirectory.lastPathComponent + ".json"))
             let decoder = JSONDecoder()
-            decoder.dateDecodingStrategy = .iso8601
-            self.manifest = try decoder.decode(ClientManifest.self, from: handle.readToEnd()!)
+            self.manifest = .decode(try handle.readToEnd()!)
         } catch {
             err("无法加载客户端 JSON: \(error)")
             self.manifest = nil
+        }
+        let configPath = runningDirectory.appending(path: ".PCL_Mac.json")
+        
+        if let config = config {
+            self.config = config
+            // 保存配置
+            let encoder = JSONEncoder()
+            encoder.outputFormatting = .prettyPrinted
+            do {
+                try FileManager.default.createDirectory(
+                    at: runningDirectory,
+                    withIntermediateDirectories: true,
+                    attributes: nil
+                )
+                try encoder.encode(config).write(to: configPath, options: .atomic)
+            } catch {
+                err("无法保存配置: \(error)")
+                // 不返回 nil，能跑就行
+            }
+        } else {
+            do {
+                guard FileManager.default.fileExists(atPath: configPath.path()) else {
+                    err("在传入的 config 为 nil 时，应有对应的配置文件")
+                    return nil
+                }
+                let handle = try FileHandle(forReadingFrom: configPath)
+                let decoder = JSONDecoder()
+                decoder.dateDecodingStrategy = .iso8601
+                self.config = try! decoder.decode(MinecraftConfig.self, from: handle.readToEnd()!)
+            } catch {
+                err("无法加载客户端配置: \(error)")
+                return nil
+            }
         }
     }
     
@@ -35,50 +66,12 @@ public class MinecraftInstance {
     }
 }
 
-
-
-public protocol MinecraftVersion: Comparable {
-    func getDisplayName() -> String
-    static func fromString(_ string: String) -> Self?
-}
-
-public final class ReleaseMinecraftVersion: MinecraftVersion {
-    private let major: Int
-    private let minor: Int
-    private let patch: Int
+public struct MinecraftConfig: Codable {
+    public let name: String
+    public let javaPath: String
     
-    public init(major: Int, minor: Int, patch: Int = 0) {
-        self.major = major
-        self.minor = minor
-        self.patch = patch
-    }
-    
-    public static func fromString(_ string: String) -> ReleaseMinecraftVersion? {
-        let components = string.components(separatedBy: ".")
-        guard components.count >= 2,
-              let major = Int(components[0]),
-              let minor = Int(components[1]),
-              let patch = Int(components.count == 3 ? components[2] : "0") else {
-            return nil
-        }
-        return ReleaseMinecraftVersion(major: major, minor: minor, patch: patch)
-    }
-    
-    public func getDisplayName() -> String {
-        return "\(major).\(minor)" + (patch == 0 ? "" : ".\(patch)")
-    }
-    
-    public static func ==(lhs: ReleaseMinecraftVersion, rhs: ReleaseMinecraftVersion) -> Bool {
-        return lhs.major == rhs.major && lhs.minor == rhs.minor && lhs.patch == rhs.patch
-    }
-    
-    public static func <(lhs: ReleaseMinecraftVersion, rhs: ReleaseMinecraftVersion) -> Bool {
-        if lhs.major != rhs.major {
-            return lhs.major < rhs.major
-        } else if lhs.minor != rhs.minor {
-            return lhs.minor < rhs.minor
-        } else {
-            return lhs.patch < rhs.patch
-        }
+    public init(name: String, javaPath: String) {
+        self.name = name
+        self.javaPath = javaPath
     }
 }

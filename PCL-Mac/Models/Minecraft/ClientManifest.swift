@@ -141,10 +141,10 @@ public struct ClientManifest: Codable {
                         public enum CodingKeys: String, CodingKey {
                             case isDemoUser = "is_demo_user"
                             case hasCustomResolution = "has_custom_resolution"
-                            case hasQuickPlaysSupport = "has_quickplay_support"
-                            case isQuickPlaySingleplayer = "is_quickplay_singleplayer"
-                            case isQuickPlayMultiplayer = "is_quickplay_multiplayer"
-                            case isQuickPlayRealms = "is_quickplay_realms"
+                            case hasQuickPlaysSupport = "has_quick_play_support"
+                            case isQuickPlaySingleplayer = "is_quick_play_singleplayer"
+                            case isQuickPlayMultiplayer = "is_quick_play_multiplayer"
+                            case isQuickPlayRealms = "is_quick_play_realms"
                         }
                         
                         public func match() -> Bool {
@@ -289,6 +289,12 @@ public struct ClientManifest: Codable {
     public let libraries: [Library]
     public let mainClass: String
     public let type: VersionType
+    
+    public static func decode(_ data: Data, _ decoder: JSONDecoder = JSONDecoder()) -> ClientManifest {
+        decoder.keyDecodingStrategy = .useDefaultKeys
+        decoder.dateDecodingStrategy = .iso8601
+        return try! decoder.decode(ClientManifest.self, from: data)
+    }
     
     public func getNeededLibraries() -> [Library] {
         return self.libraries.filter { library in

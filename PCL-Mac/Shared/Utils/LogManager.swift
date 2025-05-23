@@ -25,7 +25,7 @@ actor LogStore {
         let content = logs.joined(separator: "\n")
         Task {
             do {
-                try await FileManager.default.writeLog(content)
+                try await FileManager.writeLog(content)
                 log("日志保存成功")
             } catch {
                 err("日志保存失败: \(error)")

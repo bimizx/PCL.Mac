@@ -111,9 +111,7 @@ public class MinecraftInstaller {
         let onJsonDownloadSuccessfully: (String) -> Void = { json in
             task.decrement()
             do {
-                let decoder = JSONDecoder()
-                decoder.dateDecodingStrategy = .iso8601
-                task.manifest = try decoder.decode(ClientManifest.self, from: json.data(using: .utf8)!)
+                task.manifest = .decode(json.data(using: .utf8)!)
             } catch {
                 err("无法解析 JSON: \(error)")
                 return

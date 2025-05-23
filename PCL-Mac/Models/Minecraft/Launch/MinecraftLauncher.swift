@@ -10,7 +10,7 @@ import Foundation
 public class MinecraftLauncher {
     public static func launch(_ instance: MinecraftInstance) {
         let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/Library/Java/JavaVirtualMachines/microsoft-11-x86.jdk/Contents/Home/bin/java")
+        process.executableURL = URL(fileURLWithPath: instance.config.javaPath)
         process.environment = ProcessInfo.processInfo.environment
         process.arguments = []
         process.arguments!.append(contentsOf: buildJvmArguments(instance))
@@ -35,10 +35,9 @@ public class MinecraftLauncher {
         ]
         
         var args: [String] = [
-            "-Dorg.lwjgl.util.Debug=true"
         ]
         args.append(contentsOf: replaceTemplateStrings(instance.manifest.getArguments().getAllowedJVMArguments(), with: values))
-        return args.map { $0.contains(" ") ? "\"\($0)\"" : $0 }
+        return args//.map { $0.contains(" ") ? "\"\($0)\"" : $0 }
     }
     
     private static func buildClasspath(_ instance: MinecraftInstance) -> String {
@@ -46,7 +45,11 @@ public class MinecraftLauncher {
         
         instance.manifest.getNeededLibraries().forEach { library in
             if let artifact = library.getArtifact() {
-                urls.append(instance.runningDirectory.parent().parent().appending(path: "libraries").appending(path: artifact.path).path())
+                var path: String = instance.runningDirectory.parent().parent().appending(path: "libraries").appending(path: artifact.path).path()
+                if path.contains(" ") {
+                    path = "\"\(path)\""
+                }
+                urls.append(path)
             }
         }
         
