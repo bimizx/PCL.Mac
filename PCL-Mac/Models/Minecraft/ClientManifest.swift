@@ -49,6 +49,7 @@ public struct ClientManifest: Codable {
             public let osx: String?
         }
         
+        public let name: String
         public let downloads: Downloads
         public let rules: [Rule]?
         public let natives: Natives?

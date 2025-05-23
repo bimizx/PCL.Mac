@@ -20,7 +20,6 @@ public class MinecraftInstance {
         
         do {
             let handle = try FileHandle(forReadingFrom: runningDirectory.appending(path: runningDirectory.lastPathComponent + ".json"))
-            let decoder = JSONDecoder()
             self.manifest = .decode(try handle.readToEnd()!)
         } catch {
             err("无法加载客户端 JSON: \(error)")

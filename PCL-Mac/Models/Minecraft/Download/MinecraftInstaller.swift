@@ -110,12 +110,7 @@ public class MinecraftInstaller {
         let clientJsonUrl = task.versionUrl.appending(path: "\(minecraftVersion).json")
         let onJsonDownloadSuccessfully: (String) -> Void = { json in
             task.decrement()
-            do {
-                task.manifest = .decode(json.data(using: .utf8)!)
-            } catch {
-                err("无法解析 JSON: \(error)")
-                return
-            }
+            task.manifest = .decode(json.data(using: .utf8)!)
             downloadClientJar(task, callback)
         }
         
@@ -138,7 +133,6 @@ public class MinecraftInstaller {
         let versionUrl = task.versionUrl
         let assetIndex: String = task.manifest!.assetIndex.id
         let downloadIndexUrl: URL = URL(string: task.manifest!.assetIndex.url)!
-        
         let saveUrl = saveUrl ?? versionUrl.parent().parent().appending(path: "assets")
         let indexUrl = saveUrl.appending(path: "indexes").appending(path: "\(assetIndex).json")
         debug("正在获取散列资源索引")
@@ -146,13 +140,14 @@ public class MinecraftInstaller {
         getJson(downloadIndexUrl, indexUrl) { dict, json, _ in
             task.updateStage(.clientResources)
             let index = dict as! [String: [String: [String: Any]]] // TODO 需要实现 Codable 结构体
-            var leftObjects = index["objects"]!.keys.count
+            let leftObjects = index["objects"]!.keys.count
             updateTotalFiles(task, leftObjects)
             DispatchQueue.main.async {
                 task.remainingFiles += leftObjects
             }
             log("发现 \(leftObjects) 个文件")
             
+            let group = DispatchGroup()
             for (_, object) in index["objects"]! {
                 let hash: String = object["hash"] as! String
                 let assetUrl: URL = saveUrl.appending(path: "objects").appending(path: hash.prefix(2)).appending(path: hash)
@@ -160,28 +155,27 @@ public class MinecraftInstaller {
                 
                 if FileManager.default.fileExists(atPath: assetUrl.path()) {
                     log("\(downloadUrl.path()) 已存在，跳过")
-                    leftObjects -= 1
                     task.decrement()
                     continue
                 }
                 
+                group.enter()
                 task.addOperation {
                     getBinary(downloadUrl, assetUrl) { _, _ in
-                        leftObjects -= 1
                         task.decrement()
-                   }
+                        group.leave()
+                    }
                 }
             }
             log("资源文件请求已全部发送完成")
             
-            Task {
-                while leftObjects > 0 {}
+            group.notify(queue: .main) {
                 log("客户端散列资源下载完毕")
                 callback()
             }
         }
     }
-    
+
     // MARK: 下载依赖项
     public static func downloadLibraries(_ task: InstallTask, _ saveUrl: URL? = nil, _ callback: @escaping () -> Void) {
         let librariesUrl = task.versionUrl.parent().parent().appending(path: "libraries")
@@ -189,12 +183,11 @@ public class MinecraftInstaller {
         DispatchQueue.main.async {
             task.remainingFiles += libraries.count
         }
-        var leftObjects = libraries.count
-        debug("本地库数量: \(leftObjects)")
+        debug("本地库数量: \(libraries.count)")
         
+        let group = DispatchGroup()
         for library in libraries {
             guard let artifact = library.getArtifact() else {
-                leftObjects -= 1
                 task.decrement()
                 continue
             }
@@ -203,42 +196,44 @@ public class MinecraftInstaller {
             
             if FileManager.default.fileExists(atPath: path.path()) {
                 log("\(downloadUrl.path()) 已存在，跳过")
-                leftObjects -= 1
                 task.decrement()
                 continue
             }
             
+            group.enter()
             task.addOperation {
                 getBinary(downloadUrl, path) { _, _ in
-                    leftObjects -= 1
                     task.decrement()
+                    group.leave()
                 }
             }
         }
-        while leftObjects > 0 {}
-        log("客户端依赖项下载完成")
-        callback()
+        group.notify(queue: .main) {
+            log("客户端依赖项下载完成")
+            callback()
+        }
     }
-    
+
     // MARK: 下载本地库
     public static func downloadNatives(_ task: InstallTask, _ callback: @escaping () -> Void) {
-        let natives = task.manifest!.libraries.map { $0.getNativesArtifact() }.filter{ $0 != nil }.map { $0! }
+        let libraries = task.manifest!.libraries
         let nativesUrl = task.versionUrl.appending(path: "natives")
-        var leftObjects = natives.count
         
-        // MARK: 下载
-        for native in natives {
+        let group = DispatchGroup()
+        for library in libraries {
+            guard let native = library.getNativesArtifact() else {
+                continue
+            }
             let saveUrl = task.versionUrl.parent().parent().appending(path: "libraries").appending(path: native.path)
             
             if FileManager.default.fileExists(atPath: saveUrl.path()) {
                 log(saveUrl.path() + "已存在，跳过")
-                leftObjects -= 1
                 task.decrement()
+                continue
             }
-            
+            group.enter()
             task.addOperation {
-                getBinary(URL(string: native.url)!, saveUrl) {_, _ in
-                    leftObjects -= 1
+                getBinary(replaceNativesDownloadURL(library.name, URL(string: native.url)!), saveUrl) {_, _ in
                     task.decrement()
                     // MARK: 解压
                     do {
@@ -251,17 +246,40 @@ public class MinecraftInstaller {
                                 try fileManager.removeItem(at: fileURL)
                             }
                         }
-                        debug("解压 \(native.url) 成功")
+                        debug("解压 \(native.path) 成功")
                     } catch {
                         err("无法解压本地库: \(error)")
                     }
+                    group.leave()
                 }
             }
         }
+        group.notify(queue: .main) {
+            log("本地库下载完成")
+            callback()
+        }
+    }
+    
+    // MARK: 替换下载链接中的架构和版本
+    private static func replaceNativesDownloadURL(_ name: String, _ downloadUrl: URL) -> URL {
+        let splitted: [String] = name.split(separator: ":").map(String.init)
+        let groupId: String = splitted[0]
+        let artifactId: String = splitted[1]
         
-        while leftObjects > 0 { }
-        log("本地库下载完成")
-        callback()
+        if groupId != "org.lwjgl" {
+            return downloadUrl
+        }
+        
+        var url: URL!
+        if ExecArchitectury.SystemArch == .arm64 {
+            url = URL(string: "https://libraries.minecraft.net/org/lwjgl/\(artifactId)/3.3.3/\(artifactId)-3.3.3-natives-macos-arm64.jar")!
+        } else {
+            url = URL(string: "https://libraries.minecraft.net/org/lwjgl/\(artifactId)/3.3.3/\(artifactId)-3.3.3-natives-macos-patch.jar")!
+        }
+        
+        log("将 \(downloadUrl.path()) 替换为 \(url.path())")
+        
+        return url!
     }
     
     // MARK: 拷贝 log4j2.xml
@@ -331,7 +349,7 @@ public class InstallTask: ObservableObject {
         self.minecraftVersion = ReleaseMinecraftVersion.fromString(minecraftVersion)!
         self.startTask = startTask
         self.downloadQueue = OperationQueue()
-        self.downloadQueue.maxConcurrentOperationCount = 16
+        self.downloadQueue.maxConcurrentOperationCount = 4
     }
     
     public func complete() {
