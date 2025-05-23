@@ -12,7 +12,7 @@ import PCL_Mac
 struct PCL_MacTests {
 
     @Test func runTest() async throws {
-        let version = "1.17"
+        let version = "1.9"
         let versionUrl = URL(fileURLWithUserPath: "~/PCL-Mac-minecraft/versions/\(version)")
         let instance = MinecraftInstance(runningDirectory: versionUrl, version: ReleaseMinecraftVersion.fromString(version)!)
         instance.run()

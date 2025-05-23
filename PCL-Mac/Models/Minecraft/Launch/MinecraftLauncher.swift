@@ -10,13 +10,13 @@ import Foundation
 public class MinecraftLauncher {
     public static func launch(_ instance: MinecraftInstance) {
         let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/java")
+        process.executableURL = URL(fileURLWithPath: "/Library/Java/JavaVirtualMachines/microsoft-11-x86.jdk/Contents/Home/bin/java")
         process.environment = ProcessInfo.processInfo.environment
         process.arguments = []
         process.arguments!.append(contentsOf: buildJvmArguments(instance))
         process.arguments!.append(instance.manifest.mainClass)
         process.arguments!.append(contentsOf: buildGameArguments(instance))
-        debug(process.arguments!.joined(separator: " "))
+        debug(process.executableURL!.path() + " " + process.arguments!.joined(separator: " "))
         process.currentDirectoryURL = instance.runningDirectory
         do {
             try process.run()
@@ -38,7 +38,7 @@ public class MinecraftLauncher {
             "-Dorg.lwjgl.util.Debug=true"
         ]
         args.append(contentsOf: replaceTemplateStrings(instance.manifest.getArguments().getAllowedJVMArguments(), with: values))
-        return args
+        return args.map { $0.contains(" ") ? "\"\($0)\"" : $0 }
     }
     
     private static func buildClasspath(_ instance: MinecraftInstance) -> String {

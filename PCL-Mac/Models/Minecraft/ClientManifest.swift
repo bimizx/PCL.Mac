@@ -319,7 +319,17 @@ public struct ClientManifest: Codable {
                 return Arguments.GameArgument.string(String(minecraftArgument))
             }
             
-            return Arguments(game: gameArguments, jvm: [])
+            return Arguments(game: gameArguments, jvm: [
+                "-XX:+UseG1GC",
+                "-XX:-UseAdaptiveSizePolicy",
+                "-XX:-OmitStackTraceInFastThrow",
+                "-Djava.library.path=${natives_directory}",
+                "-Dorg.lwjgl.system.SharedLibraryExtractPath=${natives_directory}",
+                "-Dio.netty.native.workdir=${natives_directory}",
+                "-Djna.tmpdir=${native_directory}",
+                "-cp", "${classpath}"
+            ].map { Arguments.JvmArgument.string($0) }
+            )
         }
     }
 }
