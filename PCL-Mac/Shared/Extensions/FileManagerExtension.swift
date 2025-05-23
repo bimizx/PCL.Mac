@@ -10,20 +10,20 @@ import Foundation
 extension FileManager {
     static let logURL = Constants.ApplicationLogUrl
     
-    func writeLog(_ content: String) async throws {
+    static func writeLog(_ content: String) async throws {
         try await withCheckedThrowingContinuation { continuation in
             DispatchQueue.global(qos: .utility).async {
+                let fileManager = FileManager.default
                 do {
-                    if !self.fileExists(atPath: Self.logURL.path) {
-                        try self.createDirectory(
-                            at: Self.logURL.parent(),
-                                withIntermediateDirectories: true,
-                                attributes: nil
-                            )
-                        self.createFile(atPath: Self.logURL.path, contents: nil)
+                    if !fileManager.fileExists(atPath: logURL.path) {
+                        try fileManager.createDirectory(
+                            at: logURL.parent(),
+                            withIntermediateDirectories: true,
+                            attributes: nil
+                        )
+                        fileManager.createFile(atPath: logURL.path, contents: nil)
                     }
-                    
-                    let handle = try FileHandle(forWritingTo: Self.logURL)
+                    let handle = try FileHandle(forWritingTo: logURL)
                     try handle.write(contentsOf: Data(content.utf8))
                     try handle.close()
                     continuation.resume()
