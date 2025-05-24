@@ -10,20 +10,24 @@ import Zip
 
 class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
-        log("正在初始化 Java 列表")
         Task {
-            do {
-                try await JavaSearch.searchAndSet()
-            } catch {
-                err("无法初始化 Java 列表: \(error)")
+            await LogStore.shared.clear()
+            log("App 已启动")
+            log("正在初始化 Java 列表")
+            Task {
+                do {
+                    try await JavaSearch.searchAndSet()
+                } catch {
+                    err("无法初始化 Java 列表: \(error)")
+                }
             }
+            Zip.addCustomFileExtension("jar")
         }
-        Zip.addCustomFileExtension("jar")
     }
     
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
         Task {
-            await LogStore.shared.flushToDisk()
+            await LogStore.shared.save()
         }
         return .terminateLater
     }
