@@ -203,6 +203,10 @@ public class MinecraftInstaller {
             group.enter()
             task.addOperation {
                 getBinary(downloadUrl, path) { _, _ in
+                    let artifactId: String = library.name.split(separator: ":").map(String.init)[1]
+                    if artifactId == "lwjgl-glfw" {
+                        patchGlfw(path)
+                    }
                     task.decrement()
                     group.leave()
                 }
@@ -334,6 +338,21 @@ public class MinecraftInstaller {
         }
         
         return URL(string: "https://libraries.minecraft.net/org/lwjgl/\(artifactId)/\(version)/\(artifactId)-\(version).jar")!
+    }
+    
+    private static func patchGlfw(_ url: URL) {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/java")
+        process.environment = ProcessInfo.processInfo.environment
+        process.currentDirectoryURL = URL(fileURLWithPath: "/tmp")
+        process.arguments = ["-jar", Constants.ApplicationResourcesUrl.appending(path: "glfw-patcher.jar").path(), url.path()]
+        do {
+            try process.run()
+            process.waitUntilExit()
+            log("已修改 lwjgl-glfw")
+        } catch {
+            err("无法修改 lwjgl-glfw: \(error)")
+        }
     }
     
     // MARK: 拷贝 log4j2.xml

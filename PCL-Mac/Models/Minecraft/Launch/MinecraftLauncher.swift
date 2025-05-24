@@ -35,7 +35,6 @@ public class MinecraftLauncher {
         ]
         
         var args: [String] = [
-            // "-javaagent:\(Constants.ApplicationResourcesUrl.appending(path: "compat-agent.jar").path())"
         ]
         args.append(contentsOf: replaceTemplateStrings(instance.manifest.getArguments().getAllowedJVMArguments(), with: values))
         return args//.map { $0.contains(" ") ? "\"\($0)\"" : $0 }

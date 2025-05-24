@@ -13,6 +13,7 @@
 
 > SwiftUI 重写的 macOS 版 PCL，追求更快、更好、更强。<br>
 > 我们 macOS 也要有自己的启动器！
+本项目集成了 [PCL-Community/glfw-patcher](https://github.com/PCL-Community/glfw-patcher) ，用于在本地自动 patch LWJGL 的 `lwjgl-glfw.jar`，以解决兼容性问题。
 
 ## 测试
 
