@@ -333,7 +333,7 @@ public struct ClientManifest: Codable {
                 "-Djava.library.path=${natives_directory}",
                 "-Dorg.lwjgl.system.SharedLibraryExtractPath=${natives_directory}",
                 "-Dio.netty.native.workdir=${natives_directory}",
-                "-Djna.tmpdir=${native_directory}",
+                "-Djna.tmpdir=${natives_directory}",
                 "-cp", "${classpath}"
             ].map { Arguments.JvmArgument.string($0) }
             )

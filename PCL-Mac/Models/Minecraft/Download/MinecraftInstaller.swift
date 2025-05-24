@@ -232,20 +232,15 @@ public class MinecraftInstaller {
             
             if FileManager.default.fileExists(atPath: saveUrl.path()) {
                 log(saveUrl.path() + "已存在，跳过")
+                unzipNatives(native, saveUrl, nativesUrl)
                 task.decrement()
                 continue
             }
             group.enter()
             task.addOperation {
                 getBinary(replaceNativesDownloadURL(library.name, URL(string: native.url)!), saveUrl) {_, _ in
+                    unzipNatives(native, saveUrl, nativesUrl)
                     task.decrement()
-                    // MARK: 解压
-                    do {
-                        try Zip.unzipFile(saveUrl, destination: nativesUrl, overwrite: true, password: nil)
-                        debug("解压 \(native.path) 成功")
-                    } catch {
-                        err("无法解压本地库: \(error)")
-                    }
                     group.leave()
                 }
             }
@@ -257,7 +252,8 @@ public class MinecraftInstaller {
                 let fileManager = FileManager.default
                 let contents = try fileManager.contentsOfDirectory(at: nativesUrl, includingPropertiesForKeys: nil)
                 for fileURL in contents {
-                    if !fileURL.pathExtension.lowercased().hasSuffix("dylib") {
+                    if !fileURL.pathExtension.lowercased().hasSuffix("dylib") && !fileURL.pathExtension.lowercased().hasSuffix("jnilib") {
+                        debug("已清除 \(fileURL.path())")
                         try fileManager.removeItem(at: fileURL)
                     }
                 }
@@ -266,6 +262,16 @@ public class MinecraftInstaller {
             }
             log("本地库下载完成")
             callback()
+        }
+    }
+    
+    // MARK: 解压 natives
+    private static func unzipNatives(_ native: ClientManifest.Library.Downloads.Artifact, _ saveUrl: URL, _ nativesUrl: URL) {
+        do {
+            try Zip.unzipFile(saveUrl, destination: nativesUrl, overwrite: true, password: nil)
+            debug("解压 \(native.path) 成功")
+        } catch {
+            err("无法解压本地库: \(error)")
         }
     }
     
@@ -278,11 +284,12 @@ public class MinecraftInstaller {
         ) else { return }
         
         for case let fileURL as URL in enumerator {
-            guard fileURL.pathExtension == "dylib",
+            guard fileURL.pathExtension == "dylib" || fileURL.pathExtension == "jnilib",
                   let resourceValues = try? fileURL.resourceValues(forKeys: [.isDirectoryKey]),
                   !resourceValues.isDirectory! else { continue }
             do {
                 let destinationURL = directoryUrl.appendingPathComponent(fileURL.lastPathComponent)
+                if destinationURL == fileURL { continue }
                 if fileManager.fileExists(atPath: destinationURL.path) {
                     try fileManager.removeItem(at: destinationURL)
                 }
@@ -307,11 +314,15 @@ public class MinecraftInstaller {
         }
         
         var url: URL = downloadUrl
-        if version == "3.2.1" {
+        if version == "3.2.1" || version == "3.1.6" {
             version = "3.3.1"
         }
         if ExecArchitectury.SystemArch == .arm64 {
-            url = URL(string: "https://libraries.minecraft.net/org/lwjgl/\(artifactId)/\(version)/\(artifactId)-\(version)-natives-macos-arm64.jar")!
+            if version.hasPrefix("2.") {
+                url = URL(string: "https://repo1.maven.org/maven2/org/glavo/hmcl/lwjgl2-natives/2.9.3-rc1-osx-arm64/lwjgl2-natives-2.9.3-rc1-osx-arm64.jar")!
+            } else {
+                url = URL(string: "https://libraries.minecraft.net/org/lwjgl/\(artifactId)/\(version)/\(artifactId)-\(version)-natives-macos-arm64.jar")!
+            }
         } else {
             url = URL(string: "https://libraries.minecraft.net/org/lwjgl/\(artifactId)/\(version)/\(artifactId)-\(version)-natives-macos-patch.jar")!
         }
@@ -333,7 +344,7 @@ public class MinecraftInstaller {
             return downloadUrl
         }
         
-        if version == "3.2.1" {
+        if version == "3.2.1" || version == "3.1.6" {
             version = "3.3.1"
         }
         
@@ -372,6 +383,7 @@ public class MinecraftInstaller {
     
     // MARK: 检测需要下载的文件数
     private static func updateTotalFiles(_ task: InstallTask, _ hashFilesCount: Int) {
+        debug("hashFilesCount: \(hashFilesCount), needed libraries count: \(task.manifest!.getNeededLibraries().count), needed natives count: \(task.manifest!.getNeededNatives().count)")
         DispatchQueue.main.async {
             task.totalFiles = 2 + hashFilesCount + task.manifest!.getNeededLibraries().count + task.manifest!.getNeededNatives().count
             task.remainingFiles = task.totalFiles! - 3
@@ -429,7 +441,7 @@ public class InstallTask: ObservableObject {
         log("下载任务完成")
         self.updateStage(.end)
         DispatchQueue.main.async {
-            self.remainingFiles = 0
+            // self.remainingFiles = 0
             self.isCompleted = true
         }
     }
