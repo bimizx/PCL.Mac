@@ -11,7 +11,7 @@
 
 ## 简介
 
-> SwiftUI 重写的 macOS 版 PCL，追求更快、更好、更强。<br>
+> SwiftUI 重构的 macOS 版 [PCL2](https://github.com/Hex-Dragon/PCL2)（作者：龙腾猫跃），追求更快、更好、更强。<br>
 > 我们 macOS 也要有自己的启动器！
 
 ## 测试
