@@ -7,43 +7,34 @@
 
 import SwiftUI
 
-struct DraggableArea<Content: View>: NSViewRepresentable {
-    let content: () -> Content
+struct DraggableWindowArea<Content: View>: NSViewRepresentable {
+    let content: Content
 
-    func makeNSView(context: Context) -> DraggableNSHostingView<Content> {
-        let view = DraggableNSHostingView(rootView: content())
-        return view
+    init(@ViewBuilder content: () -> Content) {
+        self.content = content()
     }
 
-    func updateNSView(_ nsView: DraggableNSHostingView<Content>, context: Context) {
-        nsView.rootView = content()
+    func makeNSView(context: Context) -> NSHostingView<Content> {
+        let hostingView = NSHostingView(rootView: content)
+        hostingView.addSubview(DraggableHelperView())
+        hostingView.subviews.last?.frame = hostingView.bounds
+        hostingView.subviews.last?.autoresizingMask = [.width, .height]
+        return hostingView
+    }
+
+    func updateNSView(_ nsView: NSHostingView<Content>, context: Context) {
+        nsView.rootView = content
     }
 }
 
-class DraggableNSHostingView<Content: View>: NSHostingView<Content> {
-    private var mouseDownPointInWindow: NSPoint?
-    
+class DraggableHelperView: NSView {
     override func mouseDown(with event: NSEvent) {
-        mouseDownPointInWindow = event.locationInWindow
-    }
-    
-    override func mouseDragged(with event: NSEvent) {
-        guard let window = self.window,
-              let mouseDownPointInWindow = mouseDownPointInWindow else { return }
-        
-        if mouseDownPointInWindow.distance(to: event.locationInWindow) <= 1 {
-            window.mouseDown(with: event)
-            window.mouseUp(with: event)
-            return
+        if let window = self.window {
+            window.performDrag(with: event)
         }
-        let mouseOnScreen = NSEvent.mouseLocation
-        let newOrigin = NSPoint(x: mouseOnScreen.x - mouseDownPointInWindow.x,
-                                y: mouseOnScreen.y - mouseDownPointInWindow.y)
-        window.setFrameOrigin(newOrigin)
     }
-    
-    override func mouseUp(with event: NSEvent) {
-        mouseDownPointInWindow = nil
+    override func hitTest(_ point: NSPoint) -> NSView? {
+        return self
     }
 }
 
@@ -54,10 +45,10 @@ struct TitleBarComponent: View {
     var body: some View {
         VStack {
             ZStack {
-                DraggableArea {
+                DraggableWindowArea {
                     Spacer()
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
                 HStack {
                     Image("TitleLogo")
                         .resizable()
