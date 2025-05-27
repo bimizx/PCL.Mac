@@ -16,6 +16,7 @@ struct DownloadView: View {
             Text("剩余: \(currentTask.remainingFiles) / \(getTotalText())")
             Text("当前阶段: \(currentTask.stage.getDisplayName())")
             Text("当前阶段剩余文件数: \(currentTask.leftObjects)")
+            Text("网络速度(byte/s): \(DataManager.shared.networkMonitor.downloadSpeed)")
             MyButtonComponent(text: "启动任务") {
                 if currentTask.stage == .before {
                     currentTask.start()

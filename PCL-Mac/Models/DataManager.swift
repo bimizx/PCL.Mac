@@ -15,6 +15,8 @@ class DataManager: ObservableObject {
     @Published var lastTimeUsed: Int = 0
     @Published var showPopup: Bool = false
     @Published var currentPopup: PopupOverlay?
+    @Published var networkUsage: Float = 0
+    @Published var networkMonitor: NetworkSpeedMonitor = NetworkSpeedMonitor()
     
     private init() {}
 }

@@ -22,7 +22,15 @@ public struct ClientManifest: Codable {
         public let url: String
     }
     
-    public struct Library: Codable {
+    public struct Library: Codable, Hashable {
+        public static func == (lhs: Library, rhs: Library) -> Bool {
+            return lhs.name == rhs.name
+        }
+        
+        public func hash(into hasher: inout Hasher) {
+            hasher.combine(name)
+        }
+        
         public struct Downloads: Codable {
             public struct Artifact: Codable {
                 public let path: String
@@ -58,7 +66,7 @@ public struct ClientManifest: Codable {
             return self.downloads.artifact
         }
         
-        public func getNativesArtifact() -> Downloads.Artifact? {
+        public func getNativeArtifact() -> Downloads.Artifact? {
             if let key = natives?.osx,
                let classifiers = downloads.classifiers {
                 let nativeArtifact: Downloads.Artifact? = switch key {
@@ -298,6 +306,10 @@ public struct ClientManifest: Codable {
     }
     
     public func getNeededLibraries() -> [Library] {
+        return getAllowedLibraries().filter { !$0.name.contains("natives") } // 不能有依赖名字里带 natives 罢
+    }
+    
+    public func getAllowedLibraries() -> [Library] {
         return self.libraries.filter { library in
             var isAllowed: Bool = true
             for rule in library.rules ?? [] {
@@ -307,13 +319,19 @@ public struct ClientManifest: Codable {
         }
     }
     
-    public func getNeededNatives() -> [Library.Downloads.Artifact] {
-        var result: [Library.Downloads.Artifact] = []
-        for library in self.getNeededLibraries() {
-            if let artifact = library.getNativesArtifact() {
-                result.append(artifact)
+    public func getNeededNatives() -> [Library : Library.Downloads.Artifact] {
+        var result: [Library : Library.Downloads.Artifact] = [:]
+        for library in self.getAllowedLibraries() {
+            if let artifact = library.getNativeArtifact() {
+                result[library] = artifact
+            } else {
+                if let artifact = library.getArtifact(),
+                   library.name.hasPrefix("org.lwjgl") && library.name.contains("natives") && (ExecArchitectury.SystemArch == .x64 || library.name.hasSuffix("-arm64")) {
+                    result[library] = artifact
+                }
             }
         }
+        
         return result
     }
     

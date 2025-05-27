@@ -17,10 +17,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             do {
                 try await JavaSearch.searchAndSet()
             } catch {
-                err("无法初始化 Java 列表: \(error)")
+                err("无法初始化 Java 列表: \(error.localizedDescription)")
             }
         }
+        
         Zip.addCustomFileExtension("jar")
+        log("App初始化完成")
     }
     
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {

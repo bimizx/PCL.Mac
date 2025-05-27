@@ -14,6 +14,8 @@ final class LogStore {
     private var logs: [String] = []
     private let maxCapacity = 10_000
     private let writeImmediately = true
+    
+    private let queue = DispatchQueue(label: "io.github.pcl-community.LogStoreQueue")
 
     private init() {
         dateFormatter.dateFormat = "[yyyy-MM-dd] [HH:mm:ss.SSS]"
@@ -25,11 +27,16 @@ final class LogStore {
             logs.removeFirst(1000)
         }
         let logLine = "\(dateFormatter.string(from: Date())) [\(level)] \(caller): \(message)"
-        logs.append(logLine)
-        print(logLine)
-        if writeImmediately {
-            appendToDisk(logLine + "\n")
+        queue.async {
+            if self.logs.count >= self.maxCapacity {
+                self.logs.removeFirst(1000)
+            }
+            self.logs.append(logLine)
+            if self.writeImmediately {
+                self.appendToDisk(logLine + "\n")
+            }
         }
+        print(logLine)
     }
     
     func appendToDisk(_ content: String, _ callback: ((Bool) -> Void)? = nil) {

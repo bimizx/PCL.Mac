@@ -19,7 +19,6 @@ struct MyCardComponent<Content: View>: View {
                 HStack {
                     Text(title)
                         .font(.system(size: 14))
-                        .foregroundStyle(isHovered ? Color(hex: 0x0B5BCB) : .black)
                     Spacer()
                     Image("FoldController")
                         .resizable()
@@ -27,23 +26,21 @@ struct MyCardComponent<Content: View>: View {
                         .frame(width: 20, height: 20)
                         .offset(x: -8, y: 4)
                         .rotationEffect(.degrees(isUnfolded ? 180 : 0), anchor: .center)
-                        .foregroundStyle(isHovered ? Color(hex: 0x0B5BCB) : .black)
                 }
+                .foregroundStyle(isHovered ? Color(hex: 0x0B5BCB) : .black)
+                
                 Color.clear
-                    .frame(height: 20)
                     .contentShape(Rectangle())
                     .onTapGesture {
-                        withAnimation(.spring(response: 0.2, dampingFraction: 1, blendDuration: 0)) {
+                        withAnimation(.easeInOut(duration: 0.2)) {
                             isUnfolded.toggle()
                         }
                     }
             }
+            .frame(maxHeight: 9)
             if isUnfolded {
                 content()
-                    .transition(.asymmetric(
-                        insertion: .move(edge: .bottom).combined(with: .opacity),
-                        removal: .identity
-                    ))
+                    .frame(maxHeight: isUnfolded ? .greatestFiniteMagnitude : 0)
             }
         }
         .padding()
@@ -51,10 +48,6 @@ struct MyCardComponent<Content: View>: View {
             RoundedRectangle(cornerRadius: 8)
                 .fill(.white)
                 .shadow(color: isHovered ? Color(hex: 0x0B5BcB) : .gray, radius: isHovered ? 2 : 2, x: 0.5, y: 0.5)
-        )
-        .animation(
-            .spring(response: 0.2, dampingFraction: 1),
-            value: isUnfolded
         )
         .animation(.easeInOut(duration: 0.2), value: isHovered)
         .onHover { hover in

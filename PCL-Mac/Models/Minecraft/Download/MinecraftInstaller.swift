@@ -7,6 +7,7 @@
 
 import Foundation
 import Zip
+import SwiftUI
 
 public class MinecraftInstaller {
     private init() {}
@@ -17,7 +18,7 @@ public class MinecraftInstaller {
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         
-        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+        let task = DataManager.shared.networkMonitor.session.dataTask(with: request) { data, response, error in
             if let error = error as? URLError {
                 warn("下载失败: \(error)，正在重试")
                 getBinary(sourceUrl, saveUrl, callback)
@@ -58,7 +59,7 @@ public class MinecraftInstaller {
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         
-        URLSession.shared.dataTask(with: request) { data, response, error in
+        DataManager.shared.networkMonitor.session.dataTask(with: request) { data, response, error in
             if let httpResponse = response as? HTTPURLResponse {
                 if httpResponse.statusCode == 200 {
                     debug("200 OK GET \(url.path())")
@@ -220,14 +221,12 @@ public class MinecraftInstaller {
 
     // MARK: 下载本地库
     public static func downloadNatives(_ task: InstallTask, _ callback: @escaping () -> Void) {
-        let libraries = task.manifest!.libraries
+        let libraries = task.manifest!.getNeededNatives()
         let nativesUrl = task.versionUrl.appending(path: "natives")
+        debug("找到 \(libraries.count) 个本地库")
         
         let group = DispatchGroup()
-        for library in libraries {
-            guard let native = library.getNativesArtifact() else {
-                continue
-            }
+        for (library, native) in libraries {
             let saveUrl = task.versionUrl.parent().parent().appending(path: "libraries").appending(path: native.path)
             
             if FileManager.default.fileExists(atPath: saveUrl.path()) {

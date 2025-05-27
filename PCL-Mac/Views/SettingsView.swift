@@ -50,13 +50,13 @@ struct SettingsView: View {
                                         LocalStorage.shared.userAddedJVMPaths.append(url)
                                         dataManager.javaVirtualMachines.append(jvm)
                                     } else {
-                                        // 错误
+                                        err("发生错误，无法手动添加 Java")
                                     }
                                 } else {
-                                    // 重复
+                                    err("无法手动添加 Java: 已有重复的 Java")
                                 }
                             } else {
-                                // 可执行文件不正确
+                                err("无法手动添加 Java: 可执行文件不正确")
                             }
                         }
                     }

@@ -18,9 +18,12 @@ public class MinecraftLauncher {
         process.arguments!.append(contentsOf: buildGameArguments(instance))
         debug(process.executableURL!.path() + " " + process.arguments!.joined(separator: " "))
         process.currentDirectoryURL = instance.runningDirectory
+        
+        instance.process = process
         do {
             try process.run()
             process.waitUntilExit()
+            instance.process = nil
         } catch {
             err(error.localizedDescription)
         }
@@ -35,6 +38,7 @@ public class MinecraftLauncher {
         ]
         
         var args: [String] = [
+            "-Dorg.lwjgl.util.Debug=true"
         ]
         args.append(contentsOf: replaceTemplateStrings(instance.manifest.getArguments().getAllowedJVMArguments(), with: values))
         return args//.map { $0.contains(" ") ? "\"\($0)\"" : $0 }
@@ -45,7 +49,7 @@ public class MinecraftLauncher {
             
         ]
         
-        instance.manifest.getNeededLibraries().forEach { library in
+        instance.manifest.getAllowedLibraries().forEach { library in
             if let artifact = library.getArtifact() {
                 var path: String = instance.runningDirectory.parent().parent().appending(path: "libraries").appending(path: artifact.path).path()
                 if path.contains(" ") {
@@ -55,9 +59,9 @@ public class MinecraftLauncher {
             }
         }
         
-        instance.manifest.getNeededNatives().forEach { artifact in
-            urls.append(instance.runningDirectory.parent().parent().appending(path: "libraries").appending(path: artifact.path).path())
-        }
+//        instance.manifest.getNeededNatives().forEach { artifact in
+//            urls.append(instance.runningDirectory.parent().parent().appending(path: "libraries").appending(path: artifact.path).path())
+//        }
         
         urls.append(instance.runningDirectory.appending(path: instance.version.getDisplayName() + ".jar").path())
         

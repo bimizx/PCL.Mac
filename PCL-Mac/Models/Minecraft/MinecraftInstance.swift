@@ -60,7 +60,7 @@ public class MinecraftInstance {
         }
     }
     
-    public func run() {
+    public func run() async {
         MinecraftLauncher.launch(self)
     }
 }

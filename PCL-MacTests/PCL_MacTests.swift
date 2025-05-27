@@ -12,10 +12,10 @@ import PCL_Mac
 struct PCL_MacTests {
 
     @Test func runTest() async throws {
-        let version = "1.14"
+        let version = "1.21"
         let versionUrl = URL(fileURLWithUserPath: "~/PCL-Mac-minecraft/versions/\(version)")
         let instance = MinecraftInstance(runningDirectory: versionUrl, version: ReleaseMinecraftVersion.fromString(version)!, MinecraftConfig(name: "Test", javaPath: "/usr/bin/java"))
-        instance!.run()
+        await instance!.run()
     }
     
     @Test func loadClientManifestTest() async throws {
