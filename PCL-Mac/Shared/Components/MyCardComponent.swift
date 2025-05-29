@@ -9,16 +9,21 @@ import SwiftUI
 
 struct MyCardComponent<Content: View>: View {
     let title: String
-    let content: () -> Content
+    private let content: Content
     @State private var isHovered: Bool = false
     @State private var isUnfolded: Bool = false
+    
+    init(title: String, content: @escaping () -> Content) {
+        self.title = title
+        self.content = content()
+    }
     
     var body: some View {
         VStack {
             ZStack {
                 HStack {
                     Text(title)
-                        .font(.system(size: 14))
+                        .font(.custom("PCL English", size: 14))
                     Spacer()
                     Image("FoldController")
                         .resizable()
@@ -39,7 +44,7 @@ struct MyCardComponent<Content: View>: View {
             }
             .frame(maxHeight: 9)
             if isUnfolded {
-                content()
+                content
                     .frame(maxHeight: isUnfolded ? .greatestFiniteMagnitude : 0)
             }
         }
@@ -65,10 +70,31 @@ struct StaticMyCardComponent<Content: View>: View {
         VStack {
             HStack {
                 Text(title)
-                    .font(.system(size: 14))
+                    .font(.custom("PCL English", size: 14))
                     .foregroundStyle(isHovered ? Color(hex: 0x0B5BCB) : .black)
                 Spacer()
             }
+            content()
+        }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 8)
+                .fill(.white)
+                .shadow(color: isHovered ? Color(hex: 0x0B5BcB) : .gray, radius: isHovered ? 2 : 2, x: 0.5, y: 0.5)
+        )
+        .animation(.easeInOut(duration: 0.2), value: isHovered)
+        .onHover { hover in
+            isHovered = hover
+        }
+    }
+}
+
+struct TitlelessMyCardComponent<Content: View>: View {
+    let content: () -> Content
+    @State private var isHovered: Bool = false
+    
+    var body: some View {
+        VStack {
             content()
         }
         .padding()

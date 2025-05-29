@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Combine
 
 /// 需要在界面上同步 / 使用的都放在这里
 class DataManager: ObservableObject {
@@ -15,8 +16,22 @@ class DataManager: ObservableObject {
     @Published var lastTimeUsed: Int = 0
     @Published var showPopup: Bool = false
     @Published var currentPopup: PopupOverlay?
-    @Published var networkUsage: Float = 0
     @Published var networkMonitor: NetworkSpeedMonitor = NetworkSpeedMonitor()
+    @Published var versionManifest: VersionManifest?
+    @Published var router: AppRouter = AppRouter()
+    private var routerCancellable: AnyCancellable?
     
-    private init() {}
+    private init() {
+        routerCancellable = router.objectWillChange.sink { [weak self] _ in
+            self?.objectWillChange.send()
+        }
+    }
+    
+    func refreshVersionManifest() {
+        VersionManifest.fetchLatestData { versionManifest in
+            DispatchQueue.main.async {
+                self.versionManifest = versionManifest
+            }
+        }
+    }
 }

@@ -9,10 +9,10 @@
 /* Begin PBXBuildFile section */
 		EC01E7E82DDC3BEA006EF529 /* log4j2.xml in Resources */ = {isa = PBXBuildFile; fileRef = EC01E7E62DDC3BEA006EF529 /* log4j2.xml */; };
 		EC01E7E92DDC3BEA006EF529 /* log4j2-1.12-.xml in Resources */ = {isa = PBXBuildFile; fileRef = EC01E7E72DDC3BEA006EF529 /* log4j2-1.12-.xml */; };
+		EC23B6332DE5DC5B00CBEA9C /* PCL.ttf in Resources */ = {isa = PBXBuildFile; fileRef = EC23B6322DE5DC5B00CBEA9C /* PCL.ttf */; };
 		EC84E7412DDD56E500524871 /* Zip in Frameworks */ = {isa = PBXBuildFile; productRef = EC84E7402DDD56E500524871 /* Zip */; };
 		EC84E7432DDD56EA00524871 /* Zip in Frameworks */ = {isa = PBXBuildFile; productRef = EC84E7422DDD56EA00524871 /* Zip */; };
 		EC9A7DCA2DE150170018815F /* glfw-patcher.jar in Resources */ = {isa = PBXBuildFile; fileRef = EC9A7DC82DE1500F0018815F /* glfw-patcher.jar */; };
-		EC9A7E2F2DE1784E0018815F /* dependencies-version-mapping.json in Resources */ = {isa = PBXBuildFile; fileRef = EC9A7E2E2DE1784E0018815F /* dependencies-version-mapping.json */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -28,8 +28,8 @@
 /* Begin PBXFileReference section */
 		EC01E7E62DDC3BEA006EF529 /* log4j2.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = log4j2.xml; sourceTree = "<group>"; };
 		EC01E7E72DDC3BEA006EF529 /* log4j2-1.12-.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = "log4j2-1.12-.xml"; sourceTree = "<group>"; };
+		EC23B6322DE5DC5B00CBEA9C /* PCL.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = PCL.ttf; sourceTree = "<group>"; };
 		EC9A7DC82DE1500F0018815F /* glfw-patcher.jar */ = {isa = PBXFileReference; lastKnownFileType = archive.jar; path = "glfw-patcher.jar"; sourceTree = "<group>"; };
-		EC9A7E2E2DE1784E0018815F /* dependencies-version-mapping.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "dependencies-version-mapping.json"; sourceTree = "<group>"; };
 		EC9EAEC92DD85E48006CEDCC /* PCL-Mac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "PCL-Mac.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		ECA5D8DC2DD99A4C006C58F7 /* PCL-MacTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "PCL-MacTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -83,10 +83,10 @@
 		EC01E7E52DDC3BD2006EF529 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				EC23B6322DE5DC5B00CBEA9C /* PCL.ttf */,
 				EC9A7DC82DE1500F0018815F /* glfw-patcher.jar */,
 				EC01E7E62DDC3BEA006EF529 /* log4j2.xml */,
 				EC01E7E72DDC3BEA006EF529 /* log4j2-1.12-.xml */,
-				EC9A7E2E2DE1784E0018815F /* dependencies-version-mapping.json */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -216,9 +216,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				EC9A7E2F2DE1784E0018815F /* dependencies-version-mapping.json in Resources */,
 				EC9A7DCA2DE150170018815F /* glfw-patcher.jar in Resources */,
 				EC01E7E82DDC3BEA006EF529 /* log4j2.xml in Resources */,
+				EC23B6332DE5DC5B00CBEA9C /* PCL.ttf in Resources */,
 				EC01E7E92DDC3BEA006EF529 /* log4j2-1.12-.xml in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -13,22 +13,23 @@ struct ContentView: View {
     
     var body: some View {
         ZStack {
-            VStack(spacing: 0) {
-                TitleBarComponent(currentPage: $currentPage)
-                createViewFromPage()
-                    .foregroundStyle(.black)
-                    .frame(minWidth: 815, minHeight: 418)
-            }
-            .ignoresSafeArea(.container, edges: .top)
-            .background(
-                RadialGradient(
-                    gradient: Gradient(colors: [Color(hex: 0xC8DCF4), Color(hex: 0xB7CBE3)]),
-                    center: .center,
-                    startRadius: 0,
-                    endRadius: 410
-                )
-            )
-            if let currentPopup = DataManager.shared.currentPopup {
+//            VStack(spacing: 0) {
+//                TitleBarComponent(currentPage: $currentPage)
+//                createViewFromPage()
+//                    .foregroundStyle(.black)
+//                    .frame(minWidth: 815, minHeight: 418)
+//            }
+//            .ignoresSafeArea(.container, edges: .top)
+//            .background(
+//                RadialGradient(
+//                    gradient: Gradient(colors: [Color(hex: 0xC8DCF4), Color(hex: 0xB7CBE3)]),
+//                    center: .center,
+//                    startRadius: 0,
+//                    endRadius: 410
+//                )
+//            )
+            createViewFromRouter()
+            if let currentPopup = dataManager.currentPopup {
                 Group {
                     Rectangle()
                         .fill(Color(hex: 0x000000, alpha: 0.7))
@@ -46,16 +47,37 @@ struct ContentView: View {
         }
     }
     
-    private func createViewFromPage() -> some View {
+    // 给 createViewFromPage() 删了，希望别炸
+    
+    private func createSubviewFromRouter() -> some View {
         Group {
-            switch (currentPage) {
+            switch dataManager.router.getLast() {
             case .launcher: LauncherView()
             case .download: DownloadView()
             case .multiplayer: MultiplayerView()
             case .settings: SettingsView()
             case .others: OthersView()
+            case .installing(let task): InstallingView(task: task)
             }
         }
+    }
+    
+    private func createViewFromRouter() -> some View {
+        VStack(spacing: 0) {
+            TitleBarComponent(currentPage: $currentPage)
+            createSubviewFromRouter()
+                .foregroundStyle(.black)
+                .frame(minWidth: 815, minHeight: 418)
+        }
+        .ignoresSafeArea(.container, edges: .top)
+        .background(
+            RadialGradient(
+                gradient: Gradient(colors: [Color(hex: 0xC8DCF4), Color(hex: 0xB7CBE3)]),
+                center: .center,
+                startRadius: 0,
+                endRadius: 410
+            )
+        )
     }
     
     static func setPopup(_ popup: PopupOverlay?) {

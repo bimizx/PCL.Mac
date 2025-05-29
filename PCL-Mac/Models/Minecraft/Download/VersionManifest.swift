@@ -14,11 +14,26 @@ public struct VersionManifest: Codable {
     }
     
     public struct GameVersion: Codable {
+        public enum VersionType: String, Codable {
+            case release = "release"
+            case snapshot = "snapshot"
+            case oldBeta = "old_beta"
+            case alpha = "old_alpha"
+        }
+        
         public let id: String
         public let type: String
         public let url: String
         public let time: Date
         public let releaseTime: Date
+        
+        public func parse() -> (any MinecraftVersion)? {
+            switch self.type {
+            case "release": ReleaseMinecraftVersion.fromString(self.id)
+            case "snapshot": SnapshotMinecraftVersion.fromString(self.id)
+            default: nil
+            }
+        }
     }
     
     public let latest: LatestVersions
@@ -44,5 +59,13 @@ public struct VersionManifest: Codable {
                 }
             }
         }.resume()
+    }
+    
+    public func getLatestRelease() -> GameVersion {
+        return self.versions.find { $0.id == self.latest.release }!
+    }
+    
+    public func getLatestSnapshot() -> GameVersion {
+        return self.versions.find { $0.id == self.latest.snapshot }!
     }
 }

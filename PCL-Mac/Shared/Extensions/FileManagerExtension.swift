@@ -8,7 +8,7 @@
 import Foundation
 
 extension FileManager {
-    static let logURL = Constants.ApplicationLogUrl
+    static let logURL = SharedConstants.shared.applicationLogUrl
     
     static func writeLog(_ content: String) throws {
         let fileManager = FileManager.default

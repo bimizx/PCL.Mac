@@ -52,3 +52,64 @@ public final class ReleaseMinecraftVersion: MinecraftVersion {
         }
     }
 }
+
+public final class SnapshotMinecraftVersion: MinecraftVersion {
+    private let year: Int
+    private let week: Int
+    private let id: Character
+    
+    public init(year: Int, week: Int, id: Character) {
+        self.year = year
+        self.week = week
+        self.id = id
+    }
+    
+    public static func fromString(_ string: String) -> SnapshotMinecraftVersion? {
+        let pattern = #"^(\d{2})w(\d{2})([a-z])$"#
+        do {
+            let regex = try NSRegularExpression(pattern: pattern)
+            let range = NSRange(location: 0, length: string.utf16.count)
+            
+            if let match = regex.firstMatch(in: string, range: range) {
+                guard let yearRange = Range(match.range(at: 1), in: string) else {
+                    return nil
+                }
+                
+                guard let weekRange = Range(match.range(at: 2), in: string) else {
+                    return nil
+                }
+                
+                var id: Character = "a"
+                
+                if let idRange = Range(match.range(at: 3), in: string) {
+                    id = string[idRange].first!
+                }
+                
+                return SnapshotMinecraftVersion(year: Int(string[yearRange])!, week: Int(string[weekRange])!, id: id)
+            }
+        } catch {
+            err("正则表达式错误: \(error.localizedDescription)")
+        }
+        return nil
+    }
+    
+    public func getDisplayName() -> String {
+        return String(format: "%02dw%02d%@", self.year, self.week, String(self.id))
+    }
+    
+    public static func ==(lhs: SnapshotMinecraftVersion, rhs: SnapshotMinecraftVersion) -> Bool {
+        return lhs.year == rhs.year && lhs.week == rhs.week && lhs.id == rhs.id
+    }
+    
+    public static func <(lhs: SnapshotMinecraftVersion, rhs: SnapshotMinecraftVersion) -> Bool {
+        if lhs.year == rhs.year {
+            if lhs.week == rhs.week {
+                return lhs.id < rhs.id
+            } else {
+                return lhs.week < rhs.week
+            }
+        } else {
+            return lhs.year < rhs.year
+        }
+    }
+}

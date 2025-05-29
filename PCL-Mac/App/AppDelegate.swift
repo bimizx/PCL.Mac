@@ -22,7 +22,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         
         Zip.addCustomFileExtension("jar")
+        DataManager.shared.refreshVersionManifest()
         log("App初始化完成")
+        
     }
     
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {

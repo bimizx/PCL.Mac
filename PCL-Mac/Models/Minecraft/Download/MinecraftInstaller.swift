@@ -141,7 +141,7 @@ public class MinecraftInstaller {
         getJson(downloadIndexUrl, indexUrl) { dict, json, _ in
             task.updateStage(.clientResources)
             let index = dict as! [String: [String: [String: Any]]] // TODO 需要实现 Codable 结构体
-            let leftObjects = index["objects"]!.keys.count
+            let leftObjects = index["objects"]!.count
             updateTotalFiles(task, leftObjects)
             DispatchQueue.main.async {
                 task.remainingFiles += leftObjects
@@ -193,7 +193,7 @@ public class MinecraftInstaller {
                 continue
             }
             let path: URL = librariesUrl.appending(path: artifact.path)
-            let downloadUrl: URL = replaceLibrariesDownloadURL(library.name, URL(string: artifact.url)!)
+            let downloadUrl: URL = ArtifactVersionMapper.mapLibrarieUrl(library.name, URL(string: artifact.url)!)
             
             if FileManager.default.fileExists(atPath: path.path()) {
                 log("\(downloadUrl.path()) 已存在，跳过")
@@ -237,7 +237,7 @@ public class MinecraftInstaller {
             }
             group.enter()
             task.addOperation {
-                getBinary(replaceNativesDownloadURL(library.name, URL(string: native.url)!), saveUrl) {_, _ in
+                getBinary(ArtifactVersionMapper.mapNativeUrl(library.name, URL(string: native.url)!), saveUrl) {_, _ in
                     unzipNatives(native, saveUrl, nativesUrl)
                     task.decrement()
                     group.leave()
@@ -298,64 +298,13 @@ public class MinecraftInstaller {
             }
         }
     }
-
-    
-    // MARK: 替换本地库下载链接中的架构和版本
-    private static func replaceNativesDownloadURL(_ name: String, _ downloadUrl: URL) -> URL {
-        // return downloadUrl
-        let splitted: [String] = name.split(separator: ":").map(String.init)
-        let groupId: String = splitted[0]
-        let artifactId: String = splitted[1]
-        var version: String = splitted[2]
-        
-        if groupId != "org.lwjgl" {
-            return downloadUrl
-        }
-        
-        var url: URL = downloadUrl
-        if version == "3.2.1" || version == "3.1.6" {
-            version = "3.3.1"
-        }
-        if ExecArchitectury.SystemArch == .arm64 {
-            if version.hasPrefix("2.") {
-                url = URL(string: "https://repo1.maven.org/maven2/org/glavo/hmcl/lwjgl2-natives/2.9.3-rc1-osx-arm64/lwjgl2-natives-2.9.3-rc1-osx-arm64.jar")!
-            } else {
-                url = URL(string: "https://libraries.minecraft.net/org/lwjgl/\(artifactId)/\(version)/\(artifactId)-\(version)-natives-macos-arm64.jar")!
-            }
-        } else {
-            url = URL(string: "https://libraries.minecraft.net/org/lwjgl/\(artifactId)/\(version)/\(artifactId)-\(version)-natives-macos-patch.jar")!
-        }
-        
-        log("将 \(downloadUrl.path()) 替换为 \(url.path())")
-        
-        return url
-    }
-    
-    // MARK: 替换依赖项下载链接中的架构和版本
-    private static func replaceLibrariesDownloadURL(_ name: String, _ downloadUrl: URL) -> URL {
-        // return downloadUrl
-        let splitted: [String] = name.split(separator: ":").map(String.init)
-        let groupId: String = splitted[0]
-        let artifactId: String = splitted[1]
-        var version: String = splitted[2]
-        
-        if groupId != "org.lwjgl" {
-            return downloadUrl
-        }
-        
-        if version == "3.2.1" || version == "3.1.6" {
-            version = "3.3.1"
-        }
-        
-        return URL(string: "https://libraries.minecraft.net/org/lwjgl/\(artifactId)/\(version)/\(artifactId)-\(version).jar")!
-    }
     
     private static func patchGlfw(_ url: URL) {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/usr/bin/java")
         process.environment = ProcessInfo.processInfo.environment
         process.currentDirectoryURL = URL(fileURLWithPath: "/tmp")
-        process.arguments = ["-jar", Constants.ApplicationResourcesUrl.appending(path: "glfw-patcher.jar").path(), url.path()]
+        process.arguments = ["-jar", SharedConstants.shared.applicationResourcesUrl.appending(path: "glfw-patcher.jar").path(), url.path()]
         do {
             try process.run()
             process.waitUntilExit()
@@ -373,7 +322,7 @@ public class MinecraftInstaller {
         }
         do {
             try FileManager.default.copyItem(
-                at: Constants.ApplicationResourcesUrl.appending(path: task.minecraftVersion as! ReleaseMinecraftVersion >= ReleaseMinecraftVersion.fromString("1.12.2")! ? "log4j2.xml" : "log4j2-1.12-.xml"),
+                at: SharedConstants.shared.applicationResourcesUrl.appending(path: task.minecraftVersion as! ReleaseMinecraftVersion >= ReleaseMinecraftVersion.fromString("1.12.2")! ? "log4j2.xml" : "log4j2-1.12-.xml"),
                 to: targetUrl)
         } catch {
             err("无法拷贝 log4j2.xml: \(error)")
@@ -384,14 +333,14 @@ public class MinecraftInstaller {
     private static func updateTotalFiles(_ task: InstallTask, _ hashFilesCount: Int) {
         debug("hashFilesCount: \(hashFilesCount), needed libraries count: \(task.manifest!.getNeededLibraries().count), needed natives count: \(task.manifest!.getNeededNatives().count)")
         DispatchQueue.main.async {
-            task.totalFiles = 2 + hashFilesCount + task.manifest!.getNeededLibraries().count + task.manifest!.getNeededNatives().count
+            task.totalFiles = 3 + hashFilesCount + task.manifest!.getAllowedLibraries().count
             task.remainingFiles = task.totalFiles! - 3
         }
     }
     
     // MARK: 创建下载任务
-    public static func createTask(_ versionUrl: URL, _ minecraftVersion: String, _ completeCallback: (() -> Void)? = nil) -> InstallTask {
-        let task = InstallTask(versionUrl: versionUrl, minecraftVersion: minecraftVersion) { task in
+    public static func createTask(_ minecraftVersion: any MinecraftVersion, _ completeCallback: (() -> Void)? = nil) -> InstallTask {
+        let task = InstallTask(minecraftVersion: minecraftVersion) { task in
             Task {
                 task.updateStage(.clientJson)
                 downloadClientManifest(task) {
@@ -414,7 +363,17 @@ public class MinecraftInstaller {
     }
 }
 
-public class InstallTask: ObservableObject {
+public class InstallTask: ObservableObject, Identifiable, Hashable, Equatable {
+    public let id: UUID = UUID()
+    
+    public static func == (lhs: InstallTask, rhs: InstallTask) -> Bool {
+        lhs.id == rhs.id
+    }
+    
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
+    
     @Published public var stage: InstallStage = .before
     @Published public var remainingFiles: Int = 2
     @Published public var totalFiles: Int?
@@ -423,14 +382,19 @@ public class InstallTask: ObservableObject {
     
     public var manifest: ClientManifest?
     
-    public let versionUrl: URL
+    public var name: String
+    public var versionUrl: URL {
+        get {
+            return URL(fileURLWithUserPath: "~/PCL-Mac-minecraft/versions").appending(path: self.name)
+        }
+    }
     public let minecraftVersion: any MinecraftVersion
     public let startTask: (InstallTask) -> Void
     public let downloadQueue: OperationQueue
     
-    init(versionUrl: URL, minecraftVersion: String, startTask: @escaping (InstallTask) -> Void) {
-        self.versionUrl = versionUrl
-        self.minecraftVersion = ReleaseMinecraftVersion.fromString(minecraftVersion)!
+    init(minecraftVersion: any MinecraftVersion, startTask: @escaping (InstallTask) -> Void) {
+        self.minecraftVersion = minecraftVersion
+        self.name = self.minecraftVersion.getDisplayName()
         self.startTask = startTask
         self.downloadQueue = OperationQueue()
         self.downloadQueue.maxConcurrentOperationCount = 4
@@ -452,6 +416,7 @@ public class InstallTask: ObservableObject {
     public func updateStage(_ stage: InstallStage) {
         DispatchQueue.main.async {
             self.stage = stage
+            self.objectWillChange.send()
         }
     }
     
@@ -464,21 +429,54 @@ public class InstallTask: ObservableObject {
             self.remainingFiles -= 1
         }
     }
+    
+    public func getInstallStates() -> [InstallStage : InstallState] {
+        let allStages: [InstallStage] = [.clientJson, .clientJar, .clientIndex, .clientResources, .cliendLibraries, .natives]
+        var result: [InstallStage: InstallState] = [:]
+        var foundCurrent = false
+        
+        for stage in allStages {
+            if foundCurrent {
+                result[stage] = .waiting
+            } else if self.stage == stage {
+                result[stage] = .inprogress
+                foundCurrent = true
+            } else {
+                result[stage] = .finished
+            }
+        }
+        return result
+    }
 }
 
-public enum InstallStage {
-    case before, clientJson, clientJar, clientIndex, clientResources, cliendLibraries, natives, end
+public enum InstallStage: Int {
+    case before = 0
+    case clientJson = 1
+    case clientJar = 2
+    case clientIndex = 3
+    case clientResources = 4
+    case cliendLibraries = 5
+    case natives = 6
+    case end = 7
     public func getDisplayName() -> String {
         switch self {
         case .before: "未启动"
-        case .clientJson: "客户端 JSON 文件"
-        case .clientJar: "客户端本体"
-        case .clientIndex: "客户端资源索引"
-        case .clientResources: "客户端散列资源"
-        case .cliendLibraries: "客户端依赖项"
-        case .natives: "本地库"
+        case .clientJson: "下载原版 json 文件"
+        case .clientJar: "下载原版 jar 文件"
+        case .clientIndex: "下载资源索引文件"
+        case .clientResources: "下载散列资源文件"
+        case .cliendLibraries: "下载依赖项文件"
+        case .natives: "下载本地库文件"
         case .end: "结束"
         }
+    }
+}
+
+public enum InstallState {
+    case waiting, inprogress, finished, failed
+    
+    public func getImageName() -> String {
+        return "Install\(String(describing: self).capitalized)"
     }
 }
 

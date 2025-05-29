@@ -15,4 +15,14 @@ extension Array {
         }
         return match
     }
+    
+    public func find(_ isTarget: @escaping (Element) -> Bool) -> Element? {
+        for element in self {
+            if isTarget(element) {
+                return element
+            }
+        }
+        
+        return nil
+    }
 }

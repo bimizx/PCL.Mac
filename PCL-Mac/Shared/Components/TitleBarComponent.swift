@@ -62,11 +62,11 @@ struct TitleBarComponent: View {
                         .foregroundStyle(Color(hex: 0x0B5AC9))
                         .padding(.leading, 10)
                     Spacer()
-                    MenuItemButton(page: .launcher, parent: self)
-                    MenuItemButton(page: .download, parent: self)
-                    MenuItemButton(page: .multiplayer, parent: self)
-                    MenuItemButton(page: .settings, parent: self)
-                    MenuItemButton(page: .others, parent: self)
+                    MenuItemButton(route: .launcher, parent: self)
+                    MenuItemButton(route: .download, parent: self)
+                    MenuItemButton(route: .multiplayer, parent: self)
+                    MenuItemButton(route: .settings, parent: self)
+                    MenuItemButton(route: .others, parent: self)
                     Spacer()
                     WindowControlButton.Miniaturize
                     WindowControlButton.Close
@@ -87,7 +87,9 @@ struct TitleBarComponent: View {
 }
 
 struct MenuItemButton: View {
-    let page: Page
+    @ObservedObject private var dataManager: DataManager = DataManager.shared
+    
+    let route: AppRoute
     let parent: TitleBarComponent
     var icon: Image?
     @State private var isHovered = false
@@ -95,27 +97,27 @@ struct MenuItemButton: View {
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 25)
-                .foregroundStyle(parent.currentPage == page ? .white : (isHovered ? Color(hex: 0x3C8CDF) : .clear))
+                .foregroundStyle(dataManager.router.getRoot() == route ? .white : (isHovered ? Color(hex: 0x3C8CDF) : .clear))
             
             HStack {
                 getImage()
                     .renderingMode(.template)
                     .interpolation(.high)
                     .resizable()
-                    .foregroundStyle(parent.currentPage == page ? Color(hex: 0x1269E4) : .white)
+                    .foregroundStyle(dataManager.router.getRoot() == route ? Color(hex: 0x1269E4) : .white)
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 16, height: 16)
                     .position(x: 17, y: 13)
                 Text(getText())
-                    .foregroundStyle(parent.currentPage == page ? Color(hex: 0x1269E4) : .white)
+                    .foregroundStyle(dataManager.router.getRoot() == route ? Color(hex: 0x1269E4) : .white)
                     .position(x: 9, y: 13)
             }
         }
         .frame(width: 75, height: 27)
         .animation(.easeInOut(duration: 0.2), value: isHovered)
-        .animation(.easeInOut(duration: 0.2), value: parent.currentPage == page)
+        .animation(.easeInOut(duration: 0.2), value: dataManager.router.getRoot() == route)
         .onTapGesture {
-            parent.currentPage = page
+            dataManager.router.setRoot(route)
         }
         .onHover { hover in
             isHovered = hover
@@ -123,23 +125,25 @@ struct MenuItemButton: View {
     }
     
     private func getImage() -> Image {
-        let key = switch (page) {
+        let key = switch route {
         case .launcher: "LaunchItem"
         case .download: "DownloadItem"
         case .multiplayer: "MultiplayerItem"
         case .settings: "SettingsItem"
         case .others: "OthersItem"
+        default: ""
         }
         return Image(key)
     }
     
     private func getText() -> String {
-        return switch (page) {
+        return switch route {
         case .launcher: "启动"
         case .download: "下载"
         case .multiplayer: "联机"
         case .settings: "设置"
         case .others: "更多"
+        default: ""
         }
     }
 }

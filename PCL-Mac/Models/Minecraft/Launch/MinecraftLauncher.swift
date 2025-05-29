@@ -38,10 +38,11 @@ public class MinecraftLauncher {
         ]
         
         var args: [String] = [
-            "-Dorg.lwjgl.util.Debug=true"
+            "-Dorg.lwjgl.util.Debug=true",
+            "-Djna.tmpdir=${natives_directory}"
         ]
-        args.append(contentsOf: replaceTemplateStrings(instance.manifest.getArguments().getAllowedJVMArguments(), with: values))
-        return args//.map { $0.contains(" ") ? "\"\($0)\"" : $0 }
+        args.append(contentsOf: instance.manifest.getArguments().getAllowedJVMArguments())
+        return replaceTemplateStrings(args, with: values)
     }
     
     private static func buildClasspath(_ instance: MinecraftInstance) -> String {
