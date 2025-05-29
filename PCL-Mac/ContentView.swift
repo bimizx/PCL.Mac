@@ -8,26 +8,10 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State private var currentPage: Page = .launcher
     @ObservedObject private var dataManager: DataManager = DataManager.shared
     
     var body: some View {
         ZStack {
-//            VStack(spacing: 0) {
-//                TitleBarComponent(currentPage: $currentPage)
-//                createViewFromPage()
-//                    .foregroundStyle(.black)
-//                    .frame(minWidth: 815, minHeight: 418)
-//            }
-//            .ignoresSafeArea(.container, edges: .top)
-//            .background(
-//                RadialGradient(
-//                    gradient: Gradient(colors: [Color(hex: 0xC8DCF4), Color(hex: 0xB7CBE3)]),
-//                    center: .center,
-//                    startRadius: 0,
-//                    endRadius: 410
-//                )
-//            )
             createViewFromRouter()
             if let currentPopup = dataManager.currentPopup {
                 Group {
@@ -90,8 +74,4 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
-}
-
-enum Page {
-    case launcher, download, multiplayer, settings, others;
 }
