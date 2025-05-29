@@ -23,9 +23,6 @@ final class LogStore {
     }
     
     func append(_ message: String, _ level: String, _ caller: String) {
-        if logs.count >= maxCapacity {
-            logs.removeFirst(1000)
-        }
         let logLine = "\(dateFormatter.string(from: Date())) [\(level)] \(caller): \(message)"
         queue.async {
             if self.logs.count >= self.maxCapacity {
@@ -35,8 +32,8 @@ final class LogStore {
             if self.writeImmediately {
                 self.appendToDisk(logLine + "\n")
             }
+            print(logLine)
         }
-        print(logLine)
     }
     
     func appendToDisk(_ content: String, _ callback: ((Bool) -> Void)? = nil) {
@@ -55,12 +52,17 @@ final class LogStore {
     
     func save() {
         if !writeImmediately {
-            appendToDisk(logs.joined(separator: "\n")) { isSuccess in
-                if isSuccess {
-                    log("日志保存成功")
+            queue.async {
+                let allLogs = self.logs.joined(separator: "\n")
+                self.appendToDisk(allLogs) { isSuccess in
+                    if isSuccess {
+                        log("日志保存成功")
+                    }
+                    log("已触发进程终止")
+                    DispatchQueue.main.async {
+                        NSApp.reply(toApplicationShouldTerminate: true)
+                    }
                 }
-                log("已触发进程终止")
-                NSApp.reply(toApplicationShouldTerminate: true)
             }
         }
     }
