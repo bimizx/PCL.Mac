@@ -20,7 +20,7 @@ public class MinecraftInstaller {
         
         let task = DataManager.shared.networkMonitor.session.dataTask(with: request) { data, response, error in
             if let error = error as? URLError {
-                warn("下载失败: \(error)，正在重试")
+                warn("下载失败: \(error.localizedDescription) 正在重试")
                 getBinary(sourceUrl, saveUrl, callback)
                 return
             }

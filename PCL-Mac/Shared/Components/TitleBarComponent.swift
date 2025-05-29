@@ -38,51 +38,9 @@ class DraggableHelperView: NSView {
     }
 }
 
-struct TitleBarComponent: View {
-    var body: some View {
-        VStack {
-            ZStack {
-                DraggableWindowArea {
-                    Spacer()
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                HStack {
-                    Image("TitleLogo")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(height: 19)
-                        .bold()
-                    Tag(text: "Mac", color: .white)
-                        .foregroundStyle(Color(hex: 0x0B5AC9))
-                        .padding(.leading, 10)
-                    Spacer()
-                    MenuItemButton(route: .launcher, parent: self)
-                    MenuItemButton(route: .download, parent: self)
-                    MenuItemButton(route: .multiplayer, parent: self)
-                    MenuItemButton(route: .settings, parent: self)
-                    MenuItemButton(route: .others, parent: self)
-                    Spacer()
-                    WindowControlButton.Miniaturize
-                    WindowControlButton.Close
-                }
-            }
-        }
-        .padding()
-        .frame(maxWidth: .infinity, maxHeight: 47)
-        .background(
-            RadialGradient(
-                gradient: Gradient(colors: [Color(hex: 0x1177DC), Color(hex: 0x0F6AC4)]),
-                center: .center,
-                startRadius: 0,
-                endRadius: 410
-            )
-        )
-    }
-}
+struct GenericTitleBarComponent<Content: View>: View {
+    @ViewBuilder let content: () -> Content
 
-struct SubviewTitleBarComponent: View {
-    @ObservedObject private var dataManager: DataManager = DataManager.shared
-    
     var body: some View {
         VStack {
             ZStack {
@@ -91,16 +49,7 @@ struct SubviewTitleBarComponent: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 HStack(alignment: .center) {
-                    Image("Back")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(height: 18)
-                        .onTapGesture {
-                            dataManager.router.removeLast()
-                        }
-                        .padding(.trailing, 5)
-                    Text(getTitle())
-                        .font(.custom("PCL English", size: 16))
+                    content()
                     Spacer()
                     WindowControlButton.Miniaturize
                     WindowControlButton.Close
@@ -110,13 +59,50 @@ struct SubviewTitleBarComponent: View {
         .padding()
         .frame(maxWidth: .infinity, maxHeight: 47)
         .background(
-            RadialGradient(
-                gradient: Gradient(colors: [Color(hex: 0x1177DC), Color(hex: 0x0F6AC4)]),
-                center: .center,
-                startRadius: 0,
-                endRadius: 410
-            )
+            LocalStorage.shared.theme.getGradientView()
         )
+    }
+}
+
+struct TitleBarComponent: View {
+    var body: some View {
+        GenericTitleBarComponent {
+            Group {
+                Image("TitleLogo")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(height: 19)
+                    .bold()
+                Tag(text: "Mac", color: .white)
+                    .foregroundStyle(LocalStorage.shared.theme.gradientOr(Color(hex: 0x1269E4)))
+                    .padding(.leading, 10)
+                Spacer()
+                MenuItemButton(route: .launcher, parent: self)
+                MenuItemButton(route: .download, parent: self)
+                MenuItemButton(route: .multiplayer, parent: self)
+                MenuItemButton(route: .settings, parent: self)
+                MenuItemButton(route: .others, parent: self)
+            }
+        }
+    }
+}
+
+struct SubviewTitleBarComponent: View {
+    @ObservedObject private var dataManager: DataManager = DataManager.shared
+
+    var body: some View {
+        GenericTitleBarComponent {
+            Image("Back")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(height: 18)
+                .onTapGesture {
+                    dataManager.router.removeLast()
+                }
+                .padding(.trailing, 5)
+            Text(getTitle())
+                .font(.custom("PCL English", size: 16))
+        }
     }
     
     private func getTitle() -> String {
@@ -140,19 +126,21 @@ struct MenuItemButton: View {
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 25)
-                .foregroundStyle(dataManager.router.getRoot() == route ? .white : (isHovered ? Color(hex: 0x3C8CDF) : .clear))
+                .foregroundStyle(dataManager.router.getRoot() == route ? .white : (isHovered ? Color(hex: 0xFFFFFF, alpha: 0.17) : .clear))
             
             HStack {
                 getImage()
                     .renderingMode(.template)
                     .interpolation(.high)
                     .resizable()
-                    .foregroundStyle(dataManager.router.getRoot() == route ? Color(hex: 0x1269E4) : .white)
+                    .foregroundStyle(dataManager.router.getRoot() == route ?
+                                     AnyShapeStyle(LocalStorage.shared.theme.gradientOr(Color(hex: 0x1269E4))) : AnyShapeStyle(.white))
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 16, height: 16)
                     .position(x: 17, y: 13)
                 Text(getText())
-                    .foregroundStyle(dataManager.router.getRoot() == route ? Color(hex: 0x1269E4) : .white)
+                    .foregroundStyle(dataManager.router.getRoot() == route ?
+                                     AnyShapeStyle(LocalStorage.shared.theme.gradientOr(Color(hex: 0x1269E4))) : AnyShapeStyle(.white))
                     .position(x: 9, y: 13)
             }
         }
@@ -161,6 +149,7 @@ struct MenuItemButton: View {
         .animation(.easeInOut(duration: 0.2), value: dataManager.router.getRoot() == route)
         .onTapGesture {
             dataManager.router.setRoot(route)
+            dataManager.clearLeftTab()
         }
         .onHover { hover in
             isHovered = hover

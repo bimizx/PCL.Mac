@@ -9,6 +9,7 @@ import SwiftUI
 
 struct DownloadView: View {
     @ObservedObject var dataManager = DataManager.shared
+    
     @State var versionViews: [String: [VersionView]] = [:]
     @State var currentDownloadPage: DownloadPage?
     
@@ -79,10 +80,13 @@ struct DownloadView: View {
     
     var body: some View {
         HStack {
-            Rectangle()
-                .fill(.white)
-                .frame(width: 170)
-                .zIndex(1)
+            dataManager.leftTab(170) {
+                EmptyView()
+            }
+//            Rectangle()
+//                .fill(.white)
+//                .frame(width: 170)
+//                .zIndex(1)
             if let currentDownloadPage = self.currentDownloadPage {
                 currentDownloadPage
                     .zIndex(0)

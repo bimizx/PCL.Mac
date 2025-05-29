@@ -19,7 +19,11 @@ class DataManager: ObservableObject {
     @Published var networkMonitor: NetworkSpeedMonitor = NetworkSpeedMonitor()
     @Published var versionManifest: VersionManifest?
     @Published var router: AppRouter = AppRouter()
+    @Published var leftTabWidth: CGFloat = 0
+    @Published var leftTabContent: AnyView = AnyView(EmptyView())
+    
     private var routerCancellable: AnyCancellable?
+    private var installingView: InstallingView?
     
     private init() {
         routerCancellable = router.objectWillChange.sink { [weak self] _ in
@@ -32,6 +36,38 @@ class DataManager: ObservableObject {
             DispatchQueue.main.async {
                 self.versionManifest = versionManifest
             }
+        }
+    }
+    
+    func getInstallingView(_ task: InstallTask) -> InstallingView {
+        if installingView == nil {
+            installingView = InstallingView(task: task)
+        }
+        
+        return installingView!
+    }
+    
+    func clearInstallingView() {
+        if installingView?.task.stage != .end {
+            warn("任务仍在运行，但试图清除安装视图")
+            return
+        }
+        installingView = nil
+    }
+    
+    func leftTab(_ width: CGFloat, _ content: @escaping () -> some View) -> AnyView {
+        DispatchQueue.main.async {
+            self.leftTabWidth = width
+            self.leftTabContent = AnyView(content())
+        }
+        return AnyView(EmptyView())
+    }
+    
+    func clearLeftTab() {
+        DispatchQueue.main.async {
+            self.leftTabWidth = 0
+            self.leftTabContent = AnyView(EmptyView())
+            self.objectWillChange.send()
         }
     }
 }

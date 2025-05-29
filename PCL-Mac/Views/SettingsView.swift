@@ -12,9 +12,9 @@ struct SettingsView: View {
     
     var body: some View {
         HStack {
-            Rectangle()
-                .fill(.white)
-                .frame(width: 120)
+            dataManager.leftTab(120) {
+                EmptyView()
+            }
             ScrollView(.vertical, showsIndicators: true) {
                 VStack {
                     MyButtonComponent(text: "打开日志") {
@@ -47,7 +47,7 @@ struct SettingsView: View {
                                 if dataManager.javaVirtualMachines.filter({ $0.executableUrl == url }).isEmpty {
                                     let jvm = JavaVirtualMachine.of(url, true)
                                     if !jvm.isError {
-                                        LocalStorage.shared.userAddedJVMPaths.append(url)
+                                        LocalStorage.shared.userAddedJvmPaths.append(url)
                                         dataManager.javaVirtualMachines.append(jvm)
                                     } else {
                                         err("发生错误，无法手动添加 Java")

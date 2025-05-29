@@ -8,23 +8,22 @@
 import SwiftUI
 
 struct InstallingView: View {
+    @ObservedObject private var dataManager: DataManager = DataManager.shared
     @ObservedObject var task: InstallTask
     
     var body: some View {
         HStack {
-            VStack {
-                Spacer()
-                PanelView(title: "总进度", value: "0.0 %")
-                PanelView(title: "下载速度", value: "114514 GB/s")
-                PanelView(title: "剩余文件", value: "∞")
-                Spacer()
+            dataManager.leftTab(220) {
+                VStack {
+                    Spacer()
+                    PanelView(title: "总进度", value: "0.0 %")
+                    PanelView(title: "下载速度", value: "114514 GB/s")
+                    PanelView(title: "剩余文件", value: "∞")
+                    Spacer()
+                }
+                .padding()
+                .padding(.top, 10)
             }
-            .padding()
-            .padding(.top, 10)
-            .background(
-                Rectangle()
-                    .fill(Color(hex: 0xF5F7FB))
-            )
             VStack {
                 StaticMyCardComponent(title: "\(task.minecraftVersion.getDisplayName()) 安装") {
                     getEntries()
@@ -36,6 +35,7 @@ struct InstallingView: View {
         .onChange(of: task.stage) { stage in
             if stage == .end {
                 DataManager.shared.router.removeLast()
+                DataManager.shared.clearInstallingView()
             }
         }
     }

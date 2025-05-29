@@ -41,7 +41,7 @@ struct ContentView: View {
             case .multiplayer: MultiplayerView()
             case .settings: SettingsView()
             case .others: OthersView()
-            case .installing(let task): InstallingView(task: task)
+            case .installing(let task): dataManager.getInstallingView(task)
             }
         }
     }
@@ -53,9 +53,21 @@ struct ContentView: View {
             } else {
                 SubviewTitleBarComponent()
             }
-            createSubviewFromRouter()
-                .foregroundStyle(.black)
-                .frame(minWidth: 815, minHeight: 418)
+            HStack {
+                ZStack {
+                    Rectangle()
+                        .fill(Color(hex: 0xF5F7FB))
+                    dataManager.leftTabContent
+                }
+                .frame(width: dataManager.leftTabWidth)
+                .zIndex(1)
+                .animation(.easeOut(duration: 0.1), value: dataManager.leftTabWidth)
+                
+                createSubviewFromRouter()
+                    .foregroundStyle(Color(hex: 0x343D4A))
+                    .frame(minWidth: 815 - dataManager.leftTabWidth, minHeight: 418)
+                    .zIndex(0)
+            }
         }
         .ignoresSafeArea(.container, edges: .top)
         .background(
