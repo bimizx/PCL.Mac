@@ -38,7 +38,7 @@ struct ContentView: View {
                         .padding()
                         .opacity(dataManager.showPopup ? 1 : 0)
                     VStack {
-                        TitleBarComponent(currentPage: .constant(currentPage))
+                        TitleBarComponent()
                         Spacer()
                     }
                 }
@@ -64,7 +64,7 @@ struct ContentView: View {
     
     private func createViewFromRouter() -> some View {
         VStack(spacing: 0) {
-            TitleBarComponent(currentPage: $currentPage)
+            TitleBarComponent()
             createSubviewFromRouter()
                 .foregroundStyle(.black)
                 .frame(minWidth: 815, minHeight: 418)

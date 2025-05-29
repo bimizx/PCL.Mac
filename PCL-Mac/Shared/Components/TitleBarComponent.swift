@@ -40,7 +40,6 @@ class DraggableHelperView: NSView {
 
 struct TitleBarComponent: View {
     @State private var initialWindowOrigin: CGPoint?
-    @Binding var currentPage: Page
     
     var body: some View {
         VStack {
@@ -55,9 +54,6 @@ struct TitleBarComponent: View {
                         .aspectRatio(contentMode: .fit)
                         .frame(height: 19)
                         .bold()
-                        .onTapGesture {
-                            currentPage = .download
-                        }
                     Tag(text: "Mac", color: .white)
                         .foregroundStyle(Color(hex: 0x0B5AC9))
                         .padding(.leading, 10)
