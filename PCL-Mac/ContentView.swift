@@ -48,7 +48,11 @@ struct ContentView: View {
     
     private func createViewFromRouter() -> some View {
         VStack(spacing: 0) {
-            TitleBarComponent()
+            if dataManager.router.getLast().isRoot {
+                TitleBarComponent()
+            } else {
+                SubviewTitleBarComponent()
+            }
             createSubviewFromRouter()
                 .foregroundStyle(.black)
                 .frame(minWidth: 815, minHeight: 418)

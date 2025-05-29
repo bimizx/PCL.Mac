@@ -39,8 +39,6 @@ class DraggableHelperView: NSView {
 }
 
 struct TitleBarComponent: View {
-    @State private var initialWindowOrigin: CGPoint?
-    
     var body: some View {
         VStack {
             ZStack {
@@ -79,6 +77,55 @@ struct TitleBarComponent: View {
                 endRadius: 410
             )
         )
+    }
+}
+
+struct SubviewTitleBarComponent: View {
+    @ObservedObject private var dataManager: DataManager = DataManager.shared
+    
+    var body: some View {
+        VStack {
+            ZStack {
+                DraggableWindowArea {
+                    Spacer()
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                HStack(alignment: .center) {
+                    Image("Back")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(height: 18)
+                        .onTapGesture {
+                            dataManager.router.removeLast()
+                        }
+                        .padding(.trailing, 5)
+                    Text(getTitle())
+                        .font(.custom("PCL English", size: 16))
+                    Spacer()
+                    WindowControlButton.Miniaturize
+                    WindowControlButton.Close
+                }
+            }
+        }
+        .padding()
+        .frame(maxWidth: .infinity, maxHeight: 47)
+        .background(
+            RadialGradient(
+                gradient: Gradient(colors: [Color(hex: 0x1177DC), Color(hex: 0x0F6AC4)]),
+                center: .center,
+                startRadius: 0,
+                endRadius: 410
+            )
+        )
+    }
+    
+    private func getTitle() -> String {
+        switch dataManager.router.getLast() {
+        case .installing(_):
+            return "下载管理"
+        default:
+            return "发现问题请在 https://github.com/PCL-Community/PCL-Mac/issues/new 上反馈"
+        }
     }
 }
 
@@ -158,4 +205,8 @@ struct Tag: View {
                 )
         }
     }
+}
+
+#Preview {
+    SubviewTitleBarComponent()
 }
