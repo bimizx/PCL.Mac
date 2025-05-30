@@ -55,11 +55,10 @@ class DataManager: ObservableObject {
         installingView = nil
     }
     
-    func leftTab(_ width: CGFloat, _ content: @escaping () -> some View) -> AnyView {
+    func leftTab(_ width: CGFloat, _ content: @escaping () -> some View) {
         DispatchQueue.main.async {
             self.leftTabWidth = width
             self.leftTabContent = AnyView(content())
         }
-        return AnyView(EmptyView())
     }
 }

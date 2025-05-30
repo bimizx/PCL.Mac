@@ -13,17 +13,6 @@ struct InstallingView: View {
     
     var body: some View {
         HStack {
-            dataManager.leftTab(220) {
-                VStack {
-                    Spacer()
-                    PanelView(title: "总进度", value: "0.0 %")
-                    PanelView(title: "下载速度", value: "114514 GB/s")
-                    PanelView(title: "剩余文件", value: "∞")
-                    Spacer()
-                }
-                .padding()
-                .padding(.top, 10)
-            }
             VStack {
                 StaticMyCardComponent(title: "\(task.minecraftVersion.getDisplayName()) 安装") {
                     getEntries()
@@ -36,6 +25,19 @@ struct InstallingView: View {
             if stage == .end {
                 DataManager.shared.router.removeLast()
                 DataManager.shared.clearInstallingView()
+            }
+        }
+        .onAppear {
+            dataManager.leftTab(220) {
+                VStack {
+                    Spacer()
+                    PanelView(title: "总进度", value: "0.0 %")
+                    PanelView(title: "下载速度", value: "114514 GB/s")
+                    PanelView(title: "剩余文件", value: "∞")
+                    Spacer()
+                }
+                .padding()
+                .padding(.top, 10)
             }
         }
     }

@@ -12,9 +12,6 @@ struct SettingsView: View {
     
     var body: some View {
         HStack {
-            dataManager.leftTab(120) {
-                EmptyView()
-            }
             ScrollView(.vertical, showsIndicators: true) {
                 VStack {
                     MyButtonComponent(text: "打开日志") {
@@ -79,6 +76,10 @@ struct SettingsView: View {
             }
         }
         .onAppear {
+            dataManager.leftTab(120) {
+                EmptyView()
+            }
+            
             if dataManager.javaVirtualMachines.isEmpty {
                 Task {
                     do {

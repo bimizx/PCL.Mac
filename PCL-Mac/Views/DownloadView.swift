@@ -80,13 +80,6 @@ struct DownloadView: View {
     
     var body: some View {
         HStack {
-            dataManager.leftTab(170) {
-                EmptyView()
-            }
-//            Rectangle()
-//                .fill(.white)
-//                .frame(width: 170)
-//                .zIndex(1)
             if let currentDownloadPage = self.currentDownloadPage {
                 currentDownloadPage
                     .zIndex(0)
@@ -137,6 +130,9 @@ struct DownloadView: View {
         }
         .animation(.easeInOut(duration: 0.2), value: currentDownloadPage == nil)
         .onAppear {
+            dataManager.leftTab(170) {
+                EmptyView()
+            }
             self.versionViews["release"] = createViewsFromVersion(type: "release")
             self.versionViews["snapshot"] = createViewsFromVersion(type: "snapshot")
         }
