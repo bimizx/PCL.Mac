@@ -74,7 +74,7 @@ struct MyCardComponent<Content: View>: View {
         .background(
             RoundedRectangle(cornerRadius: 8)
                 .fill(.white)
-                .shadow(color: isHovered ? Color(hex: 0x0B5BcB) : .gray, radius: 2, x: 0.5, y: 0.5)
+                .shadow(color: isHovered ? Color(hex: 0x0B5BCB) : .gray, radius: 2, x: 0.5, y: 0.5)
         )
         .animation(.easeInOut(duration: 0.2), value: isHovered)
         .onHover { hover in
@@ -112,7 +112,7 @@ struct StaticMyCardComponent<Content: View>: View {
         .background(
             RoundedRectangle(cornerRadius: 8)
                 .fill(.white)
-                .shadow(color: isHovered ? Color(hex: 0x0B5BcB) : .gray, radius: isHovered ? 2 : 2, x: 0.5, y: 0.5)
+                .shadow(color: isHovered ? Color(hex: 0x0B5BCB) : .gray, radius: isHovered ? 2 : 2, x: 0.5, y: 0.5)
         )
         .animation(.easeInOut(duration: 0.2), value: isHovered)
         .onHover { hover in
@@ -133,7 +133,7 @@ struct TitlelessMyCardComponent<Content: View>: View {
         .background(
             RoundedRectangle(cornerRadius: 8)
                 .fill(.white)
-                .shadow(color: isHovered ? Color(hex: 0x0B5BcB) : .gray, radius: isHovered ? 2 : 2, x: 0.5, y: 0.5)
+                .shadow(color: isHovered ? Color(hex: 0x0B5BCB) : .gray, radius: isHovered ? 2 : 2, x: 0.5, y: 0.5)
         )
         .animation(.easeInOut(duration: 0.2), value: isHovered)
         .onHover { hover in
