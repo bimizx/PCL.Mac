@@ -10,8 +10,7 @@
 		EC01E7E82DDC3BEA006EF529 /* log4j2.xml in Resources */ = {isa = PBXBuildFile; fileRef = EC01E7E62DDC3BEA006EF529 /* log4j2.xml */; };
 		EC01E7E92DDC3BEA006EF529 /* log4j2-1.12-.xml in Resources */ = {isa = PBXBuildFile; fileRef = EC01E7E72DDC3BEA006EF529 /* log4j2-1.12-.xml */; };
 		EC23B6332DE5DC5B00CBEA9C /* PCL.ttf in Resources */ = {isa = PBXBuildFile; fileRef = EC23B6322DE5DC5B00CBEA9C /* PCL.ttf */; };
-		EC84E7412DDD56E500524871 /* Zip in Frameworks */ = {isa = PBXBuildFile; productRef = EC84E7402DDD56E500524871 /* Zip */; };
-		EC84E7432DDD56EA00524871 /* Zip in Frameworks */ = {isa = PBXBuildFile; productRef = EC84E7422DDD56EA00524871 /* Zip */; };
+		EC2E78572DE9387100876873 /* Zip in Frameworks */ = {isa = PBXBuildFile; productRef = EC2E78562DE9387100876873 /* Zip */; };
 		EC9A7DCA2DE150170018815F /* glfw-patcher.jar in Resources */ = {isa = PBXBuildFile; fileRef = EC9A7DC82DE1500F0018815F /* glfw-patcher.jar */; };
 /* End PBXBuildFile section */
 
@@ -65,7 +64,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				EC84E7412DDD56E500524871 /* Zip in Frameworks */,
+				EC2E78572DE9387100876873 /* Zip in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -73,7 +72,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				EC84E7432DDD56EA00524871 /* Zip in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -138,7 +136,7 @@
 			);
 			name = "PCL-Mac";
 			packageProductDependencies = (
-				EC84E7402DDD56E500524871 /* Zip */,
+				EC2E78562DE9387100876873 /* Zip */,
 			);
 			productName = "PCL-Mac";
 			productReference = EC9EAEC92DD85E48006CEDCC /* PCL-Mac.app */;
@@ -162,7 +160,6 @@
 			);
 			name = "PCL-MacTests";
 			packageProductDependencies = (
-				EC84E7422DDD56EA00524871 /* Zip */,
 			);
 			productName = "PCL-MacTests";
 			productReference = ECA5D8DC2DD99A4C006C58F7 /* PCL-MacTests.xctest */;
@@ -198,7 +195,7 @@
 			mainGroup = EC9EAEC02DD85E48006CEDCC;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				EC84E6E12DDD560A00524871 /* XCRemoteSwiftPackageReference "Zip" */,
+				EC2E78552DE9387100876873 /* XCRemoteSwiftPackageReference "Zip" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = EC9EAECA2DD85E48006CEDCC /* Products */;
@@ -507,7 +504,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		EC84E6E12DDD560A00524871 /* XCRemoteSwiftPackageReference "Zip" */ = {
+		EC2E78552DE9387100876873 /* XCRemoteSwiftPackageReference "Zip" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/marmelroy/Zip.git";
 			requirement = {
@@ -518,14 +515,9 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		EC84E7402DDD56E500524871 /* Zip */ = {
+		EC2E78562DE9387100876873 /* Zip */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = EC84E6E12DDD560A00524871 /* XCRemoteSwiftPackageReference "Zip" */;
-			productName = Zip;
-		};
-		EC84E7422DDD56EA00524871 /* Zip */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = EC84E6E12DDD560A00524871 /* XCRemoteSwiftPackageReference "Zip" */;
+			package = EC2E78552DE9387100876873 /* XCRemoteSwiftPackageReference "Zip" */;
 			productName = Zip;
 		};
 /* End XCSwiftPackageProductDependency section */
