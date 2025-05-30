@@ -19,7 +19,7 @@ class DataManager: ObservableObject {
     @Published var networkMonitor: NetworkSpeedMonitor = NetworkSpeedMonitor()
     @Published var versionManifest: VersionManifest?
     @Published var router: AppRouter = AppRouter()
-    @Published var leftTabWidth: CGFloat = 0
+    @Published var leftTabWidth: CGFloat = 310
     @Published var leftTabContent: AnyView = AnyView(EmptyView())
     
     private var routerCancellable: AnyCancellable?
@@ -61,13 +61,5 @@ class DataManager: ObservableObject {
             self.leftTabContent = AnyView(content())
         }
         return AnyView(EmptyView())
-    }
-    
-    func clearLeftTab() {
-        DispatchQueue.main.async {
-            self.leftTabWidth = 0
-            self.leftTabContent = AnyView(EmptyView())
-            self.objectWillChange.send()
-        }
     }
 }
