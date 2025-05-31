@@ -8,21 +8,66 @@
 import Foundation
 
 public protocol MinecraftVersion: Comparable {
+    var releaseDate: Date { get }
     func getDisplayName() -> String
+    func isLessThan(_ another: any MinecraftVersion) -> Bool
+
     static func fromString(_ string: String) -> Self?
+}
+
+public extension MinecraftVersion {
+    func isLessThan(_ another: any MinecraftVersion) -> Bool {
+        return self.releaseDate < another.releaseDate
+    }
+
+    static func < (lhs: Self, rhs: Self) -> Bool {
+        lhs.isLessThan(rhs)
+    }
+    
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.getDisplayName() == rhs.getDisplayName()
+    }
+}
+
+public func < (lhs: any MinecraftVersion, rhs: any MinecraftVersion) -> Bool {
+    lhs.isLessThan(rhs)
+}
+
+public func <= (lhs: any MinecraftVersion, rhs: any MinecraftVersion) -> Bool {
+    lhs.isLessThan(rhs) || lhs == rhs
+}
+
+public func > (lhs: any MinecraftVersion, rhs: any MinecraftVersion) -> Bool {
+    !(lhs <= rhs)
+}
+
+public func >= (lhs: any MinecraftVersion, rhs: any MinecraftVersion) -> Bool {
+    lhs > rhs || lhs == rhs
+}
+
+public func == (lhs: any MinecraftVersion, rhs: any MinecraftVersion) -> Bool {
+    lhs.getDisplayName() == rhs.getDisplayName()
 }
 
 public final class ReleaseMinecraftVersion: MinecraftVersion {
     private let major: Int
     private let minor: Int
     private let patch: Int
-    
+
+    private var _releaseDate: Date?
+    public var releaseDate: Date {
+        if _releaseDate == nil {
+            _releaseDate = VersionManifest.getReleaseDate(self)
+        }
+        return _releaseDate!
+    }
+
     public init(major: Int, minor: Int, patch: Int = 0) {
         self.major = major
         self.minor = minor
         self.patch = patch
     }
-    
+
     public static func fromString(_ string: String) -> ReleaseMinecraftVersion? {
         let components = string.components(separatedBy: ".")
         guard components.count >= 2,
@@ -33,23 +78,9 @@ public final class ReleaseMinecraftVersion: MinecraftVersion {
         }
         return ReleaseMinecraftVersion(major: major, minor: minor, patch: patch)
     }
-    
+
     public func getDisplayName() -> String {
         return "\(major).\(minor)" + (patch == 0 ? "" : ".\(patch)")
-    }
-    
-    public static func ==(lhs: ReleaseMinecraftVersion, rhs: ReleaseMinecraftVersion) -> Bool {
-        return lhs.major == rhs.major && lhs.minor == rhs.minor && lhs.patch == rhs.patch
-    }
-    
-    public static func <(lhs: ReleaseMinecraftVersion, rhs: ReleaseMinecraftVersion) -> Bool {
-        if lhs.major != rhs.major {
-            return lhs.major < rhs.major
-        } else if lhs.minor != rhs.minor {
-            return lhs.minor < rhs.minor
-        } else {
-            return lhs.patch < rhs.patch
-        }
     }
 }
 
@@ -57,34 +88,37 @@ public final class SnapshotMinecraftVersion: MinecraftVersion {
     private let year: Int
     private let week: Int
     private let id: Character
-    
+
+    private var _releaseDate: Date?
+    public var releaseDate: Date {
+        if _releaseDate == nil {
+            _releaseDate = VersionManifest.getReleaseDate(self)
+        }
+        return _releaseDate!
+    }
+
     public init(year: Int, week: Int, id: Character) {
         self.year = year
         self.week = week
         self.id = id
     }
-    
+
     public static func fromString(_ string: String) -> SnapshotMinecraftVersion? {
         let pattern = #"^(\d{2})w(\d{2})([a-z])$"#
         do {
             let regex = try NSRegularExpression(pattern: pattern)
             let range = NSRange(location: 0, length: string.utf16.count)
-            
+
             if let match = regex.firstMatch(in: string, range: range) {
-                guard let yearRange = Range(match.range(at: 1), in: string) else {
+                guard let yearRange = Range(match.range(at: 1), in: string),
+                      let weekRange = Range(match.range(at: 2), in: string) else {
                     return nil
                 }
-                
-                guard let weekRange = Range(match.range(at: 2), in: string) else {
-                    return nil
-                }
-                
+
                 var id: Character = "a"
-                
                 if let idRange = Range(match.range(at: 3), in: string) {
                     id = string[idRange].first!
                 }
-                
                 return SnapshotMinecraftVersion(year: Int(string[yearRange])!, week: Int(string[weekRange])!, id: id)
             }
         } catch {
@@ -92,24 +126,19 @@ public final class SnapshotMinecraftVersion: MinecraftVersion {
         }
         return nil
     }
-    
+
     public func getDisplayName() -> String {
         return String(format: "%02dw%02d%@", self.year, self.week, String(self.id))
     }
-    
-    public static func ==(lhs: SnapshotMinecraftVersion, rhs: SnapshotMinecraftVersion) -> Bool {
-        return lhs.year == rhs.year && lhs.week == rhs.week && lhs.id == rhs.id
+}
+
+public func fromVersionString(_ versionString: String) -> (any MinecraftVersion)? {
+    if let version = ReleaseMinecraftVersion.fromString(versionString) {
+        return version
     }
-    
-    public static func <(lhs: SnapshotMinecraftVersion, rhs: SnapshotMinecraftVersion) -> Bool {
-        if lhs.year == rhs.year {
-            if lhs.week == rhs.week {
-                return lhs.id < rhs.id
-            } else {
-                return lhs.week < rhs.week
-            }
-        } else {
-            return lhs.year < rhs.year
-        }
+    if let version = SnapshotMinecraftVersion.fromString(versionString) {
+        return version
     }
+    warn("未知的版本格式: \(versionString)")
+    return nil
 }

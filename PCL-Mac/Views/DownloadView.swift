@@ -151,7 +151,7 @@ struct DownloadView: View {
                 self.currentDownloadPage = nil
             }
         } else {
-            err("无法解析版本")
+            err("无法解析版本: \(version.id)")
         }
     }
 }
@@ -163,11 +163,10 @@ struct DownloadPage: View {
     @State private var icon: String = "Release"
     @State private var name: String
     
-    @ObservedObject private var currentTask: InstallTask
+    @ObservedObject private var currentTask: Holder<InstallTask> = Holder()
     
     init(_ version: any MinecraftVersion, _ back: @escaping () -> Void) {
         self.version = version
-        self.currentTask = MinecraftInstaller.createTask(self.version)
         self.name = version.getDisplayName()
         self.back = back
     }
@@ -213,8 +212,9 @@ struct DownloadPage: View {
                                 .font(.custom("PCL English", size: 16))
                         }
                     } onClick: {
-                        DataManager.shared.router.append(.installing(task: self.currentTask))
-                        self.currentTask.start()
+                        self.currentTask.setObject(MinecraftInstaller.createTask(version, name, MinecraftDirectory(rootUrl: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft"))))
+                        DataManager.shared.router.append(.installing(task: self.currentTask.object!))
+                        self.currentTask.object!.start()
                     }
                     .foregroundStyle(.white)
                     .padding()

@@ -70,7 +70,7 @@ public struct ArtifactVersionMapper {
     }
 
     // MARK: 替换依赖项下载链接中的版本
-    public static func mapLibrarieUrl(_ name: String, _ downloadUrl: URL) -> URL {
+    public static func mapLibraryUrl(_ name: String, _ downloadUrl: URL) -> URL {
         let splitted: [String] = name.split(separator: ":").map(String.init)
         let groupId: String = splitted[0]
         let artifactId: String = splitted[1]

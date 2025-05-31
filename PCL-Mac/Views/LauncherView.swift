@@ -32,7 +32,7 @@ struct LauncherView: View {
                         if self.instance == nil {
                             let version = "1.14"
                             let versionUrl = URL(fileURLWithUserPath: "~/PCL-Mac-minecraft/versions/\(version)")
-                            self.instance = MinecraftInstance(runningDirectory: versionUrl, version: ReleaseMinecraftVersion.fromString(version)!, MinecraftConfig(name: "Test", javaPath: "/usr/bin/java"))
+                            self.instance = MinecraftInstance(runningDirectory: versionUrl)
                         }
                         if self.instance!.process == nil {
                             Task {

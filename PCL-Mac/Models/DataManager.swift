@@ -21,6 +21,8 @@ class DataManager: ObservableObject {
     @Published var router: AppRouter = AppRouter()
     @Published var leftTabWidth: CGFloat = 310
     @Published var leftTabContent: AnyView = AnyView(EmptyView())
+    @Published var downloadSpeed: Double = 0
+    @Published var currentStagePercentage: Double = 0
     
     private var routerCancellable: AnyCancellable?
     private var installingView: InstallingView?

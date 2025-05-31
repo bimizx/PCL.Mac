@@ -8,6 +8,35 @@
 import SwiftUI
 
 struct InstallingView: View {
+    private struct LeftTabView: View {
+        @ObservedObject private var dataManager: DataManager = DataManager.shared
+        var body: some View {
+            VStack {
+                Spacer()
+                PanelView(title: "总进度", value: "0.0 %")
+                PanelView(title: "下载速度", value: "\(formatSpeed(dataManager.downloadSpeed))")
+                PanelView(title: "剩余文件", value: "∞")
+                Spacer()
+            }
+            .padding()
+            .padding(.top, 10)
+        }
+        
+        func formatSpeed(_ speed: Double) -> String {
+            let units = ["B/s", "KB/s", "MB/s", "GB/s", "TB/s"]
+            var value = speed
+            var unitIndex = 0
+
+            while value >= 1024 && unitIndex < units.count - 1 {
+                value /= 1024
+                unitIndex += 1
+            }
+
+            let formatted = String(format: value < 10 && unitIndex > 0 ? "%.1f" : "%.0f", value)
+            return "\(formatted) \(units[unitIndex])"
+        }
+    }
+    
     @ObservedObject private var dataManager: DataManager = DataManager.shared
     @ObservedObject var task: InstallTask
     
@@ -29,15 +58,7 @@ struct InstallingView: View {
         }
         .onAppear {
             dataManager.leftTab(220) {
-                VStack {
-                    Spacer()
-                    PanelView(title: "总进度", value: "0.0 %")
-                    PanelView(title: "下载速度", value: "114514 GB/s")
-                    PanelView(title: "剩余文件", value: "∞")
-                    Spacer()
-                }
-                .padding()
-                .padding(.top, 10)
+                LeftTabView()
             }
         }
     }
@@ -47,7 +68,7 @@ struct InstallingView: View {
             ForEach(Array(task.getInstallStates()).sorted(by: { $0.key.rawValue < $1.key.rawValue }), id: \.key) { stage, state in
                 HStack {
                     if state == .inprogress {
-                        Text("0%")
+                        Text(String(format: "%.0f%%", dataManager.currentStagePercentage * 100))
                             .font(.custom("PCL English", size: 14))
                             .foregroundStyle(Color(hex: 0x1370F3))
                             .padding(EdgeInsets(top: 6, leading: 18, bottom: 6, trailing: 0))
@@ -91,5 +112,5 @@ private struct PanelView: View {
 }
 
 #Preview {
-    InstallingView(task: MinecraftInstaller.createTask(ReleaseMinecraftVersion.fromString("1.21.5")!))
+    InstallingView(task: MinecraftInstaller.createTask(ReleaseMinecraftVersion.fromString("1.21.5")!, "测试", MinecraftDirectory(rootUrl: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft"))))
 }

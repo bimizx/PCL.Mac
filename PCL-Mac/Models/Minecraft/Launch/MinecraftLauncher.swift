@@ -16,7 +16,7 @@ public class MinecraftLauncher {
         process.arguments!.append(contentsOf: buildJvmArguments(instance))
         process.arguments!.append(instance.manifest.mainClass)
         process.arguments!.append(contentsOf: buildGameArguments(instance))
-        debug(process.executableURL!.path() + " " + process.arguments!.joined(separator: " "))
+        debug(process.executableURL!.path + " " + process.arguments!.joined(separator: " "))
         process.currentDirectoryURL = instance.runningDirectory
         
         instance.process = process
@@ -31,8 +31,8 @@ public class MinecraftLauncher {
     
     private static func buildJvmArguments(_ instance: MinecraftInstance) -> [String] {
         let values: [String: String] = [
-            "natives_directory": instance.runningDirectory.appending(path: "natives").path(),
-            "launcher_name": "\"PCL Mac\"",
+            "natives_directory": instance.runningDirectory.appending(path: "natives").path,
+            "launcher_name": "PCL Mac",
             "launcher_version": "1.0.0",
             "classpath": buildClasspath(instance)
         ]
@@ -52,19 +52,12 @@ public class MinecraftLauncher {
         
         instance.manifest.getAllowedLibraries().forEach { library in
             if let artifact = library.getArtifact() {
-                var path: String = instance.runningDirectory.parent().parent().appending(path: "libraries").appending(path: artifact.path).path()
-                if path.contains(" ") {
-                    path = "\"\(path)\""
-                }
+                let path: String = instance.runningDirectory.parent().parent().appending(path: "libraries").appending(path: artifact.path).path
                 urls.append(path)
             }
         }
         
-//        instance.manifest.getNeededNatives().forEach { artifact in
-//            urls.append(instance.runningDirectory.parent().parent().appending(path: "libraries").appending(path: artifact.path).path())
-//        }
-        
-        urls.append(instance.runningDirectory.appending(path: instance.version.getDisplayName() + ".jar").path())
+        urls.append(instance.runningDirectory.appending(path: "\(instance.config.name).jar").path)
         
         return urls.joined(separator: ":")
     }
@@ -73,13 +66,13 @@ public class MinecraftLauncher {
         let values: [String: String] = [
             "auth_player_name": "PCL_Mac",
             "version_name": instance.version.getDisplayName(),
-            "game_directory": instance.runningDirectory.path(),
-            "assets_root": instance.runningDirectory.parent().parent().appending(path: "assets").path(),
+            "game_directory": instance.runningDirectory.path,
+            "assets_root": instance.runningDirectory.parent().parent().appending(path: "assets").path,
             "assets_index_name": instance.manifest.assetIndex.id,
             "auth_uuid": "a256e7ba1da830119b633a974279e906",
             "auth_access_token": "9856e9a933b5421cb6cf38f21553bd54",
             "user_type": "msa",
-            "version_type": "\"PCL Mac\""
+            "version_type": "PCL Mac"
         ]
         return replaceTemplateStrings(instance.manifest.getArguments().getAllowedGameArguments(), with: values)
     }

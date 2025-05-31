@@ -1,375 +1,268 @@
 //
-//  MinecraftDownloader.swift
+//  MinecraftInstallerNew.swift
 //  PCL-Mac
 //
-//  Created by YiZhiMCQiu on 2025/5/19.
+//  Created by YiZhiMCQiu on 2025/5/31.
 //
+
+/**
+ *                             _ooOoo_
+ *                            o8888888o
+ *                            88" . "88
+ *                            (| -_- |)
+ *                            O\  =  /O
+ *                         ____/`---'\____
+ *                       .'  \\|     |//  `.
+ *                      /  \\|||  :  |||//  \
+ *                     /  _||||| -:- |||||-  \
+ *                     |   | \\\  -  /// |   |
+ *                     | \_|  ''\---/''  |   |
+ *                     \  .-\__  `-`  ___/-. /
+ *                   ___`. .'  /--.--\  `. . __
+ *                ."" '<  `.___\_<|>_/___.'  >'"".
+ *               | | :  `- \`.;`\ _ /`;.`/ - ` : | |
+ *               \  \ `-.   \_ __\ /__ _/   .-` /  /
+ *          ======`-.____`-.___\_____/___.-`____.-'======
+ *                             `=---='
+ *          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ *          佛祖你怎么了（
+*/
 
 import Foundation
 import Zip
-import SwiftUI
 
 public class MinecraftInstaller {
     private init() {}
     
-    // MARK: 下载二进制和普通文件
-    private static func getBinary(_ sourceUrl: URL, _ saveUrl: URL, _ callback: @escaping (Data, HTTPURLResponse) throws -> Void) {
-        let url = sourceUrl
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        
-        let task = DataManager.shared.networkMonitor.session.dataTask(with: request) { data, response, error in
-            if let error = error as? URLError {
-                warn("下载失败: \(error.localizedDescription) 正在重试")
-                getBinary(sourceUrl, saveUrl, callback)
-                return
-            }
-            if let httpResponse = response as? HTTPURLResponse {
-                if httpResponse.statusCode == 200 {
-                    debug("200 OK GET \(url.path())")
-                    if let data = data {
-                        do {
-                            try FileManager.default.createDirectory(
-                                at: saveUrl.parent(),
-                                withIntermediateDirectories: true,
-                                attributes: nil
-                            )
-                            FileManager.default.createFile(atPath: saveUrl.path(), contents: nil)
-                            
-                            let handle = try FileHandle(forWritingTo: saveUrl)
-                            try handle.write(contentsOf: data)
-                            try handle.close()
-                            try callback(data, httpResponse)
-                        } catch {
-                            err("在写入文件时发生错误: \(error)")
-                        }
-                    }
+    // MARK: 下载客户端清单
+    private static func downloadClientManifest(_ task: InstallTask) async {
+        task.updateStage(.clientJson)
+        let minecraftVersion = task.minecraftVersion.getDisplayName()
+        let clientJsonUrl = task.versionUrl.appending(path: "\(task.name).json")
+        await withCheckedContinuation { continuation in
+            let downloader = ProgressiveDownloader(urls: [URL(string: "https://bmclapi2.bangbang93.com/version/\(minecraftVersion)/json")!], destinations: [clientJsonUrl], completion: {
+                // 解析 JSON
+                if let data = try? Data(contentsOf: clientJsonUrl) {
+                    task.manifest = .decode(data)
                 } else {
-                    err("请求 \(url.absoluteString) 时出现错误: \(httpResponse.statusCode)")
+                    err("无法解析 JSON")
                 }
-            }
+                continuation.resume()
+            })
+            downloader.start()
         }
-        task.resume()
-        debug("向 \(url.absoluteString) 发送了请求")
-    }
-    
-    // MARK: 下载 JSON 文件并解析
-    private static func getJson(_ sourceUrl: URL, _ saveUrl: URL, _ callback: @escaping ([String: Any], String, HTTPURLResponse) throws -> Void) {
-        let url = sourceUrl
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        
-        DataManager.shared.networkMonitor.session.dataTask(with: request) { data, response, error in
-            if let httpResponse = response as? HTTPURLResponse {
-                if httpResponse.statusCode == 200 {
-                    debug("200 OK GET \(url.path())")
-                    if let data = data, let result = String(data: data, encoding: .utf8) {
-                        do {
-                            try FileManager.default.createDirectory(
-                                at: saveUrl.parent(),
-                                withIntermediateDirectories: true,
-                                attributes: nil
-                            )
-                            FileManager.default.createFile(atPath: saveUrl.path(), contents: nil)
-                            
-                            let handle = try FileHandle(forWritingTo: saveUrl)
-                            try handle.write(contentsOf: Data(JsonUtils.formatJSON(result)!.utf8))
-                            try handle.close()
-                            try callback(JSONSerialization.jsonObject(with: data) as! [String : Any], result, httpResponse)
-                        } catch {
-                            err("在写入文件时发生错误: \(error)")
-                        }
-                    }
-                } else {
-                    err("请求 \(url.absoluteString) 时出现错误: \(httpResponse.statusCode)")
-                }
-            }
-        }.resume()
-        debug("向 \(url.absoluteString) 发送了请求")
     }
     
     // MARK: 下载客户端本体
-    public static func downloadClientJar(_ task: InstallTask, _ callback: @escaping () -> Void) {
+    private static func downloadClientJar(_ task: InstallTask) async {
         task.updateStage(.clientJar)
-        let clientJarUrl = task.versionUrl.appending(path: task.minecraftVersion.getDisplayName() + ".jar")
-        if FileManager.default.fileExists(atPath: clientJarUrl.path()) {
-            task.decrement()
-            callback()
-            return
-        }
-        
-        getBinary(URL(string: "https://bmclapi2.bangbang93.com/version/\(task.minecraftVersion.getDisplayName())/client")!, clientJarUrl) { _, _ in
-            task.decrement()
-            callback()
+        let clientJarUrl = task.versionUrl.appending(path: "\(task.name).jar")
+        await withCheckedContinuation { continuation in
+            let downloader = ProgressiveDownloader(urls: [URL(string: "https://bmclapi2.bangbang93.com/version/\(task.minecraftVersion.getDisplayName())/client")!], destinations: [clientJarUrl], completion: {
+                continuation.resume()
+            })
+            downloader.start()
         }
     }
     
-    // MARK: 下载客户端清单
-    public static func downloadClientManifest(_ task: InstallTask, _ callback: @escaping () -> Void) {
-        debug("正在下载客户端清单")
-        let minecraftVersion = task.minecraftVersion.getDisplayName()
-        let clientJsonUrl = task.versionUrl.appending(path: "\(minecraftVersion).json")
-        let onJsonDownloadSuccessfully: (String) -> Void = { json in
-            task.decrement()
-            task.manifest = .decode(json.data(using: .utf8)!)
-            downloadClientJar(task, callback)
-        }
-        
-        if FileManager.default.fileExists(atPath: clientJsonUrl.path()) {
-            if let data = try? Data(contentsOf: clientJsonUrl),
-               let result = String(data: data, encoding: .utf8) {
-                onJsonDownloadSuccessfully(result)
-            } else {
-                err("无法获取客户端 JSON (\(clientJsonUrl.path())")
-            }
-        } else {
-            getJson(URL(string: "https://bmclapi2.bangbang93.com/version/\(minecraftVersion)/json")!, clientJsonUrl) { dict, json, response in
-                onJsonDownloadSuccessfully(json)
-            }
+    // MARK: 下载资源索引
+    private static func downloadAssetIndex(_ task: InstallTask) async {
+        task.updateStage(.clientResources)
+        let assetIndexUrl: URL = URL(string: task.manifest!.assetIndex.url)!
+        let destUrl: URL = task.minecraftDirectory.assetsUrl.appending(component: "indexes").appending(component: "\(task.manifest!.assetIndex.id).json")
+        await withCheckedContinuation { continuation in
+            let downloader = ProgressiveDownloader(urls: [assetIndexUrl], destinations: [destUrl], skipIfExists: true, completion: {
+                do {
+                    let data = try Data(contentsOf: destUrl)
+                    let dict = try JSONSerialization.jsonObject(with: data) as! [String : [String : [String : Any]]]
+                        task.assetIndex = dict
+                } catch {
+                    err("在解析 JSON 时发生错误: \(error.localizedDescription)")
+                }
+                continuation.resume()
+            })
+            downloader.start()
         }
     }
     
-    // MARK: 下载散列资源文件
-    public static func downloadHashResourceFiles(_ task: InstallTask, _ saveUrl: URL? = nil, _ callback: @escaping () -> Void) {
-        let versionUrl = task.versionUrl
-        let assetIndex: String = task.manifest!.assetIndex.id
-        let downloadIndexUrl: URL = URL(string: task.manifest!.assetIndex.url)!
-        let saveUrl = saveUrl ?? versionUrl.parent().parent().appending(path: "assets")
-        let indexUrl = saveUrl.appending(path: "indexes").appending(path: "\(assetIndex).json")
-        debug("正在获取散列资源索引")
+    // MARK: 下载散列资源
+    private static func downloadHashResourcesFiles(_ task: InstallTask) async {
+        let objects = task.assetIndex!["objects"]!
         
-        getJson(downloadIndexUrl, indexUrl) { dict, json, _ in
-            task.updateStage(.clientResources)
-            let index = dict as! [String: [String: [String: Any]]] // TODO 需要实现 Codable 结构体
-            let leftObjects = index["objects"]!.count
-            updateTotalFiles(task, leftObjects)
-            DispatchQueue.main.async {
-                task.remainingFiles += leftObjects
-            }
-            log("发现 \(leftObjects) 个文件")
-            
-            let group = DispatchGroup()
-            for (_, object) in index["objects"]! {
-                let hash: String = object["hash"] as! String
-                let assetUrl: URL = saveUrl.appending(path: "objects").appending(path: hash.prefix(2)).appending(path: hash)
-                let downloadUrl: URL = URL(string: "https://resources.download.minecraft.net")!.appending(path:hash.prefix(2)).appending(path: hash)
-                
-                if FileManager.default.fileExists(atPath: assetUrl.path()) {
-                    log("\(downloadUrl.path()) 已存在，跳过")
-                    task.decrement()
-                    continue
-                }
-                
-                group.enter()
-                task.addOperation {
-                    getBinary(downloadUrl, assetUrl) { _, _ in
-                        task.decrement()
-                        group.leave()
-                    }
-                }
-            }
-            log("资源文件请求已全部发送完成")
-            
-            group.notify(queue: .main) {
-                log("客户端散列资源下载完毕")
-                callback()
-            }
+        var urls: [URL] = []
+        var destinations: [URL] = []
+        
+        for object in objects {
+            let hash: String = object.value["hash"] as! String
+            urls.append(URL(string: "https://resources.download.minecraft.net")!.appending(path: String(hash.prefix(2))).appending(path: hash))
+            destinations.append(task.minecraftDirectory.assetsUrl.appending(path: "objects").appending(path: String(hash.prefix(2))).appending(path: hash))
+        }
+        
+        await withCheckedContinuation { continuation in
+            let downloader = ProgressiveDownloader(urls: urls, destinations: destinations, skipIfExists: true, completion: {
+                continuation.resume()
+            })
+            downloader.start()
         }
     }
-
+    
     // MARK: 下载依赖项
-    public static func downloadLibraries(_ task: InstallTask, _ saveUrl: URL? = nil, _ callback: @escaping () -> Void) {
-        let librariesUrl = task.versionUrl.parent().parent().appending(path: "libraries")
-        let libraries = task.manifest!.getNeededLibraries()
-        DispatchQueue.main.async {
-            task.remainingFiles += libraries.count
-        }
-        debug("本地库数量: \(libraries.count)")
+    private static func downloadLibraries(_ task: InstallTask) async {
+        task.updateStage(.clientLibraries)
         
-        let group = DispatchGroup()
-        for library in libraries {
-            guard let artifact = library.getArtifact() else {
-                task.decrement()
-                continue
-            }
-            let path: URL = librariesUrl.appending(path: artifact.path)
-            let downloadUrl: URL = ArtifactVersionMapper.mapLibrarieUrl(library.name, URL(string: artifact.url)!)
-            
-            if FileManager.default.fileExists(atPath: path.path()) {
-                log("\(downloadUrl.path()) 已存在，跳过")
-                task.decrement()
-                continue
-            }
-            
-            group.enter()
-            task.addOperation {
-                getBinary(downloadUrl, path) { _, _ in
-                    let artifactId: String = library.name.split(separator: ":").map(String.init)[1]
-                    if artifactId == "lwjgl-glfw" {
-                        patchGlfw(path)
-                    }
-                    task.decrement()
-                    group.leave()
-                }
-            }
+        var urls: [URL] = []
+        var destinations: [URL] = []
+        
+        for library in task.manifest!.getNeededLibraries() {
+            urls.append(ArtifactVersionMapper.mapLibraryUrl(library.name, URL(string: library.getArtifact()!.url)!))
+            destinations.append(task.minecraftDirectory.librariesUrl.appending(path: library.getArtifact()!.path))
         }
-        group.notify(queue: .main) {
-            log("客户端依赖项下载完成")
-            callback()
+        
+        await withCheckedContinuation { continuation in
+            let downloader = ProgressiveDownloader(urls: urls, destinations: destinations, skipIfExists: true, completion: {
+                continuation.resume()
+            })
+            downloader.start()
         }
     }
-
+    
     // MARK: 下载本地库
-    public static func downloadNatives(_ task: InstallTask, _ callback: @escaping () -> Void) {
-        let libraries = task.manifest!.getNeededNatives()
-        let nativesUrl = task.versionUrl.appending(path: "natives")
-        debug("找到 \(libraries.count) 个本地库")
+    private static func downloadNatives(_ task: InstallTask) async {
+        task.updateStage(.natives)
         
-        let group = DispatchGroup()
-        for (library, native) in libraries {
-            let saveUrl = task.versionUrl.parent().parent().appending(path: "libraries").appending(path: native.path)
+        var urls: [URL] = []
+        var destinations: [URL] = []
+        
+        for (library, artifact) in task.manifest!.getNeededNatives() {
+            urls.append(ArtifactVersionMapper.mapNativeUrl(library.name, URL(string: artifact.url)!))
+            destinations.append(task.minecraftDirectory.librariesUrl.appending(path: artifact.path))
+        }
+        
+        try? FileManager.default.createDirectory(at: task.versionUrl.appending(path: "natives"), withIntermediateDirectories: true)
+        
+        await withCheckedContinuation { continuation in
+            let downloader = ProgressiveDownloader(urls: urls, destinations: destinations, skipIfExists: true, progress: { finished, total, percent, speed in
+                print("进度: \(finished)/\(total) \(String(format:"%.2f", percent * 100))% 速度: \(String(format:"%.2f", speed / 1024 / 1024)) MB/s")
+            }, completion: {
+                continuation.resume()
+            })
+            downloader.start()
+        }
+    }
+    
+    // MARK: 解压本地库
+    private static func unzipNatives(_ task: InstallTask) {
+        let nativesUrl: URL = task.versionUrl.appending(path: "natives")
+        for (_, native) in task.manifest!.getNeededNatives() {
+            let jarUrl: URL = task.minecraftDirectory.librariesUrl.appending(path: native.path)
             
-            if FileManager.default.fileExists(atPath: saveUrl.path()) {
-                log(saveUrl.path() + "已存在，跳过")
-                unzipNatives(native, saveUrl, nativesUrl)
-                task.decrement()
-                continue
-            }
-            group.enter()
-            task.addOperation {
-                getBinary(ArtifactVersionMapper.mapNativeUrl(library.name, URL(string: native.url)!), saveUrl) {_, _ in
-                    unzipNatives(native, saveUrl, nativesUrl)
-                    task.decrement()
-                    group.leave()
-                }
-            }
-        }
-        group.notify(queue: .main) {
             do {
-                moveDylibsToRoot(nativesUrl)
-                // 只保留 dylib
-                let fileManager = FileManager.default
-                let contents = try fileManager.contentsOfDirectory(at: nativesUrl, includingPropertiesForKeys: nil)
-                for fileURL in contents {
-                    if !fileURL.pathExtension.lowercased().hasSuffix("dylib") && !fileURL.pathExtension.lowercased().hasSuffix("jnilib") {
-                        debug("已清除 \(fileURL.path())")
-                        try fileManager.removeItem(at: fileURL)
-                    }
-                }
+                try Zip.unzipFile(jarUrl, destination: nativesUrl, overwrite: true, password: nil)
+                debug("解压 \(native.path) 成功")
             } catch {
-                err("清理时发生错误: \(error.localizedDescription)")
+                err("无法解压本地库: \(error.localizedDescription)")
             }
-            log("本地库下载完成")
-            callback()
         }
+        processLibs(nativesUrl)
+        
     }
     
-    // MARK: 解压 natives
-    private static func unzipNatives(_ native: ClientManifest.Library.Downloads.Artifact, _ saveUrl: URL, _ nativesUrl: URL) {
-        do {
-            try Zip.unzipFile(saveUrl, destination: nativesUrl, overwrite: true, password: nil)
-            debug("解压 \(native.path) 成功")
-        } catch {
-            err("无法解压本地库: \(error)")
-        }
-    }
-    
-    // MARK: 移动所有 dylib 到根部
-    private static func moveDylibsToRoot(_ directoryUrl: URL) {
+    // MARK: 处理解压结果
+    private static func processLibs(_ nativesUrl: URL) {
         let fileManager = FileManager.default
         guard let enumerator = fileManager.enumerator(
-            at: directoryUrl,includingPropertiesForKeys: [.isDirectoryKey],
+            at: nativesUrl, includingPropertiesForKeys: [.isDirectoryKey],
             options: [.skipsHiddenFiles]
         ) else { return }
-        
         for case let fileURL as URL in enumerator {
             guard fileURL.pathExtension == "dylib" || fileURL.pathExtension == "jnilib",
                   let resourceValues = try? fileURL.resourceValues(forKeys: [.isDirectoryKey]),
                   !resourceValues.isDirectory! else { continue }
             do {
-                let destinationURL = directoryUrl.appendingPathComponent(fileURL.lastPathComponent)
+                let destinationURL = nativesUrl.appendingPathComponent(fileURL.lastPathComponent)
                 if destinationURL == fileURL { continue }
                 if fileManager.fileExists(atPath: destinationURL.path) {
                     try fileManager.removeItem(at: destinationURL)
                 }
                 try fileManager.moveItem(at: fileURL, to: destinationURL)
             } catch {
-                err("无法拷贝 dylib: \(error.localizedDescription) \(fileURL.path()) -> \(directoryUrl.path())")
-            }
-        }
-    }
-    
-    private static func patchGlfw(_ url: URL) {
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/java")
-        process.environment = ProcessInfo.processInfo.environment
-        process.currentDirectoryURL = URL(fileURLWithPath: "/tmp")
-        process.arguments = ["-jar", SharedConstants.shared.applicationResourcesUrl.appending(path: "glfw-patcher.jar").path(), url.path()]
-        do {
-            try process.run()
-            process.waitUntilExit()
-            log("已修改 lwjgl-glfw")
-        } catch {
-            err("无法修改 lwjgl-glfw: \(error)")
-        }
-    }
-    
-    // MARK: 拷贝 log4j2.xml
-    public static func copyLog4j2(_ task: InstallTask) {
-        let targetUrl: URL = task.versionUrl.appending(path: "log4j2.xml")
-        if FileManager.default.fileExists(atPath: targetUrl.path()) {
-            return
-        }
-        do {
-            try FileManager.default.copyItem(
-                at: SharedConstants.shared.applicationResourcesUrl.appending(path: task.minecraftVersion as! ReleaseMinecraftVersion >= ReleaseMinecraftVersion.fromString("1.12.2")! ? "log4j2.xml" : "log4j2-1.12-.xml"),
-                to: targetUrl)
-        } catch {
-            err("无法拷贝 log4j2.xml: \(error)")
-        }
-    }
-    
-    // MARK: 检测需要下载的文件数
-    private static func updateTotalFiles(_ task: InstallTask, _ hashFilesCount: Int) {
-        debug("hashFilesCount: \(hashFilesCount), needed libraries count: \(task.manifest!.getNeededLibraries().count), needed natives count: \(task.manifest!.getNeededNatives().count)")
-        DispatchQueue.main.async {
-            task.totalFiles = 3 + hashFilesCount + task.manifest!.getAllowedLibraries().count
-            task.remainingFiles = task.totalFiles! - 3
-        }
-    }
-    
-    // MARK: 创建下载任务
-    public static func createTask(_ minecraftVersion: any MinecraftVersion, _ completeCallback: (() -> Void)? = nil) -> InstallTask {
-        let task = InstallTask(minecraftVersion: minecraftVersion) { task in
-            Task {
-                task.updateStage(.clientJson)
-                downloadClientManifest(task) {
-                    task.updateStage(.clientIndex)
-                    downloadHashResourceFiles(task) {
-                        task.updateStage(.cliendLibraries)
-                        downloadLibraries(task) {
-                            downloadNatives(task) {
-                                copyLog4j2(task)
-                                task.complete()
-                                completeCallback?()
-                            }
-                        }
-                    }
-                }
+                err("无法拷贝本地库: \(error.localizedDescription) (\(fileURL.path()) -> \(nativesUrl.path()))")
             }
         }
         
+        do {
+            let fileManager = FileManager.default
+            let contents = try fileManager.contentsOfDirectory(at: nativesUrl, includingPropertiesForKeys: nil)
+            for fileURL in contents {
+                if !fileURL.pathExtension.lowercased().hasSuffix("dylib") && !fileURL.pathExtension.lowercased().hasSuffix("jnilib") {
+                    debug("已清除 \(fileURL.path())")
+                    try fileManager.removeItem(at: fileURL)
+                }
+            }
+        } catch {
+            err("清理时发生错误: \(error.localizedDescription)")
+        }
+    }
+    
+    // MARK: 收尾
+    private static func finalWork(_ task: InstallTask) {
+        // 拷贝 log4j2.xml
+        let targetUrl: URL = task.versionUrl.appending(path: "log4j2.xml")
+        if !FileManager.default.fileExists(atPath: targetUrl.path()) {
+            do {
+                try FileManager.default.copyItem(
+                    at: SharedConstants.shared.applicationResourcesUrl.appending(path: task.minecraftVersion >= ReleaseMinecraftVersion.fromString("1.12.2")! ? "log4j2.xml" : "log4j2-1.12-.xml"),
+                    to: targetUrl)
+            } catch {
+                err("无法拷贝 log4j2.xml: \(error.localizedDescription)")
+            }
+        }
+        
+        // 初始化实例
+        let _ = MinecraftInstance(runningDirectory: task.versionUrl, config: MinecraftConfig(name: task.name))
+        
+        // 修改 GLFW
+        if let glfw = task.manifest!.getNeededLibraries().find({ $0.name.contains("lwjgl-glfw") }) {
+            let process = Process()
+            process.executableURL = URL(fileURLWithPath: "/usr/bin/java")
+            process.environment = ProcessInfo.processInfo.environment
+            process.currentDirectoryURL = URL(fileURLWithPath: "/tmp")
+            process.arguments = ["-jar", SharedConstants.shared.applicationResourcesUrl.appending(path: "glfw-patcher.jar").path, task.minecraftDirectory.librariesUrl.appending(path: glfw.getArtifact()!.path).path]
+            do {
+                try process.run()
+                process.waitUntilExit()
+                log("已修改 lwjgl-glfw")
+            } catch {
+                err("无法修改 lwjgl-glfw: \(error)")
+            }
+        }
+        
+        task.complete()
+    }
+    
+    public static func createTask(_ minecraftVersion: any MinecraftVersion, _ name: String, _ minecraftDirectory: MinecraftDirectory, _ callback: (() -> Void)? = nil) -> InstallTask {
+        let task = InstallTask(minecraftVersion: minecraftVersion, minecraftDirectory: MinecraftDirectory(rootUrl: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft")), name: name) { task in
+            Task {
+                await downloadClientManifest(task)
+                await downloadClientJar(task)
+                await downloadAssetIndex(task)
+                await downloadHashResourcesFiles(task)
+                await downloadLibraries(task)
+                await downloadNatives(task)
+                unzipNatives(task)
+                finalWork(task)
+                callback?()
+            }
+        }
         return task
     }
 }
 
 public class InstallTask: ObservableObject, Identifiable, Hashable, Equatable {
     public let id: UUID = UUID()
-    
     public static func == (lhs: InstallTask, rhs: InstallTask) -> Bool {
         lhs.id == rhs.id
     }
-    
     public func hash(into hasher: inout Hasher) {
         hasher.combine(id)
     }
@@ -381,7 +274,7 @@ public class InstallTask: ObservableObject, Identifiable, Hashable, Equatable {
     @Published public var leftObjects: Int = 0
     
     public var manifest: ClientManifest?
-    
+    public var assetIndex: [String: [String: [String: Any]]]?
     public var name: String
     public var versionUrl: URL {
         get {
@@ -389,52 +282,47 @@ public class InstallTask: ObservableObject, Identifiable, Hashable, Equatable {
         }
     }
     public let minecraftVersion: any MinecraftVersion
+    public let minecraftDirectory: MinecraftDirectory
     public let startTask: (InstallTask) -> Void
     public let downloadQueue: OperationQueue
     
-    init(minecraftVersion: any MinecraftVersion, startTask: @escaping (InstallTask) -> Void) {
+    public init(minecraftVersion: any MinecraftVersion, minecraftDirectory: MinecraftDirectory, name: String, startTask: @escaping (InstallTask) -> Void) {
         self.minecraftVersion = minecraftVersion
-        self.name = self.minecraftVersion.getDisplayName()
+        self.minecraftDirectory = minecraftDirectory
+        self.name = name
         self.startTask = startTask
         self.downloadQueue = OperationQueue()
         self.downloadQueue.maxConcurrentOperationCount = 4
     }
-    
     public func complete() {
         log("下载任务完成")
         self.updateStage(.end)
         DispatchQueue.main.async {
-            // self.remainingFiles = 0
             self.isCompleted = true
         }
     }
-    
     public func start() {
         self.startTask(self)
     }
-    
     public func updateStage(_ stage: InstallStage) {
+        debug("切换阶段: \(stage.getDisplayName())")
         DispatchQueue.main.async {
             self.stage = stage
-            self.objectWillChange.send()
+            DataManager.shared.currentStagePercentage = 0
         }
     }
-    
     public func addOperation(_ operation: @escaping () -> Void) {
         self.downloadQueue.addOperation(BlockOperation(block: operation))
     }
-    
     public func decrement() {
         DispatchQueue.main.async {
             self.remainingFiles -= 1
         }
     }
-    
     public func getInstallStates() -> [InstallStage : InstallState] {
-        let allStages: [InstallStage] = [.clientJson, .clientJar, .clientIndex, .clientResources, .cliendLibraries, .natives]
+        let allStages: [InstallStage] = [.clientJson, .clientJar, .clientIndex, .clientResources, .clientLibraries, .natives]
         var result: [InstallStage: InstallState] = [:]
         var foundCurrent = false
-        
         for stage in allStages {
             if foundCurrent {
                 result[stage] = .waiting
@@ -455,7 +343,7 @@ public enum InstallStage: Int {
     case clientJar = 2
     case clientIndex = 3
     case clientResources = 4
-    case cliendLibraries = 5
+    case clientLibraries = 5
     case natives = 6
     case end = 7
     public func getDisplayName() -> String {
@@ -465,7 +353,7 @@ public enum InstallStage: Int {
         case .clientJar: "下载原版 jar 文件"
         case .clientIndex: "下载资源索引文件"
         case .clientResources: "下载散列资源文件"
-        case .cliendLibraries: "下载依赖项文件"
+        case .clientLibraries: "下载依赖项文件"
         case .natives: "下载本地库文件"
         case .end: "结束"
         }
@@ -474,7 +362,6 @@ public enum InstallStage: Int {
 
 public enum InstallState {
     case waiting, inprogress, finished, failed
-    
     public func getImageName() -> String {
         return "Install\(String(describing: self).capitalized)"
     }
@@ -482,11 +369,9 @@ public enum InstallState {
 
 public class InstallOperation: Operation, @unchecked Sendable {
     public let task: () -> Void
-    
     public init(task: @escaping () -> Void) {
         self.task = task
     }
-    
     public override func main() {
         task()
     }

@@ -6,18 +6,18 @@
 //
 
 import Foundation
+import Testing
 import PCL_Mac
-import XCTest
 
-class PCL_MacTests: XCTestCase {
-    func testRun() async throws {
-        let version = "1.13"
-        let versionUrl = URL(fileURLWithUserPath: "~/PCL-Mac-minecraft/versions/\(version)")
-        let instance = MinecraftInstance(runningDirectory: versionUrl, version: ReleaseMinecraftVersion.fromString(version)!, MinecraftConfig(name: "Test", javaPath: "/Library/Java/JavaVirtualMachines/jdk-1.8.jdk/Contents/Home/bin/java"))
+struct PCL_MacTests {
+    @Test func testRun() async throws {
+        try await Task.sleep(nanoseconds: 1_000_000_000)
+        let versionUrl = URL(fileURLWithUserPath: "~/PCL-Mac-minecraft/versions/1.21 Test")
+        let instance = MinecraftInstance(runningDirectory: versionUrl)
         await instance!.run()
     }
     
-    func testLoadClientManifest() async throws {
+    @Test func testLoadClientManifest() async throws {
         let handle = try FileHandle(forReadingFrom: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft/versions/1.21/1.21.json"))
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
@@ -25,28 +25,31 @@ class PCL_MacTests: XCTestCase {
         print(manifest.getArguments().getAllowedGameArguments())
     }
     
-    func testDownload() async throws {
-        var isRunning = true
-        let version = "1.12"
-        let versionUrl = URL(fileURLWithUserPath: "~/PCL-Mac-minecraft/versions/\(version)")
-        MinecraftInstaller.createTask(versionUrl, version) {
-            isRunning = false
-        }.start()
-        while isRunning {}
+    @Test func testDownload() async throws {
+        await withCheckedContinuation { continuation in
+            MinecraftInstaller.createTask(ReleaseMinecraftVersion.fromString("1.14")!, "1.14", MinecraftDirectory(rootUrl: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft"))) {
+                continuation.resume()
+            }.start()
+        }
     }
     
-    func testSnapshotVersion() async throws {
+    @Test func testSnapshotVersion() async throws {
         print(SnapshotMinecraftVersion.fromString("11w45a")!.getDisplayName())
     }
     
-    func testFetchVersionsManifest() async throws {
-        let expectation = self.expectation(description: "Async operation")
-        
-        VersionManifest.fetchLatestData { manifest in
-            print(manifest.versions.first!.parse()!.getDisplayName())
-            expectation.fulfill()
+    @Test func testFetchVersionsManifest() async throws {
+        await withCheckedContinuation { continuation in
+            VersionManifest.fetchLatestData { manifest in
+                print(manifest.versions.first!.parse()!.getDisplayName())
+                continuation.resume()
+            }
         }
-        
-        await fulfillment(of: [expectation], timeout: 5)
+    }
+    
+    @Test func testMinecraftDirectory() async throws {
+        try await Task.sleep(nanoseconds: 1_000_000_000)
+        DispatchQueue.main.schedule(after: DispatchQueue.SchedulerTimeType(DispatchTime(uptimeNanoseconds: 2000000000))) {
+            print("22w16a 最合适的 Java 版本是: " + MinecraftInstance.findSuitableJava(fromVersionString("25w14craftmine")!)!.executableUrl.path())
+        }
     }
 }

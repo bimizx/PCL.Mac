@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct VersionManifest: Codable {
+public class VersionManifest: Codable {
     public struct LatestVersions: Codable {
         public let release: String
         public let snapshot: String
@@ -67,5 +67,14 @@ public struct VersionManifest: Codable {
     
     public func getLatestSnapshot() -> GameVersion {
         return self.versions.find { $0.id == self.latest.snapshot }!
+    }
+    
+    public static func getReleaseDate(_ version: any MinecraftVersion) -> Date? {
+        if let manifest = DataManager.shared.versionManifest {
+            return manifest.versions.find { $0.id == version.getDisplayName() }?.releaseTime // 需要缓存
+        } else {
+            warn("正在获取发布日期，但版本清单未初始化完成") // 布什隔门
+        }
+        return nil
     }
 }
