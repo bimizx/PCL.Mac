@@ -258,6 +258,7 @@ public class MinecraftInstaller {
     }
 }
 
+// MARK: 安装任务定义
 public class InstallTask: ObservableObject, Identifiable, Hashable, Equatable {
     public let id: UUID = UUID()
     public static func == (lhs: InstallTask, rhs: InstallTask) -> Bool {
@@ -268,10 +269,6 @@ public class InstallTask: ObservableObject, Identifiable, Hashable, Equatable {
     }
     
     @Published public var stage: InstallStage = .before
-    @Published public var remainingFiles: Int = 2
-    @Published public var totalFiles: Int?
-    @Published public var isCompleted: Bool = false
-    @Published public var leftObjects: Int = 0
     
     public var manifest: ClientManifest?
     public var assetIndex: [String: [String: [String: Any]]]?
@@ -284,26 +281,22 @@ public class InstallTask: ObservableObject, Identifiable, Hashable, Equatable {
     public let minecraftVersion: any MinecraftVersion
     public let minecraftDirectory: MinecraftDirectory
     public let startTask: (InstallTask) -> Void
-    public let downloadQueue: OperationQueue
     
     public init(minecraftVersion: any MinecraftVersion, minecraftDirectory: MinecraftDirectory, name: String, startTask: @escaping (InstallTask) -> Void) {
         self.minecraftVersion = minecraftVersion
         self.minecraftDirectory = minecraftDirectory
         self.name = name
         self.startTask = startTask
-        self.downloadQueue = OperationQueue()
-        self.downloadQueue.maxConcurrentOperationCount = 4
     }
     public func complete() {
         log("下载任务完成")
         self.updateStage(.end)
-        DispatchQueue.main.async {
-            self.isCompleted = true
-        }
     }
+    
     public func start() {
-        self.startTask(self)
+        startTask(self)
     }
+    
     public func updateStage(_ stage: InstallStage) {
         debug("切换阶段: \(stage.getDisplayName())")
         DispatchQueue.main.async {
@@ -311,14 +304,7 @@ public class InstallTask: ObservableObject, Identifiable, Hashable, Equatable {
             DataManager.shared.currentStagePercentage = 0
         }
     }
-    public func addOperation(_ operation: @escaping () -> Void) {
-        self.downloadQueue.addOperation(BlockOperation(block: operation))
-    }
-    public func decrement() {
-        DispatchQueue.main.async {
-            self.remainingFiles -= 1
-        }
-    }
+    
     public func getInstallStates() -> [InstallStage : InstallState] {
         let allStages: [InstallStage] = [.clientJson, .clientJar, .clientIndex, .clientResources, .clientLibraries, .natives]
         var result: [InstallStage: InstallState] = [:]
@@ -337,6 +323,7 @@ public class InstallTask: ObservableObject, Identifiable, Hashable, Equatable {
     }
 }
 
+// MARK: 安装进度定义
 public enum InstallStage: Int {
     case before = 0
     case clientJson = 1
@@ -360,19 +347,10 @@ public enum InstallStage: Int {
     }
 }
 
+// MARK: 安装进度状态定义
 public enum InstallState {
     case waiting, inprogress, finished, failed
     public func getImageName() -> String {
         return "Install\(String(describing: self).capitalized)"
-    }
-}
-
-public class InstallOperation: Operation, @unchecked Sendable {
-    public let task: () -> Void
-    public init(task: @escaping () -> Void) {
-        self.task = task
-    }
-    public override func main() {
-        task()
     }
 }
