@@ -23,6 +23,11 @@ jobs:
             sudo gem install cocoapods
             pod install
           fi
+      
+      - name: Generate Secrets.xcconfig
+        run: echo "CLIENT_ID = $CLIENT_ID" > Secrets.xcconfig
+        env:
+          CLIENT_ID: ${{ secrets.CLIENT_ID }}
 
       - name: Build Universal Binary (xcodebuild)
         run: |
@@ -31,6 +36,7 @@ jobs:
 
           if [ -d "$PROJECT" ]; then
             xcodebuild -project "$PROJECT" -scheme "$SCHEME" -configuration Release \
+              -xcconfig Secrets.xcconfig \
               ARCHS="arm64 x86_64" ONLY_ACTIVE_ARCH=NO \
               CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO build
           else
