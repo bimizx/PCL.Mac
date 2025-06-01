@@ -242,7 +242,7 @@ public class MinecraftInstaller {
     public static func updateProgress(_ task: InstallTask) {
         DispatchQueue.main.async {
             task.totalFiles = 3 + task.assetIndex!["objects"]!.count + task.manifest!.getNeededLibraries().count + task.manifest!.getNeededNatives().count
-            debug(task.totalFiles)
+            log("总文件数: \(task.totalFiles)")
             task.remainingFiles = task.totalFiles - 2
         }
     }
@@ -303,7 +303,9 @@ public class InstallTask: ObservableObject, Identifiable, Hashable, Equatable {
     public func complete() {
         log("下载任务完成")
         self.updateStage(.end)
-        DataManager.shared.inprogressInstallTask = nil
+        DispatchQueue.main.async {
+            DataManager.shared.inprogressInstallTask = nil
+        }
     }
     
     public func start() {
