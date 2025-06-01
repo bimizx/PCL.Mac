@@ -59,7 +59,7 @@ public final class ReleaseMinecraftVersion: MinecraftVersion {
         if _releaseDate == nil {
             _releaseDate = VersionManifest.getReleaseDate(self)
         }
-        return _releaseDate!
+        return _releaseDate ?? Date(timeIntervalSince1970: TimeInterval(0))
     }
 
     public init(major: Int, minor: Int, patch: Int = 0) {

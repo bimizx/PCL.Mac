@@ -7,15 +7,17 @@
 
 import Foundation
 
-public class MinecraftInstance {
-    private static let RequiredJava17: ReleaseMinecraftVersion = ReleaseMinecraftVersion.fromString("1.18")!
-    private static let RequiredJava21: ReleaseMinecraftVersion = ReleaseMinecraftVersion.fromString("1.21")!
+public class MinecraftInstance: Identifiable {
+    private static let RequiredJava17: any MinecraftVersion = ReleaseMinecraftVersion.fromString("1.18")!
+    private static let RequiredJava21: any MinecraftVersion = SnapshotMinecraftVersion.fromString("24w14a")!
     
     public let runningDirectory: URL
     public let version: any MinecraftVersion
     public var process: Process?
     public let manifest: ClientManifest!
     public var config: MinecraftConfig
+    
+    public let id: UUID = UUID()
     
     public init?(runningDirectory: URL, config: MinecraftConfig? = nil) {
         self.runningDirectory = runningDirectory

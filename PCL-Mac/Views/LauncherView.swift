@@ -28,33 +28,43 @@ struct LauncherView: View {
                     Text("YiZhiMCQiu")
                         .font(.custom("PCL English", size: 16))
                     Spacer()
-                    MyButtonComponent(text: "启动游戏", descriptionText: "1.14", foregroundStyle: Color(hex: 0x0A54CA)) {
-                        if self.instance == nil {
-                            let version = "1.14"
-                            let versionUrl = URL(fileURLWithUserPath: "~/PCL-Mac-minecraft/versions/\(version)")
-                            self.instance = MinecraftInstance(runningDirectory: versionUrl)
-                        }
-                        if self.instance!.process == nil {
-                            Task {
-                                await instance!.run()
+                    if let defaultInstance = LocalStorage.shared.defaultInstance {
+                        MyButtonComponent(text: "启动游戏", descriptionText: defaultInstance, foregroundStyle: Color(hex: 0x0A54CA)) {
+                            if self.instance == nil {
+                                let versionUrl = URL(fileURLWithUserPath: "~/PCL-Mac-minecraft/versions/\(defaultInstance)")
+                                self.instance = MinecraftInstance(runningDirectory: versionUrl)
+                            }
+                            if self.instance!.process == nil {
+                                Task {
+                                    await instance!.run()
+                                }
                             }
                         }
+                        .frame(width: 280, height: 55)
+                        .padding()
+                        .padding(.bottom, -27)
+                    } else {
+                        MyButtonComponent(text: "下载游戏", descriptionText: "未找到可用的游戏版本") {
+                            dataManager.router.setRoot(.download)
+                        }
+                        .frame(width: 280, height: 55)
+                        .padding()
+                        .padding(.bottom, -27)
                     }
-                    .frame(width: 280, height: 55)
-                    .padding()
-                    .padding(.bottom, -27)
                     HStack {
                         MyButtonComponent(text: "版本选择") {
-                            
+                            dataManager.router.append(.versionList)
                         }
-                        .frame(width: 135, height: 30)
-                        .padding(.leading, 10)
-                        Spacer()
-                        MyButtonComponent(text: "版本设置") {
-                            
+                        .frame(width: LocalStorage.shared.defaultInstance == nil ? 280 : 135, height: 35)
+                        .padding(.leading, LocalStorage.shared.defaultInstance == nil ? 0 : 10)
+                        if LocalStorage.shared.defaultInstance != nil {
+                            Spacer()
+                            MyButtonComponent(text: "版本设置") {
+                                
+                            }
+                            .frame(width: 135, height: 35)
+                            .padding(.trailing, 10)
                         }
-                        .frame(width: 135, height: 30)
-                        .padding(.trailing, 10)
                     }
                     .frame(width: 300, height: 60)
                 }

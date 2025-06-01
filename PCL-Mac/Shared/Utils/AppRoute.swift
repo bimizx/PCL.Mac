@@ -17,6 +17,7 @@ public enum AppRoute: Hashable {
     
     // 子页面
     case installing(task: InstallTask)
+    case versionList
     
     var isRoot: Bool {
         switch self {

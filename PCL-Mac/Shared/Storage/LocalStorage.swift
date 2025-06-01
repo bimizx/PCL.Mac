@@ -23,13 +23,16 @@ public class LocalStorage: ObservableObject {
     }
     
     @AppStorage("theme") private var themeRawValue: String = Theme.pcl.rawValue
-    var theme: Theme {
+    public var theme: Theme {
         get { Theme(rawValue: themeRawValue) ?? .pcl }
         set {
             themeRawValue = newValue.rawValue
             objectWillChange.send()
         }
     }
+    
+    /// 启动时若为空自动设置为第一个版本
+    @AppStorage("defaultInstance") public var defaultInstance: String?
     
     private init() {
         log("已加载持久化储存数据")

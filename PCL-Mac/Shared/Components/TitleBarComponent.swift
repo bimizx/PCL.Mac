@@ -107,8 +107,8 @@ struct SubviewTitleBarComponent: View {
     
     private func getTitle() -> String {
         switch dataManager.router.getLast() {
-        case .installing(_):
-            return "下载管理"
+        case .installing(_): return "下载管理"
+        case .versionList: return "版本选择"
         default:
             return "发现问题请在 https://github.com/PCL-Community/PCL-Mac/issues/new 上反馈"
         }

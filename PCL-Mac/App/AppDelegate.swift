@@ -23,8 +23,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         Zip.addCustomFileExtension("jar")
         DataManager.shared.refreshVersionManifest()
+        if LocalStorage.shared.defaultInstance == nil {
+            LocalStorage.shared.defaultInstance = MinecraftDirectory(rootUrl: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft")).getInnerInstances().first?.config.name
+        }
         log("App初始化完成")
-        
     }
     
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {

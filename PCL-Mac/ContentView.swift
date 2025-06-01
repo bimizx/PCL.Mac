@@ -61,6 +61,7 @@ struct ContentView: View {
             case .settings: SettingsView()
             case .others: OthersView()
             case .installing(let task): InstallingView(task: task)
+            case .versionList: VersionListView()
             }
         }
     }
