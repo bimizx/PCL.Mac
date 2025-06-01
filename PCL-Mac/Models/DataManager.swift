@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Combine
 
 /// 需要在界面上同步 / 使用的都放在这里
 class DataManager: ObservableObject {
@@ -15,6 +16,35 @@ class DataManager: ObservableObject {
     @Published var lastTimeUsed: Int = 0
     @Published var showPopup: Bool = false
     @Published var currentPopup: PopupOverlay?
+    @Published var networkMonitor: NetworkSpeedMonitor = NetworkSpeedMonitor()
+    @Published var versionManifest: VersionManifest?
+    @Published var router: AppRouter = AppRouter()
+    @Published var leftTabWidth: CGFloat = 310
+    @Published var leftTabContent: AnyView = AnyView(EmptyView())
+    @Published var downloadSpeed: Double = 0
+    @Published var currentStagePercentage: Double = 0
+    @Published var inprogressInstallTask: InstallTask?
     
-    private init() {}
+    private var routerCancellable: AnyCancellable?
+    
+    private init() {
+        routerCancellable = router.objectWillChange.sink { [weak self] _ in
+            self?.objectWillChange.send()
+        }
+    }
+    
+    func refreshVersionManifest() {
+        VersionManifest.fetchLatestData { versionManifest in
+            DispatchQueue.main.async {
+                self.versionManifest = versionManifest
+            }
+        }
+    }
+    
+    func leftTab(_ width: CGFloat, _ content: @escaping () -> some View) {
+        DispatchQueue.main.async {
+            self.leftTabWidth = width
+            self.leftTabContent = AnyView(content())
+        }
+    }
 }
