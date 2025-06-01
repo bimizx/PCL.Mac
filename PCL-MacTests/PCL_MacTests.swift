@@ -8,6 +8,7 @@
 import Foundation
 import Testing
 import PCL_Mac
+import SwiftUI
 
 struct PCL_MacTests {
     @Test func testRun() async throws {
@@ -51,5 +52,10 @@ struct PCL_MacTests {
         DispatchQueue.main.schedule(after: DispatchQueue.SchedulerTimeType(DispatchTime(uptimeNanoseconds: 2000000000))) {
             print("22w16a 最合适的 Java 版本是: " + MinecraftInstance.findSuitableJava(fromVersionString("25w14craftmine")!)!.executableUrl.path())
         }
+    }
+    
+    @Test func testMsLogin() async throws {
+        await MsLogin.login()
+        print(LocalStorage.shared.accessToken!)
     }
 }

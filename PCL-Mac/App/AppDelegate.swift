@@ -27,7 +27,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             LocalStorage.shared.defaultInstance = MinecraftDirectory(rootUrl: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft")).getInnerInstances().first?.config.name
         }
         log("App初始化完成")
-        log("Client ID: \(String(describing: Bundle.main.object(forInfoDictionaryKey: "CLIENT_ID") as? String))")
     }
     
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
