@@ -23,9 +23,9 @@ class DataManager: ObservableObject {
     @Published var leftTabContent: AnyView = AnyView(EmptyView())
     @Published var downloadSpeed: Double = 0
     @Published var currentStagePercentage: Double = 0
+    @Published var inprogressInstallTask: InstallTask?
     
     private var routerCancellable: AnyCancellable?
-    private var installingView: InstallingView?
     
     private init() {
         routerCancellable = router.objectWillChange.sink { [weak self] _ in
@@ -39,22 +39,6 @@ class DataManager: ObservableObject {
                 self.versionManifest = versionManifest
             }
         }
-    }
-    
-    func getInstallingView(_ task: InstallTask) -> InstallingView {
-        if installingView == nil {
-            installingView = InstallingView(task: task)
-        }
-        
-        return installingView!
-    }
-    
-    func clearInstallingView() {
-        if installingView?.task.stage != .end {
-            warn("任务仍在运行，但试图清除安装视图")
-            return
-        }
-        installingView = nil
     }
     
     func leftTab(_ width: CGFloat, _ content: @escaping () -> some View) {

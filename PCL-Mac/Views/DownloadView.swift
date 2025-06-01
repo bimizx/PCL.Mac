@@ -212,7 +212,9 @@ struct DownloadPage: View {
                                 .font(.custom("PCL English", size: 16))
                         }
                     } onClick: {
+                        if DataManager.shared.inprogressInstallTask != nil { return }
                         self.currentTask.setObject(MinecraftInstaller.createTask(version, name, MinecraftDirectory(rootUrl: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft"))))
+                        DataManager.shared.inprogressInstallTask = self.currentTask.object!
                         DataManager.shared.router.append(.installing(task: self.currentTask.object!))
                         self.currentTask.object!.start()
                     }
@@ -223,42 +225,40 @@ struct DownloadPage: View {
             }
         }
     }
+}
+
+struct RoundedButton<Content: View>: View {
+    let content: () -> Content
+    let onClick: () -> Void
     
-    struct RoundedButton<Content: View>: View {
-        let content: () -> Content
-        let onClick: () -> Void
-        
-        @State private var isHovered: Bool = false
-        @State private var isPressed: Bool = false
-        
-        var body: some View {
-            content()
-                .padding()
-                .padding(.leading, 10)
-                .padding(.trailing, 10)
-                .background(
-                    RoundedRectangle(cornerRadius: .infinity)
-                        .fill(Color(hex: 0x1370F3))
-                )
-                .scaleEffect(isPressed ? 0.85 : 1.0)
-                .animation(.easeInOut(duration: 0.2), value: isHovered)
-                .animation(.easeInOut(duration: 0.2), value: isPressed)
-                .onHover {
-                    isHovered = $0
-                }
-                .gesture(
-                    DragGesture(minimumDistance: 0)
-                        .onChanged { _ in
-                            isPressed = true
+    @State private var isHovered: Bool = false
+    @State private var isPressed: Bool = false
+    
+    var body: some View {
+        content()
+            .padding()
+            .background(
+                RoundedRectangle(cornerRadius: .infinity)
+                    .fill(Color(hex: 0x1370F3))
+            )
+            .scaleEffect(isPressed ? 0.85 : 1.0)
+            .animation(.easeInOut(duration: 0.2), value: isHovered)
+            .animation(.easeInOut(duration: 0.2), value: isPressed)
+            .onHover {
+                isHovered = $0
+            }
+            .gesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { _ in
+                        isPressed = true
+                    }
+                    .onEnded { value in
+                        if isPressed {
+                            onClick()
                         }
-                        .onEnded { value in
-                            if isPressed {
-                                onClick()
-                            }
-                            isPressed = false
-                        }
-                )
-        }
+                        isPressed = false
+                    }
+            )
     }
 }
 

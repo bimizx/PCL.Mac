@@ -141,9 +141,7 @@ public class MinecraftInstaller {
         try? FileManager.default.createDirectory(at: task.versionUrl.appending(path: "natives"), withIntermediateDirectories: true)
         
         await withCheckedContinuation { continuation in
-            let downloader = ProgressiveDownloader(task: task, urls: urls, destinations: destinations, skipIfExists: true, progress: { finished, total, percent, speed in
-                print("进度: \(finished)/\(total) \(String(format:"%.2f", percent * 100))% 速度: \(String(format:"%.2f", speed / 1024 / 1024)) MB/s")
-            }, completion: {
+            let downloader = ProgressiveDownloader(task: task, urls: urls, destinations: destinations, skipIfExists: true, completion: {
                 continuation.resume()
             })
             downloader.start()
@@ -301,9 +299,11 @@ public class InstallTask: ObservableObject, Identifiable, Hashable, Equatable {
         self.name = name
         self.startTask = startTask
     }
+    
     public func complete() {
         log("下载任务完成")
         self.updateStage(.end)
+        DataManager.shared.inprogressInstallTask = nil
     }
     
     public func start() {
@@ -322,6 +322,10 @@ public class InstallTask: ObservableObject, Identifiable, Hashable, Equatable {
         DispatchQueue.main.async {
             self.remainingFiles -= 1
         }
+    }
+    
+    public func getProgress() -> Double {
+        Double(totalFiles - remainingFiles) / Double(totalFiles)
     }
     
     public func getInstallStates() -> [InstallStage : InstallState] {

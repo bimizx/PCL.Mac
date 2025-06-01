@@ -14,7 +14,7 @@ struct InstallingView: View {
         var body: some View {
             VStack {
                 Spacer()
-                PanelView(title: "总进度", value: String(format: "%.1f %%", Double(task.totalFiles - task.remainingFiles) / Double(task.totalFiles) * 100))
+                PanelView(title: "总进度", value: String(format: "%.1f %%", task.getProgress() * 100))
                 PanelView(title: "下载速度", value: "\(formatSpeed(dataManager.downloadSpeed))")
                 PanelView(title: "剩余文件", value: String(describing: task.remainingFiles))
                 Spacer()
@@ -54,7 +54,7 @@ struct InstallingView: View {
         .onChange(of: task.stage) { stage in
             if stage == .end {
                 DataManager.shared.router.removeLast()
-                DataManager.shared.clearInstallingView()
+                DataManager.shared.inprogressInstallTask = nil
             }
         }
         .onAppear {

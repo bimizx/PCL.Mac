@@ -13,6 +13,27 @@ struct ContentView: View {
     var body: some View {
         ZStack {
             createViewFromRouter()
+            if let task = dataManager.inprogressInstallTask {
+                if case .installing = dataManager.router.getLast() {
+                    EmptyView()
+                } else {
+                    HStack() {
+                        Spacer()
+                        VStack() {
+                            Spacer()
+                            RoundedButton {
+                                Image("DownloadItem")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 20)
+                            } onClick: {
+                                dataManager.router.append(.installing(task: task))
+                            }
+                            .padding()
+                        }
+                    }
+                }
+            }
             if let currentPopup = dataManager.currentPopup {
                 Group {
                     Rectangle()
@@ -31,8 +52,6 @@ struct ContentView: View {
         }
     }
     
-    // 给 createViewFromPage() 删了，希望别炸
-    
     private func createSubviewFromRouter() -> some View {
         Group {
             switch dataManager.router.getLast() {
@@ -41,7 +60,7 @@ struct ContentView: View {
             case .multiplayer: MultiplayerView()
             case .settings: SettingsView()
             case .others: OthersView()
-            case .installing(let task): dataManager.getInstallingView(task)
+            case .installing(let task): InstallingView(task: task)
             }
         }
     }
