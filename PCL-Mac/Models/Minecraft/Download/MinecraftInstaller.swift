@@ -39,7 +39,7 @@ public class MinecraftInstaller {
         let minecraftVersion = task.minecraftVersion.getDisplayName()
         let clientJsonUrl = task.versionUrl.appending(path: "\(task.name).json")
         await withCheckedContinuation { continuation in
-            let downloader = ProgressiveDownloader(urls: [URL(string: "https://bmclapi2.bangbang93.com/version/\(minecraftVersion)/json")!], destinations: [clientJsonUrl], completion: {
+            let downloader = ProgressiveDownloader(task: task, urls: [URL(string: "https://bmclapi2.bangbang93.com/version/\(minecraftVersion)/json")!], destinations: [clientJsonUrl], completion: {
                 // 解析 JSON
                 if let data = try? Data(contentsOf: clientJsonUrl) {
                     task.manifest = .decode(data)
@@ -57,7 +57,7 @@ public class MinecraftInstaller {
         task.updateStage(.clientJar)
         let clientJarUrl = task.versionUrl.appending(path: "\(task.name).jar")
         await withCheckedContinuation { continuation in
-            let downloader = ProgressiveDownloader(urls: [URL(string: "https://bmclapi2.bangbang93.com/version/\(task.minecraftVersion.getDisplayName())/client")!], destinations: [clientJarUrl], completion: {
+            let downloader = ProgressiveDownloader(task: task, urls: [URL(string: "https://bmclapi2.bangbang93.com/version/\(task.minecraftVersion.getDisplayName())/client")!], destinations: [clientJarUrl], completion: {
                 continuation.resume()
             })
             downloader.start()
@@ -66,11 +66,11 @@ public class MinecraftInstaller {
     
     // MARK: 下载资源索引
     private static func downloadAssetIndex(_ task: InstallTask) async {
-        task.updateStage(.clientResources)
+        task.updateStage(.clientIndex)
         let assetIndexUrl: URL = URL(string: task.manifest!.assetIndex.url)!
         let destUrl: URL = task.minecraftDirectory.assetsUrl.appending(component: "indexes").appending(component: "\(task.manifest!.assetIndex.id).json")
         await withCheckedContinuation { continuation in
-            let downloader = ProgressiveDownloader(urls: [assetIndexUrl], destinations: [destUrl], skipIfExists: true, completion: {
+            let downloader = ProgressiveDownloader(task: task, urls: [assetIndexUrl], destinations: [destUrl], skipIfExists: true, completion: {
                 do {
                     let data = try Data(contentsOf: destUrl)
                     let dict = try JSONSerialization.jsonObject(with: data) as! [String : [String : [String : Any]]]
@@ -86,6 +86,7 @@ public class MinecraftInstaller {
     
     // MARK: 下载散列资源
     private static func downloadHashResourcesFiles(_ task: InstallTask) async {
+        task.updateStage(.clientResources)
         let objects = task.assetIndex!["objects"]!
         
         var urls: [URL] = []
@@ -98,7 +99,7 @@ public class MinecraftInstaller {
         }
         
         await withCheckedContinuation { continuation in
-            let downloader = ProgressiveDownloader(urls: urls, destinations: destinations, skipIfExists: true, completion: {
+            let downloader = ProgressiveDownloader(task: task, urls: urls, destinations: destinations, skipIfExists: true, completion: {
                 continuation.resume()
             })
             downloader.start()
@@ -118,7 +119,7 @@ public class MinecraftInstaller {
         }
         
         await withCheckedContinuation { continuation in
-            let downloader = ProgressiveDownloader(urls: urls, destinations: destinations, skipIfExists: true, completion: {
+            let downloader = ProgressiveDownloader(task: task, urls: urls, destinations: destinations, skipIfExists: true, completion: {
                 continuation.resume()
             })
             downloader.start()
@@ -140,7 +141,7 @@ public class MinecraftInstaller {
         try? FileManager.default.createDirectory(at: task.versionUrl.appending(path: "natives"), withIntermediateDirectories: true)
         
         await withCheckedContinuation { continuation in
-            let downloader = ProgressiveDownloader(urls: urls, destinations: destinations, skipIfExists: true, progress: { finished, total, percent, speed in
+            let downloader = ProgressiveDownloader(task: task, urls: urls, destinations: destinations, skipIfExists: true, progress: { finished, total, percent, speed in
                 print("进度: \(finished)/\(total) \(String(format:"%.2f", percent * 100))% 速度: \(String(format:"%.2f", speed / 1024 / 1024)) MB/s")
             }, completion: {
                 continuation.resume()
@@ -239,12 +240,23 @@ public class MinecraftInstaller {
         task.complete()
     }
     
+    // MARK: 获取进度
+    public static func updateProgress(_ task: InstallTask) {
+        DispatchQueue.main.async {
+            task.totalFiles = 3 + task.assetIndex!["objects"]!.count + task.manifest!.getNeededLibraries().count + task.manifest!.getNeededNatives().count
+            debug(task.totalFiles)
+            task.remainingFiles = task.totalFiles - 2
+        }
+    }
+    
+    // MARK: 创建任务
     public static func createTask(_ minecraftVersion: any MinecraftVersion, _ name: String, _ minecraftDirectory: MinecraftDirectory, _ callback: (() -> Void)? = nil) -> InstallTask {
         let task = InstallTask(minecraftVersion: minecraftVersion, minecraftDirectory: MinecraftDirectory(rootUrl: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft")), name: name) { task in
             Task {
                 await downloadClientManifest(task)
-                await downloadClientJar(task)
                 await downloadAssetIndex(task)
+                updateProgress(task)
+                await downloadClientJar(task)
                 await downloadHashResourcesFiles(task)
                 await downloadLibraries(task)
                 await downloadNatives(task)
@@ -268,6 +280,8 @@ public class InstallTask: ObservableObject, Identifiable, Hashable, Equatable {
     }
     
     @Published public var stage: InstallStage = .before
+    @Published public var remainingFiles: Int = -1
+    @Published public var totalFiles: Int = -1
     
     public var manifest: ClientManifest?
     public var assetIndex: [String: [String: [String: Any]]]?
@@ -304,8 +318,14 @@ public class InstallTask: ObservableObject, Identifiable, Hashable, Equatable {
         }
     }
     
+    public func completeOneFile() {
+        DispatchQueue.main.async {
+            self.remainingFiles -= 1
+        }
+    }
+    
     public func getInstallStates() -> [InstallStage : InstallState] {
-        let allStages: [InstallStage] = [.clientJson, .clientJar, .clientIndex, .clientResources, .clientLibraries, .natives]
+        let allStages: [InstallStage] = [.clientJson, .clientIndex, .clientJar, .clientResources, .clientLibraries, .natives]
         var result: [InstallStage: InstallState] = [:]
         var foundCurrent = false
         for stage in allStages {
@@ -326,8 +346,8 @@ public class InstallTask: ObservableObject, Identifiable, Hashable, Equatable {
 public enum InstallStage: Int {
     case before = 0
     case clientJson = 1
-    case clientJar = 2
-    case clientIndex = 3
+    case clientIndex = 2
+    case clientJar = 3
     case clientResources = 4
     case clientLibraries = 5
     case natives = 6

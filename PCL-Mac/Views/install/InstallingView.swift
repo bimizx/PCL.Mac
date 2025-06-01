@@ -10,12 +10,13 @@ import SwiftUI
 struct InstallingView: View {
     private struct LeftTabView: View {
         @ObservedObject private var dataManager: DataManager = DataManager.shared
+        @ObservedObject private(set) var task: InstallTask
         var body: some View {
             VStack {
                 Spacer()
-                PanelView(title: "总进度", value: "0.0 %")
+                PanelView(title: "总进度", value: String(format: "%.1f %%", Double(task.totalFiles - task.remainingFiles) / Double(task.totalFiles) * 100))
                 PanelView(title: "下载速度", value: "\(formatSpeed(dataManager.downloadSpeed))")
-                PanelView(title: "剩余文件", value: "∞")
+                PanelView(title: "剩余文件", value: String(describing: task.remainingFiles))
                 Spacer()
             }
             .padding()
@@ -58,7 +59,7 @@ struct InstallingView: View {
         }
         .onAppear {
             dataManager.leftTab(220) {
-                LeftTabView()
+                LeftTabView(task: task)
             }
         }
     }
@@ -71,12 +72,9 @@ struct InstallingView: View {
                         Text(String(format: "%.0f%%", dataManager.currentStagePercentage * 100))
                             .font(.custom("PCL English", size: 14))
                             .foregroundStyle(Color(hex: 0x1370F3))
-                            .padding(EdgeInsets(top: 6, leading: 18, bottom: 6, trailing: 0))
+                            .padding(EdgeInsets(top: 6, leading: 20, bottom: 6, trailing: 10))
                     } else {
                         Image(state.getImageName())
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 15)
                             .foregroundStyle(Color(hex: 0x1370F3))
                             .padding(EdgeInsets(top: 6, leading: 20, bottom: 6, trailing: 10))
                     }
@@ -85,6 +83,7 @@ struct InstallingView: View {
                         .foregroundStyle(Color(hex: 0x343D4A))
                     Spacer()
                 }
+                .frame(height: 20)
             }
         }
     }

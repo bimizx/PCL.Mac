@@ -8,6 +8,7 @@
 import Foundation
 
 public final class ProgressiveDownloader: NSObject, URLSessionDownloadDelegate {
+    public let task: InstallTask
     public let urls: [URL]
     public let destinations: [URL]
     public let concurrentLimit: Int
@@ -15,17 +16,17 @@ public final class ProgressiveDownloader: NSObject, URLSessionDownloadDelegate {
     public let progressCallback: ((Int, Int, Double, Double) -> Void)?
     public let completion: (() -> Void)?
     public var finishedCount = 0
-    public var totalCount: Int { urls.count }
-    public var session: URLSession!
-    public var startTime: Date?
-    public var fileSizeMap: [Int: Int64] = [:]
-    public var bytesMap: [Int: Int64] = [:]
-    public let lock = NSLock()
-    public var nextIndex: Int = 0
+    private var session: URLSession!
+    private var startTime: Date?
+    private var fileSizeMap: [Int: Int64] = [:]
+    private var bytesMap: [Int: Int64] = [:]
+    private let lock = NSLock()
+    private var nextIndex: Int = 0
 
-    public init(urls: [URL], destinations: [URL], concurrentLimit: Int = 4, skipIfExists: Bool = false,
+    public init(task: InstallTask, urls: [URL], destinations: [URL], concurrentLimit: Int = 4, skipIfExists: Bool = false,
                 progress: ((Int, Int, Double, Double) -> Void)? = nil,
                 completion: (() -> Void)? = nil) {
+        self.task = task
         self.urls = urls
         self.destinations = destinations
         self.concurrentLimit = concurrentLimit
@@ -59,6 +60,7 @@ public final class ProgressiveDownloader: NSObject, URLSessionDownloadDelegate {
             if skipIfExists && FileManager.default.fileExists(atPath: dest.path) {
                 lock.lock()
                 finishedCount += 1
+                task.completeOneFile()
                 lock.unlock()
                 updateProgress()
                 if finishedCount == urls.count {
@@ -77,23 +79,39 @@ public final class ProgressiveDownloader: NSObject, URLSessionDownloadDelegate {
         }
     }
 
-    // 只统计已知大小的文件
     private func computeProgress() -> (progress: Double, downloaded: Int64, expected: Int64, speed: Double) {
-        let expected = fileSizeMap.values.filter { $0 > 0 }.reduce(0, +)
-        let downloaded = bytesMap.reduce(0) { sum, pair in
-            let (i, v) = pair
-            return (fileSizeMap[i] ?? 0) > 0 ? sum + Int(v) : sum
+        var partialProgress: Double = 0.0
+        var totalDownloaded: Int64 = 0
+        var totalExpected: Int64 = 0
+
+        lock.lock()
+        for (index, _) in urls.enumerated() {
+            if let fileSize = fileSizeMap[index], let bytes = bytesMap[index], fileSize > 0 {
+                if bytes >= fileSize {
+                    continue
+                } else {
+                    partialProgress += min(1.0, Double(bytes) / Double(fileSize))
+                }
+            }
         }
+        let completed = Double(finishedCount)
+        let total = Double(urls.count)
+        let progress = min(1.0, (completed + partialProgress) / total)
+
+        totalDownloaded = bytesMap.values.reduce(0, +)
+        totalExpected = fileSizeMap.values.reduce(0, +)
+
         let elapsed = Date().timeIntervalSince(startTime ?? Date())
-        let speed = elapsed > 0 ? Double(downloaded) / elapsed : 0
-        let progress = (expected > 0) ? min(1.0, Double(downloaded) / Double(expected)) : 0
-        return (progress, Int64(downloaded), expected, speed)
+        let speed = elapsed > 0 ? Double(totalDownloaded) / elapsed : 0
+
+        lock.unlock()
+        return (progress, totalDownloaded, totalExpected, speed)
     }
 
     private func updateProgress() {
         let (progress, _, _, speed) = computeProgress()
         DispatchQueue.main.async {
-            self.progressCallback?(self.finishedCount, self.totalCount, progress, speed)
+            self.progressCallback?(self.finishedCount, self.urls.count, progress, speed)
             DataManager.shared.downloadSpeed = speed
             DataManager.shared.currentStagePercentage = progress
         }
@@ -106,7 +124,6 @@ public final class ProgressiveDownloader: NSObject, URLSessionDownloadDelegate {
         guard let strIndex = downloadTask.taskDescription, let index = Int(strIndex) else { return }
         lock.lock()
         bytesMap[index] = totalBytesWritten
-        // 只在首次且 totalBytesExpectedToWrite > 0 时写入 fileSizeMap，之后只允许变大不允许变小
         if totalBytesExpectedToWrite > 0 {
             if let old = fileSizeMap[index] {
                 if totalBytesExpectedToWrite > old {
@@ -137,7 +154,7 @@ public final class ProgressiveDownloader: NSObject, URLSessionDownloadDelegate {
 
         lock.lock()
         finishedCount += 1
-        // 用实际文件大小覆盖（只增不减）
+        task.completeOneFile()
         if fileSize > 0, (fileSizeMap[index] ?? 0) < fileSize {
             fileSizeMap[index] = fileSize
             bytesMap[index] = fileSize
