@@ -14,7 +14,8 @@
 > 我们 macOS 也要有自己的 Minecraft 启动器！<br>
 
 本项目使用了 [PCL-Community/glfw-patcher](https://github.com/PCL-Community/glfw-patcher) ，用于在本地自动 patch LWJGL 的 `lwjgl-glfw.jar`，以解决兼容性问题。<br>
-因 App 未签名，所以你需要打开一次 App，然后进入 `系统设置 > 隐私与安全性`，滑到下面，点击“仍然打开”。~~若您认为可能造成安全性问题，请每年 V 我们一千八来签名~~
+因 App 未签名，所以你需要打开一次 App，然后进入 `系统设置 > 隐私与安全性`，滑到下面，点击“仍然打开”。<br>
+~~若您认为可能造成安全性问题，请每年V我们七百块钱来签名。~~
 
 ## 测试
 
