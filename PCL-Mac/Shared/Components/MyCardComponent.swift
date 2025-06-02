@@ -42,7 +42,9 @@ struct MyCardComponent<Content: View>: View {
                         if before {
                             showContent.toggle()
                         }
-                        withAnimation(.spring(response: 0.4, dampingFraction: 0.85, blendDuration: 0)) {
+                        let heightDelta: CGFloat = contentHeight
+                        let duration: Double = max(0.1, Double(heightDelta / 1000) * 2)
+                        withAnimation(.spring(response: duration, dampingFraction: 0.85, blendDuration: 0)) {
                             isUnfolded.toggle()
                         }
                         if !before {
