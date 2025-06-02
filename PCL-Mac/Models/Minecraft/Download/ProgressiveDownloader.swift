@@ -14,7 +14,7 @@ public final class ProgressiveDownloader: NSObject, URLSessionDownloadDelegate {
     public let concurrentLimit: Int
     public let skipIfExists: Bool
     public let progressCallback: ((Int, Int, Double, Double) -> Void)?
-    public let completion: (() -> Void)?
+    public var completion: (() -> Void)?
     public var finishedCount = 0
     private var session: URLSession!
     private var startTime: Date?
@@ -58,6 +58,7 @@ public final class ProgressiveDownloader: NSObject, URLSessionDownloadDelegate {
             guard index < urls.count else { return }
             let dest = destinations[index]
             if skipIfExists && FileManager.default.fileExists(atPath: dest.path) {
+                debug("\(dest.path) 已存在，跳过")
                 lock.lock()
                 finishedCount += 1
                 task.completeOneFile()
@@ -67,6 +68,7 @@ public final class ProgressiveDownloader: NSObject, URLSessionDownloadDelegate {
                     session.invalidateAndCancel()
                     DispatchQueue.main.async {
                         self.completion?()
+                        self.completion = nil
                     }
                 }
                 continue
@@ -166,6 +168,7 @@ public final class ProgressiveDownloader: NSObject, URLSessionDownloadDelegate {
             session.invalidateAndCancel()
             DispatchQueue.main.async {
                 self.completion?()
+                self.completion = nil
             }
         }
     }

@@ -22,6 +22,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         
         Zip.addCustomFileExtension("jar")
+        
         DataManager.shared.refreshVersionManifest()
         if LocalStorage.shared.defaultInstance == nil {
             LocalStorage.shared.defaultInstance = MinecraftDirectory(rootUrl: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft")).getInnerInstances().first?.config.name

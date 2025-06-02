@@ -9,6 +9,7 @@ import Foundation
 import Testing
 import PCL_Mac
 import SwiftUI
+import UserNotifications
 
 struct PCL_MacTests {
     @Test func testRun() async throws {
@@ -57,5 +58,20 @@ struct PCL_MacTests {
     @Test func testMsLogin() async throws {
         await MsLogin.login()
         print(LocalStorage.shared.accessToken!)
+    }
+    
+    @Test func testNotifaction() async throws {
+        UNUserNotificationCenter.current().setNotificationCategories([])
+        
+        let content = UNMutableNotificationContent()
+        content.title = "提醒"
+        content.body = "这是来自应用的通知"
+        
+        let request = UNNotificationRequest(
+            identifier: UUID().uuidString,
+            content: content,
+            trigger: nil // 立即触发
+        )
+        try await UNUserNotificationCenter.current().add(request)
     }
 }
