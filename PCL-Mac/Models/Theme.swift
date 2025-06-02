@@ -16,13 +16,13 @@ public enum Theme: String, CaseIterable {
             return AnyShapeStyle(
                 LinearGradient(
                     gradient: Gradient(colors: [
-                        Color(red: 255 / 255, green: 172 / 255, blue: 40 / 255),
-                        Color(red: 255 / 255, green: 55 / 255, blue: 105 / 255),
-                        Color(red: 210 / 255, green: 156 / 255, blue: 255 / 255),
-                        Color(red: 138 / 255, green: 207 / 255, blue: 234 / 255)
+                        Color(hex: 0xFFAC4A),
+                        Color(hex: 0xFF3769),
+                        Color(hex: 0xD29CFF),
+                        Color(hex: 0x8ACFEA)
                     ]),
                     startPoint: .topLeading,
-                    endPoint: .bottomTrailing
+                    endPoint: .topTrailing
                 )
             )
         case .pcl:
@@ -32,6 +32,33 @@ public enum Theme: String, CaseIterable {
                     center: .center,
                     startRadius: 0,
                     endRadius: 410
+                )
+            )
+        }
+    }
+    
+    public func getBackgroundGradientView() -> some ShapeStyle {
+        switch self {
+        case .pcl:
+            return AnyShapeStyle(
+                RadialGradient(
+                    gradient: Gradient(colors: [Color(hex: 0xC8DCF4), Color(hex: 0xB7CBE3)]),
+                    center: .center,
+                    startRadius: 0,
+                    endRadius: 410
+                )
+            )
+        case .colorful:
+            return AnyShapeStyle(
+                LinearGradient(
+                    gradient: Gradient(colors: [
+                        Color(hex: 0xFFAC4A), // 橙色
+                        Color(hex: 0xFF3769), // 红色
+                        Color(hex: 0xD29CFF), // 紫色
+                        Color(hex: 0x8ACFEA), // 蓝色
+                    ]),
+                    startPoint: .topLeading,
+                    endPoint: .topTrailing
                 )
             )
         }

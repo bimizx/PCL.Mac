@@ -37,7 +37,7 @@ public class MinecraftInstance: Identifiable {
                 let handle = try FileHandle(forReadingFrom: configPath)
                 let decoder = JSONDecoder()
                 decoder.dateDecodingStrategy = .iso8601
-                self.config = try! decoder.decode(MinecraftConfig.self, from: handle.readToEnd()!)
+                self.config = try decoder.decode(MinecraftConfig.self, from: handle.readToEnd()!)
             } catch {
                 err("无法加载配置: \(error.localizedDescription)")
                 return nil

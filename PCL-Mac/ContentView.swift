@@ -91,12 +91,7 @@ struct ContentView: View {
         }
         .ignoresSafeArea(.container, edges: .top)
         .background(
-            RadialGradient(
-                gradient: Gradient(colors: [Color(hex: 0xC8DCF4), Color(hex: 0xB7CBE3)]),
-                center: .center,
-                startRadius: 0,
-                endRadius: 410
-            )
+            LocalStorage.shared.theme.getBackgroundGradientView()
         )
     }
     
