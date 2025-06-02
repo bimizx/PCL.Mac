@@ -32,8 +32,18 @@ public class MinecraftInstance: Identifiable {
         }
         let configPath = runningDirectory.appending(path: ".PCL_Mac.json")
         
-        if let config = config {
-            self.config = config
+        if FileManager.default.fileExists(atPath: configPath.path) {
+            do {
+                let handle = try FileHandle(forReadingFrom: configPath)
+                let decoder = JSONDecoder()
+                decoder.dateDecodingStrategy = .iso8601
+                self.config = try! decoder.decode(MinecraftConfig.self, from: handle.readToEnd()!)
+            } catch {
+                err("无法加载配置: \(error.localizedDescription)")
+                return nil
+            }
+        } else {
+            self.config = config ?? MinecraftConfig(name: runningDirectory.lastPathComponent)
             // 保存配置
             let encoder = JSONEncoder()
             encoder.outputFormatting = .prettyPrinted
@@ -45,22 +55,7 @@ public class MinecraftInstance: Identifiable {
                 )
                 try encoder.encode(config).write(to: configPath, options: .atomic)
             } catch {
-                err("无法保存配置: \(error)")
-                // 不返回 nil，能跑就行
-            }
-        } else {
-            do {
-                guard FileManager.default.fileExists(atPath: configPath.path) else {
-                    err("在传入的 config 为 nil 时，应有对应的配置文件")
-                    return nil
-                }
-                let handle = try FileHandle(forReadingFrom: configPath)
-                let decoder = JSONDecoder()
-                decoder.dateDecodingStrategy = .iso8601
-                self.config = try! decoder.decode(MinecraftConfig.self, from: handle.readToEnd()!)
-            } catch {
-                err("无法加载客户端配置: \(error)")
-                return nil
+                err("无法保存配置: \(error.localizedDescription)")
             }
         }
         

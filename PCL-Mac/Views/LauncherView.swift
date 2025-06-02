@@ -28,15 +28,16 @@ struct LauncherView: View {
                     Text("YiZhiMCQiu")
                         .font(.custom("PCL English", size: 16))
                     Spacer()
-                    if let defaultInstance = LocalStorage.shared.defaultInstance {
+                    if let defaultInstance = LocalStorage.shared.defaultInstance,
+                       let instance = MinecraftInstance(runningDirectory: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft/versions/\(defaultInstance)")) {
                         MyButtonComponent(text: "启动游戏", descriptionText: defaultInstance, foregroundStyle: Color(hex: 0x0A54CA)) {
                             if self.instance == nil {
-                                let versionUrl = URL(fileURLWithUserPath: "~/PCL-Mac-minecraft/versions/\(defaultInstance)")
-                                self.instance = MinecraftInstance(runningDirectory: versionUrl)
+                                self.instance = instance
                             }
+                            
                             if self.instance!.process == nil {
                                 Task {
-                                    await instance!.run()
+                                    await self.instance!.run()
                                 }
                             }
                         }
