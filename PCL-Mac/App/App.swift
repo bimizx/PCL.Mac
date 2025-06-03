@@ -36,6 +36,8 @@ struct WindowAccessor: NSViewRepresentable {
                 window.isMovableByWindowBackground = false
                 window.styleMask.remove(.resizable)
                 window.isMovable = false
+                window.isOpaque = false
+                window.backgroundColor = NSColor.clear
             }
         }
         return nsView

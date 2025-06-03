@@ -88,11 +88,11 @@ struct ContentView: View {
                     .frame(minWidth: 815 - dataManager.leftTabWidth, minHeight: 418)
                     .zIndex(0)
             }
+            .background(
+                LocalStorage.shared.theme.getBackgroundView()
+            )
         }
         .ignoresSafeArea(.container, edges: .top)
-        .background(
-            LocalStorage.shared.theme.getBackgroundGradientView()
-        )
     }
     
     static func setPopup(_ popup: PopupOverlay?) {
