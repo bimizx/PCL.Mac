@@ -85,6 +85,15 @@ public class MinecraftInstance: Identifiable {
                 break
             }
         }
+        
+        if suitableJava == nil {
+            warn("未找到可用 Java")
+            debug("版本: \(version.getDisplayName())")
+            debug("需要 Java 16: \(needsJava16)")
+            debug("需要 Java 17: \(needsJava21)")
+            debug("需要 Java 21: \(needsJava21)")
+        }
+        
         return suitableJava
     }
     

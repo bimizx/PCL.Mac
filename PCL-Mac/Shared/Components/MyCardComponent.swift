@@ -42,7 +42,7 @@ struct MyCardComponent<Content: View>: View {
                         .rotationEffect(.degrees(isUnfolded ? 180 : 0), anchor: .center)
                         .animation(.easeInOut(duration: 0.2), value: isUnfolded)
                 }
-                .foregroundStyle(isHovered ? AnyShapeStyle(LocalStorage.shared.theme.getBackgroundStyle()) : AnyShapeStyle(.black))
+                .foregroundStyle(isHovered ? AnyShapeStyle(LocalStorage.shared.theme.getTextStyle()) : AnyShapeStyle(.black))
                 Color.clear
                     .contentShape(Rectangle())
                     .onTapGesture {
@@ -127,7 +127,7 @@ struct StaticMyCardComponent<Content: View>: View {
             HStack {
                 Text(title)
                     .font(.custom("PCL English", size: 14))
-                    .foregroundStyle(isHovered ? AnyShapeStyle(LocalStorage.shared.theme.getBackgroundStyle()) : AnyShapeStyle(.black))
+                    .foregroundStyle(isHovered ? AnyShapeStyle(LocalStorage.shared.theme.getTextStyle()) : AnyShapeStyle(.black))
                 Spacer()
             }
             content()

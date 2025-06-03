@@ -9,7 +9,7 @@ import Cocoa
 import Zip
 
 class AppDelegate: NSObject, NSApplicationDelegate {
-    func registerCustomFonts() {
+    private func registerCustomFonts() {
         guard let fontURL = Bundle.main.url(forResource: "PCL", withExtension: "ttf") else {
             err("Bundle 内未找到字体")
             return
@@ -27,26 +27,30 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
     
+    private func initJavaList() {
+        do {
+            try JavaSearch.searchAndSet()
+        } catch {
+            err("无法初始化 Java 列表: \(error.localizedDescription)")
+        }
+    }
+    
     func applicationDidFinishLaunching(_ notification: Notification) {
         LogStore.shared.clear()
         log("App 已启动")
         log("正在初始化 Java 列表")
         
         registerCustomFonts()
-        
-        Task {
-            do {
-                try await JavaSearch.searchAndSet()
-            } catch {
-                err("无法初始化 Java 列表: \(error.localizedDescription)")
-            }
-        }
+        initJavaList()
         
         Zip.addCustomFileExtension("jar")
         
         DataManager.shared.refreshVersionManifest()
+        
+        let directory = MinecraftDirectory(rootUrl: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft"))
+        
         if let defaultInstance = LocalStorage.shared.defaultInstance,
-           MinecraftInstance(runningDirectory: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft").appending(path: defaultInstance)) == nil {
+           MinecraftInstance(runningDirectory: directory.versionsUrl.appending(path: defaultInstance)) == nil {
             warn("无效的 defaultInstance 配置")
             LocalStorage.shared.defaultInstance = nil
         }
@@ -55,7 +59,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             LocalStorage.shared.defaultInstance = MinecraftDirectory(rootUrl: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft")).getInnerInstances().first?.config.name
         }
         
-        log("App初始化完成")
+        log("App 初始化完成")
     }
     
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {

@@ -73,7 +73,7 @@ public class VersionManifest: Codable {
         if let manifest = DataManager.shared.versionManifest {
             return manifest.versions.find { $0.id == version.getDisplayName() }?.releaseTime // 需要缓存
         } else {
-            warn("正在获取发布日期，但版本清单未初始化完成") // 布什隔门
+            warn("正在获取 \(version.getDisplayName()) 的发布日期，但版本清单未初始化完成") // 哦天呐，不会吧哥们
         }
         return nil
     }

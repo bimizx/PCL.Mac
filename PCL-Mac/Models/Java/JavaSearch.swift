@@ -9,40 +9,30 @@ import Foundation
 
 public class JavaSearch {
     public static var highestVersion: Int!
-    private static var javaVirtualMachines: [JavaVirtualMachine] = []
-    private static var lastTimeUsed: Int = 0
     
-    @MainActor
-    public static func updateData() {
-        DataManager.shared.javaVirtualMachines = javaVirtualMachines
-        DataManager.shared.lastTimeUsed = lastTimeUsed
-    }
-    
-    public static func searchAndSet() async throws {
+    public static func searchAndSet() throws {
         let before = Date().timeIntervalSince1970
-        javaVirtualMachines = try await search()
-        lastTimeUsed = Int((Date().timeIntervalSince1970 - before) * 1000)
-        log("搜索 Java 耗时 \(lastTimeUsed)ms")
-        highestVersion = javaVirtualMachines.sorted { jvm1, jvm2 in
+        DataManager.shared.javaVirtualMachines = try search()
+        DataManager.shared.lastTimeUsed = Int((Date().timeIntervalSince1970 - before) * 1000)
+        log("搜索 Java 耗时 \(DataManager.shared.lastTimeUsed)ms")
+        highestVersion = DataManager.shared.javaVirtualMachines.sorted { jvm1, jvm2 in
             return jvm1.version > jvm2.version
         }[0].version
         
-        for i in 0..<javaVirtualMachines.count {
-            if javaVirtualMachines[i].version == 0 {
-                javaVirtualMachines[i].version = highestVersion
-                javaVirtualMachines[i].displayVersion = String(highestVersion)
-            }
+        if var java = DataManager.shared.javaVirtualMachines.find ({ $0.executableUrl.path == "/usr/bin/java" }) {
+            java.version = highestVersion
+            java.displayVersion = String(highestVersion)
         }
+        
         loadCustomJVMs()
-        await updateData()
     }
     
     private static func loadCustomJVMs() {
-        LocalStorage.shared.userAddedJvmPaths.forEach{ javaVirtualMachines.append(JavaVirtualMachine.of($0, true)) }
+        LocalStorage.shared.userAddedJvmPaths.forEach{ DataManager.shared.javaVirtualMachines.append(JavaVirtualMachine.of($0, true)) }
         log("加载了 \(LocalStorage.shared.userAddedJvmPaths.count) 个由用户添加的 Java")
     }
     
-    public static func search() async throws -> [JavaVirtualMachine] {
+    public static func search() throws -> [JavaVirtualMachine] {
         var dirs: [String] = []
         dirs.append("/usr/bin")
         let jvmDirsRanges = [

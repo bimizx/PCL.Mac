@@ -34,11 +34,16 @@ class DataManager: ObservableObject {
     }
     
     func refreshVersionManifest() {
+        let group = DispatchGroup()
+        var _versionManifest: VersionManifest? = nil
+        group.enter()
         VersionManifest.fetchLatestData { versionManifest in
-            DispatchQueue.main.async {
-                self.versionManifest = versionManifest
-            }
+            _versionManifest = versionManifest
+            group.leave()
         }
+        
+        group.wait()
+        versionManifest = _versionManifest
     }
     
     func leftTab(_ width: CGFloat, _ content: @escaping () -> some View) {
