@@ -18,8 +18,8 @@ public final class ProgressiveDownloader: NSObject, URLSessionDownloadDelegate {
     public var finishedCount = 0
     private var session: URLSession!
     private var startTime: Date?
-    private var fileSizeMap: [Int: Int64] = [:]
-    private var bytesMap: [Int: Int64] = [:]
+    private var fileSizeMap: [Int : Int64] = [:]
+    private var bytesMap: [Int : Int64] = [:]
     private let lock = NSLock()
     private var nextIndex: Int = 0
 
