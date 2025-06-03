@@ -8,7 +8,7 @@
 import Foundation
 
 public final class ProgressiveDownloader: NSObject, URLSessionDownloadDelegate {
-    public let task: InstallTask
+    public let task: InstallTask?
     public let urls: [URL]
     public let destinations: [URL]
     public let concurrentLimit: Int
@@ -23,7 +23,7 @@ public final class ProgressiveDownloader: NSObject, URLSessionDownloadDelegate {
     private let lock = NSLock()
     private var nextIndex: Int = 0
 
-    public init(task: InstallTask, urls: [URL], destinations: [URL], concurrentLimit: Int = 4, skipIfExists: Bool = false,
+    public init(task: InstallTask? = nil, urls: [URL], destinations: [URL], concurrentLimit: Int = 4, skipIfExists: Bool = false,
                 progress: ((Int, Int, Double, Double) -> Void)? = nil,
                 completion: (() -> Void)? = nil) {
         self.task = task
@@ -61,7 +61,7 @@ public final class ProgressiveDownloader: NSObject, URLSessionDownloadDelegate {
                 debug("\(dest.path) 已存在，跳过")
                 lock.lock()
                 finishedCount += 1
-                task.completeOneFile()
+                task?.completeOneFile()
                 lock.unlock()
                 updateProgress()
                 if finishedCount == urls.count {
@@ -156,7 +156,7 @@ public final class ProgressiveDownloader: NSObject, URLSessionDownloadDelegate {
 
         lock.lock()
         finishedCount += 1
-        task.completeOneFile()
+        task?.completeOneFile()
         if fileSize > 0, (fileSizeMap[index] ?? 0) < fileSize {
             fileSizeMap[index] = fileSize
             bytesMap[index] = fileSize

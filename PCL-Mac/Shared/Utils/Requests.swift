@@ -36,6 +36,25 @@ public struct Requests {
         }
     }
     
+    public static func get(url: URL, headers: [String : String]? = nil) async -> Data? {
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        if let headers = headers {
+            for (key, value) in headers {
+                request.setValue(value, forHTTPHeaderField: key)
+            }
+        }
+        
+        return await withCheckedContinuation { continuation in
+            URLSession.shared.dataTask(with: request) { data, response, error in
+                if let response = response as? HTTPURLResponse {
+                    debug("\(response.statusCode) \(url.path)")
+                }
+                continuation.resume(returning: data)
+            }.resume()
+        }
+    }
+    
     public enum EncodeMethod {
         case json, urlencoded
     }

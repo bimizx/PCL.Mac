@@ -76,6 +76,6 @@ struct PCL_MacTests {
     }
     
     @Test func testNetwork() async throws {
-        print(await NetworkTest.shared.hasNetworkConnection())
+        print(NetworkTest.shared.hasNetworkConnection())
     }
 }
