@@ -21,12 +21,10 @@ struct SettingsView: View {
                     .padding()
                     .padding(.bottom, -23)
                     MyButtonComponent(text: "刷新Java列表") {
-                        Task {
-                            do {
-                                try await JavaSearch.searchAndSet()
-                            } catch {
-                                print("无法刷新Java列表: \(error)")
-                            }
+                        do {
+                            try JavaSearch.searchAndSet()
+                        } catch {
+                            print("无法刷新Java列表: \(error)")
                         }
                     }
                     .frame(height: 40)
@@ -81,11 +79,7 @@ struct SettingsView: View {
             }
             
             if dataManager.javaVirtualMachines.isEmpty {
-                Task {
-                    do {
-                        try await JavaSearch.searchAndSet()
-                    } catch { }
-                }
+                try? JavaSearch.searchAndSet()
             }
         }
     }

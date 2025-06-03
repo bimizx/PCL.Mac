@@ -22,12 +22,10 @@ struct JavaComponent: View {
                 Image(systemName: "trash")
                     .onTapGesture {
                         LocalStorage.shared.userAddedJvmPaths.removeAll { $0 == jvm.executableUrl }
-                        Task {
-                            do {
-                                try await JavaSearch.searchAndSet()
-                            } catch {
-                                err("在删除手动添加的 Java 并刷新 Java 列表时发生错误: \(error)")
-                            }
+                        do {
+                            try JavaSearch.searchAndSet()
+                        } catch {
+                            err("在删除手动添加的 Java 并刷新 Java 列表时发生错误: \(error)")
                         }
                     }
             }
