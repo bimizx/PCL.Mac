@@ -8,6 +8,7 @@
 import Foundation
 
 public class MinecraftInstance: Identifiable {
+    private static let RequiredJava16: any MinecraftVersion = SnapshotMinecraftVersion.fromString("21w19a")!
     private static let RequiredJava17: any MinecraftVersion = ReleaseMinecraftVersion.fromString("1.18")!
     private static let RequiredJava21: any MinecraftVersion = SnapshotMinecraftVersion.fromString("24w14a")!
     
@@ -66,12 +67,15 @@ public class MinecraftInstance: Identifiable {
     }
     
     public static func findSuitableJava(_ version: any MinecraftVersion) -> JavaVirtualMachine? {
+        let needsJava16: Bool = version >= RequiredJava16
         let needsJava17: Bool = version >= RequiredJava17
         let needsJava21: Bool = version >= RequiredJava21
         
         var suitableJava: JavaVirtualMachine?
         for jvm in DataManager.shared.javaVirtualMachines.sorted(by: { $0.version < $1.version }) {
-            if (jvm.version < 17 && needsJava17) || (jvm.version < 21 && needsJava21) {
+            if (jvm.version < 16 && needsJava16)
+            || (jvm.version < 17 && needsJava17)
+            || (jvm.version < 21 && needsJava21) {
                 continue
             }
             
