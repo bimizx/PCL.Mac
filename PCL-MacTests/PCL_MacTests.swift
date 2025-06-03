@@ -75,6 +75,7 @@ struct PCL_MacTests {
         try await UNUserNotificationCenter.current().add(request)
     }
     
-    @Test func testTheme() async throws {
+    @Test func testNetwork() async throws {
+        print(await NetworkTest.shared.hasNetworkConnection())
     }
 }

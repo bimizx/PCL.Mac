@@ -212,6 +212,12 @@ struct DownloadPage: View {
                                 .font(.custom("PCL English", size: 16))
                         }
                     } onClick: {
+                        guard NetworkTest.shared.hasNetworkConnection() else {
+                            ContentView.setPopup(PopupOverlay("无互联网连接", "请确保当前设备已联网！", [.Ok]))
+                            warn("试图下载新版本，但无网络连接")
+                            return
+                        }
+                        
                         if DataManager.shared.inprogressInstallTask != nil { return }
                         self.currentTask.setObject(MinecraftInstaller.createTask(version, name, MinecraftDirectory(rootUrl: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft"))))
                         DataManager.shared.inprogressInstallTask = self.currentTask.object!

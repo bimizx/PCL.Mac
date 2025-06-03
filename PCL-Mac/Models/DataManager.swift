@@ -34,16 +34,27 @@ class DataManager: ObservableObject {
     }
     
     func refreshVersionManifest() {
-        let group = DispatchGroup()
-        var _versionManifest: VersionManifest? = nil
-        group.enter()
-        VersionManifest.fetchLatestData { versionManifest in
-            _versionManifest = versionManifest
-            group.leave()
+        if NetworkTest.shared.hasNetworkConnection() {
+            let group = DispatchGroup()
+            var _versionManifest: VersionManifest? = nil
+            group.enter()
+            VersionManifest.fetchLatestData { versionManifest in
+                _versionManifest = versionManifest
+                group.leave()
+            }
+            
+            group.wait()
+            versionManifest = _versionManifest
+            LocalStorage.shared.lastVersionManifest = versionManifest
+        } else {
+            warn("无网络连接，使用最后一次获取到的版本清单")
+            if let lastVersionManifest = LocalStorage.shared.lastVersionManifest {
+                versionManifest = lastVersionManifest
+            } else {
+                err("无网络连接，但最后一次获取到的版本清单也为空，程序被迫终止")
+                fatalError("无网络连接，但最后一次获取到的版本清单也为空，程序被迫终止")
+            }
         }
-        
-        group.wait()
-        versionManifest = _versionManifest
     }
     
     func leftTab(_ width: CGFloat, _ content: @escaping () -> some View) {

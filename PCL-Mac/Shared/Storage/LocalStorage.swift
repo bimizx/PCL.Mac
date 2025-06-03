@@ -44,6 +44,9 @@ public class LocalStorage: ObservableObject {
     /// 上次刷新时间，用于判断是否需要刷新访问令牌
     @AppStorage("lastRefreshToken") public var lastRefreshToken: Date = Date(timeIntervalSince1970: 0)
     
+    /// 最后一次获取到的 VersionManifest，断网时使用
+    @CodableAppStorage(wrappedValue: nil, "lastVersionManifest") public var lastVersionManifest: VersionManifest?
+    
     private init() {
         log("已加载持久化储存数据")
     }
