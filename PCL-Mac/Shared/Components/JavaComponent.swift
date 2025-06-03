@@ -13,8 +13,9 @@ struct JavaComponent: View {
     
     var body: some View {
         HStack {
-            VStack {
-                Text("Java \(jvm.version) (\(jvm.displayVersion)) \(jvm.arch) 运行方式: \(jvm.callMethod.getDisplayName())\n\(jvm.executableUrl.path())")
+            VStack(alignment: .leading) {
+                Text("Java \(jvm.version) (\(jvm.displayVersion)) \(jvm.arch) 运行方式: \(jvm.callMethod.getDisplayName())")
+                Text(jvm.executableUrl.path)
             }
             Spacer()
             if jvm.isAddedByUser {

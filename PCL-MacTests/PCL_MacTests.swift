@@ -64,8 +64,8 @@ struct PCL_MacTests {
         UNUserNotificationCenter.current().setNotificationCategories([])
         
         let content = UNMutableNotificationContent()
-        content.title = "提醒"
-        content.body = "这是来自应用的通知"
+        content.title = "登录"
+        content.body = "请将剪切板中的内容粘贴到输入框中"
         
         let request = UNNotificationRequest(
             identifier: UUID().uuidString,

@@ -22,6 +22,7 @@ public class LocalStorage: ObservableObject {
         }
     }
     
+    /// 主题需要观察 DataManager 才能更新
     @AppStorage("theme") private var themeRawValue: String = Theme.pcl.rawValue
     public var theme: Theme {
         get { Theme(rawValue: themeRawValue) ?? .pcl }

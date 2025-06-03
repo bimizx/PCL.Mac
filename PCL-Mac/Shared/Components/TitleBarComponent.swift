@@ -65,6 +65,8 @@ struct GenericTitleBarComponent<Content: View>: View {
 }
 
 struct TitleBarComponent: View {
+    @ObservedObject private var dataManager: DataManager = DataManager.shared
+    
     var body: some View {
         GenericTitleBarComponent {
             Group {

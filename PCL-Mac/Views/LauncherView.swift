@@ -19,6 +19,14 @@ struct LauncherView: View {
             }
             .frame(height: 40)
             .padding()
+            .padding(.bottom, -23)
+            MyButtonComponent(text: "测试主题更换") {
+                LocalStorage.shared.theme = LocalStorage.shared.theme == .venti ? .pcl : .venti
+                DataManager.shared.objectWillChange.send()
+            }
+            .frame(height: 40)
+            .padding()
+            .padding(.bottom, -23)
             Spacer()
         }
         .onAppear {
@@ -30,7 +38,7 @@ struct LauncherView: View {
                     Spacer()
                     if let defaultInstance = LocalStorage.shared.defaultInstance,
                        let instance = MinecraftInstance(runningDirectory: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft/versions/\(defaultInstance)")) {
-                        MyButtonComponent(text: "启动游戏", descriptionText: defaultInstance, foregroundStyle: Color(hex: 0x0A54CA)) {
+                        MyButtonComponent(text: "启动游戏", descriptionText: defaultInstance, foregroundStyle: LocalStorage.shared.theme.getTextStyle()) {
                             if self.instance == nil {
                                 self.instance = instance
                             }

@@ -8,18 +8,25 @@
 import SwiftUI
 
 struct MyCardComponent<Content: View>: View {
+    @ObservedObject private var dataManager: DataManager = DataManager.shared
+    
     let title: String
     private let content: Content
     @State private var isHovered: Bool = false
-    @State private var isUnfolded: Bool = false // 带动画
-    @State private var showContent: Bool = false // 无动画
+    @State private var isUnfolded: Bool = false
+    @State private var showContent: Bool = false
     @State private var contentHeight: CGFloat = .zero
+    @State private var unfoldDuration: Double = 0.3
+
+    let unfoldSpeed: CGFloat = 3000 // 每秒展开300pt
+    let headerHeight: CGFloat = 36 // 头部高度，可以根据实际调整
+    let paddingValue: CGFloat = 16 // 上下padding合计
 
     init(title: String, @ViewBuilder content: @escaping () -> Content) {
         self.title = title
         self.content = content()
     }
-    
+
     var body: some View {
         VStack(spacing: 0) {
             ZStack {
@@ -33,28 +40,31 @@ struct MyCardComponent<Content: View>: View {
                         .frame(width: 20, height: 20)
                         .offset(x: -8, y: 4)
                         .rotationEffect(.degrees(isUnfolded ? 180 : 0), anchor: .center)
+                        .animation(.easeInOut(duration: 0.2), value: isUnfolded)
                 }
-                .foregroundStyle(isHovered ? Color(hex: 0x0B5BCB) : .black)
+                .foregroundStyle(isHovered ? AnyShapeStyle(LocalStorage.shared.theme.getBackgroundStyle()) : AnyShapeStyle(.black))
                 Color.clear
                     .contentShape(Rectangle())
                     .onTapGesture {
-                        let before: Bool = !showContent
+                        let before = !showContent
                         if before {
                             showContent.toggle()
                         }
-                        let heightDelta: CGFloat = contentHeight
-                        let duration: Double = max(0.1, Double(heightDelta / 1000) * 2)
-                        withAnimation(.spring(response: duration, dampingFraction: 0.85, blendDuration: 0)) {
+                        // 箭头动画
+                        withAnimation(.easeInOut(duration: 0.2)) {
                             isUnfolded.toggle()
                         }
+                        // 内容动画
+                        let duration = max(Double(contentHeight / unfoldSpeed), 0.18)
+                        unfoldDuration = duration
                         if !before {
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + duration * 0.67) {
                                 showContent.toggle()
                             }
                         }
                     }
             }
-            .frame(height: 9)
+            .frame(height: headerHeight)
 
             ZStack(alignment: .top) {
                 content
@@ -69,21 +79,31 @@ struct MyCardComponent<Content: View>: View {
             .frame(height: isUnfolded ? contentHeight : 0, alignment: .top)
             .clipped()
             .padding(.top, showContent ? 10 : 0)
-            .animation(.easeInOut(duration: 0.3), value: isUnfolded)
-            .animation(.easeInOut(duration: 0.3), value: contentHeight)
         }
-        .padding()
+        .padding(.vertical, paddingValue / 2)
+        .padding(.horizontal)
+        .frame(
+            height: headerHeight
+                + (isUnfolded ? contentHeight : 0)
+                + (showContent ? 10 : 0)
+                + paddingValue // 额外padding
+        )
         .background(
             RoundedRectangle(cornerRadius: 8)
                 .fill(.white)
                 .shadow(color: isHovered ? Color(hex: 0x0B5BCB) : .gray, radius: 2, x: 0.5, y: 0.5)
         )
+        .animation(.easeInOut(duration: unfoldDuration), value: isUnfolded)
+        .animation(.easeInOut(duration: unfoldDuration), value: contentHeight)
         .animation(.easeInOut(duration: 0.2), value: isHovered)
         .onHover { hover in
             isHovered = hover
         }
         .onPreferenceChange(ContentHeightKey.self) { h in
-            if h > 0 { contentHeight = h }
+            if h > 0 {
+                contentHeight = h
+                unfoldDuration = max(Double(h / unfoldSpeed), 0.18)
+            }
         }
     }
 }
@@ -96,6 +116,8 @@ fileprivate struct ContentHeightKey: PreferenceKey {
 }
 
 struct StaticMyCardComponent<Content: View>: View {
+    @ObservedObject private var dataManager: DataManager = DataManager.shared
+    
     let title: String
     let content: () -> Content
     @State private var isHovered: Bool = false
@@ -105,7 +127,7 @@ struct StaticMyCardComponent<Content: View>: View {
             HStack {
                 Text(title)
                     .font(.custom("PCL English", size: 14))
-                    .foregroundStyle(isHovered ? Color(hex: 0x0B5BCB) : .black)
+                    .foregroundStyle(isHovered ? AnyShapeStyle(LocalStorage.shared.theme.getBackgroundStyle()) : AnyShapeStyle(.black))
                 Spacer()
             }
             content()

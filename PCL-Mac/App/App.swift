@@ -38,6 +38,7 @@ struct WindowAccessor: NSViewRepresentable {
                 window.isMovable = false
                 window.isOpaque = false
                 window.backgroundColor = NSColor.clear
+                window.dockTile.display()
             }
         }
         return nsView
