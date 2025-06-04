@@ -14,7 +14,7 @@ struct PCL_MacApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .padding(.top, -28)
+                //.padding(.top, -28)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(WindowAccessor())
         }
@@ -38,6 +38,13 @@ struct WindowAccessor: NSViewRepresentable {
                 window.isMovable = false
                 window.isOpaque = false
                 window.backgroundColor = NSColor.clear
+                window.styleMask = [.borderless]
+                
+                if let contentView = window.contentView {
+                    contentView.wantsLayer = true
+                    contentView.layer?.cornerRadius = 10
+                    contentView.layer?.masksToBounds = true
+                }
             }
         }
         return nsView

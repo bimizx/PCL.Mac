@@ -77,6 +77,7 @@ struct ContentView: View {
                 ZStack {
                     Rectangle()
                         .fill(Color(hex: 0xF5F7FB))
+                        .shadow(radius: 2)
                     dataManager.leftTabContent
                 }
                 .frame(width: dataManager.leftTabWidth)

@@ -77,7 +77,6 @@ struct TitleBarComponent: View {
                     .bold()
                 Tag(text: "Mac", color: .white)
                     .foregroundStyle(LocalStorage.shared.theme.gradientOr(Color(hex: 0x1269E4)))
-                    .padding(.leading, 10)
                 Spacer()
                 MenuItemButton(route: .launcher, parent: self)
                 MenuItemButton(route: .download, parent: self)
@@ -200,5 +199,5 @@ struct Tag: View {
 }
 
 #Preview {
-    SubviewTitleBarComponent()
+    TitleBarComponent()
 }
