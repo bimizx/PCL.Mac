@@ -10,7 +10,8 @@ import SwiftUI
 public enum Theme: String, CaseIterable {
     case pcl, colorful, venti
     
-    public func getStyle() -> some ShapeStyle { // 获取主渐变色（如标题栏）
+    /// 获取主渐变色（如标题栏）
+    public func getStyle() -> some ShapeStyle {
         switch self {
         case .venti:
             return AnyShapeStyle(Color(hex: 0x23D49F))
@@ -29,27 +30,34 @@ public enum Theme: String, CaseIterable {
             )
         case .pcl:
             return AnyShapeStyle(
-                RadialGradient(
-                    gradient: Gradient(colors: [Color(hex: 0x1177DC), Color(hex: 0x0F6AC4)]),
-                    center: .center,
-                    startRadius: 0,
-                    endRadius: 410
+                LinearGradient(
+                    gradient: Gradient(stops: [
+                        .init(color: Color(hex: 0x106AC4), location: 0.0),
+                        .init(color: Color(hex: 0x1277DD), location: 0.5),
+                        .init(color: Color(hex: 0x106AC4), location: 1.0)
+                    ]),
+                    startPoint: UnitPoint(x: 0.0, y: 0.0),
+                    endPoint: UnitPoint(x: 1.0, y: 0.0)
                 )
             )
         }
     }
     
-    public func getBackgroundStyle() -> some ShapeStyle { // 获取副渐变色（如背景）
+    /// 获取副渐变色（如背景）
+    public func getBackgroundStyle() -> some ShapeStyle {
         switch self {
         case .venti:
             return AnyShapeStyle(Color(hex: 0x23D49F, alpha: 0.7))
         case .pcl:
             return AnyShapeStyle(
-                RadialGradient(
-                    gradient: Gradient(colors: [Color(hex: 0xC8DCF4), Color(hex: 0xB7CBE3)]),
-                    center: .center,
-                    startRadius: 0,
-                    endRadius: 410
+                LinearGradient(
+                    gradient: Gradient(stops: [
+                        .init(color: Color(hex: 0xB1CFD5), location: 0.0),
+                        .init(color: Color(hex: 0xCBE1F8), location: 0.4),
+                        .init(color: Color(hex: 0xC0C5DD), location: 1.0)
+                    ]),
+                    startPoint: UnitPoint(x: 0.9, y: 0.0),
+                    endPoint: UnitPoint(x: 0.1, y: 1.0)
                 )
             )
         case .colorful:
@@ -77,14 +85,16 @@ public enum Theme: String, CaseIterable {
         }
     }
     
-    public func getGradientView() -> some View { // 带图片主题的标题栏视图
+    /// 带图片主题的标题栏视图
+    public func getGradientView() -> some View {
         switch self {
         default:
             return AnyView(EmptyView().background(getStyle()))
         }
     }
     
-    public func getBackgroundView() -> some View { // 带图片主题的背景视图
+    /// 带图片主题的背景视图
+    public func getBackgroundView() -> some View {
         switch self {
         case .venti:
             return AnyView(
