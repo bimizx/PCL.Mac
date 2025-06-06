@@ -39,7 +39,11 @@ public class MinecraftInstaller {
         let minecraftVersion = task.minecraftVersion.getDisplayName()
         let clientJsonUrl = task.versionUrl.appending(path: "\(task.name).json")
         await withCheckedContinuation { continuation in
-            let downloader = ProgressiveDownloader(task: task, urls: [URL(string: "https://bmclapi2.bangbang93.com/version/\(minecraftVersion)/json")!], destinations: [clientJsonUrl], completion: {
+            let downloader = ProgressiveDownloader(
+                task: task,
+                urls: [URL(string: "https://bmclapi2.bangbang93.com/version/\(minecraftVersion)/json")!],
+                destinations: [clientJsonUrl],
+                completion: {
                 // 解析 JSON
                 if let data = try? Data(contentsOf: clientJsonUrl) {
                     task.manifest = .decode(data)
@@ -70,7 +74,12 @@ public class MinecraftInstaller {
         let assetIndexUrl: URL = URL(string: task.manifest!.assetIndex.url)!
         let destUrl: URL = task.minecraftDirectory.assetsUrl.appending(component: "indexes").appending(component: "\(task.manifest!.assetIndex.id).json")
         await withCheckedContinuation { continuation in
-            let downloader = ProgressiveDownloader(task: task, urls: [assetIndexUrl], destinations: [destUrl], skipIfExists: true, completion: {
+            let downloader = ProgressiveDownloader(
+                task: task,
+                urls: [assetIndexUrl],
+                destinations: [destUrl],
+                skipIfExists: true,
+                completion: {
                 do {
                     let data = try Data(contentsOf: destUrl)
                     let dict = try JSONSerialization.jsonObject(with: data) as! [String : [String : [String : Any]]]
@@ -99,7 +108,12 @@ public class MinecraftInstaller {
         }
         
         await withCheckedContinuation { continuation in
-            let downloader = ProgressiveDownloader(task: task, urls: urls, destinations: destinations, skipIfExists: true, completion: {
+            let downloader = ProgressiveDownloader(
+                task: task,
+                urls: urls,
+                destinations: destinations,
+                concurrentLimit: 8,
+                skipIfExists: true, completion: {
                 continuation.resume()
             })
             downloader.start()
@@ -119,7 +133,12 @@ public class MinecraftInstaller {
         }
         
         await withCheckedContinuation { continuation in
-            let downloader = ProgressiveDownloader(task: task, urls: urls, destinations: destinations, skipIfExists: true, completion: {
+            let downloader = ProgressiveDownloader(
+                task: task,
+                urls: urls,
+                destinations: destinations,
+                skipIfExists: true,
+                completion: {
                 continuation.resume()
             })
             downloader.start()
@@ -141,7 +160,12 @@ public class MinecraftInstaller {
         try? FileManager.default.createDirectory(at: task.versionUrl.appending(path: "natives"), withIntermediateDirectories: true)
         
         await withCheckedContinuation { continuation in
-            let downloader = ProgressiveDownloader(task: task, urls: urls, destinations: destinations, skipIfExists: true, completion: {
+            let downloader = ProgressiveDownloader(
+                task: task,
+                urls: urls,
+                destinations: destinations,
+                skipIfExists: true,
+                completion: {
                 continuation.resume()
             })
             downloader.start()
