@@ -5,6 +5,8 @@
 //  Created by YiZhiMCQiu on 2025/5/18.
 //
 
+// 不改了，能跑就不要动
+//          by YiZhiMCQiu at 2025/6/6 in fix & optimizations (1)
 import Foundation
 
 public class JavaSearch {

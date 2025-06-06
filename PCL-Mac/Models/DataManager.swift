@@ -52,7 +52,7 @@ class DataManager: ObservableObject {
                 versionManifest = lastVersionManifest
             } else {
                 err("无网络连接，但最后一次获取到的版本清单也为空，程序被迫终止")
-                fatalError("无网络连接，但最后一次获取到的版本清单也为空，程序被迫终止")
+                NSApplication.shared.terminate(nil)
             }
         }
     }

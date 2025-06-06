@@ -61,7 +61,11 @@ public class MinecraftInstaller {
         task.updateStage(.clientJar)
         let clientJarUrl = task.versionUrl.appending(path: "\(task.name).jar")
         await withCheckedContinuation { continuation in
-            let downloader = ProgressiveDownloader(task: task, urls: [URL(string: "https://bmclapi2.bangbang93.com/version/\(task.minecraftVersion.getDisplayName())/client")!], destinations: [clientJarUrl], completion: {
+            let downloader = ProgressiveDownloader(
+                task: task,
+                urls: [URL(string: "https://bmclapi2.bangbang93.com/version/\(task.minecraftVersion.getDisplayName())/client")!],
+                destinations: [clientJarUrl],
+                completion: {
                 continuation.resume()
             })
             downloader.start()
@@ -93,7 +97,7 @@ public class MinecraftInstaller {
         }
     }
     
-    // MARK: 下载散列资源
+    // MARK: 下载散列资源文件
     private static func downloadHashResourcesFiles(_ task: InstallTask) async {
         task.updateStage(.clientResources)
         let objects = task.assetIndex!["objects"]!

@@ -14,9 +14,18 @@ struct InstallingView: View {
         var body: some View {
             VStack {
                 Spacer()
-                PanelView(title: "总进度", value: String(format: "%.1f %%", task.getProgress() * 100))
-                PanelView(title: "下载速度", value: "\(formatSpeed(dataManager.downloadSpeed))")
-                PanelView(title: "剩余文件", value: String(describing: task.remainingFiles))
+                PanelView(
+                    title: "总进度",
+                    value: task.totalFiles == -1 ? "未知" : String(format: "%.1f %%", task.getProgress() * 100)
+                )
+                PanelView(
+                    title: "下载速度",
+                    value: "\(formatSpeed(dataManager.downloadSpeed))"
+                )
+                PanelView(
+                    title: "剩余文件",
+                    value: task.totalFiles == -1 ? "未知" : String(describing: task.remainingFiles)
+                )
                 Spacer()
             }
             .padding()

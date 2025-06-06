@@ -70,15 +70,15 @@ final class LogStore {
 
 final class Logger {
     static func log(_ message: String, _ caller: String) {
-        LogStore.shared.append(message, "LOG", caller)
+        LogStore.shared.append(message, "INFO", caller)
     }
     
     static func warn(_ message: String, _ caller: String) {
-        LogStore.shared.append(message, "WRN", caller)
+        LogStore.shared.append(message, "WARN", caller)
     }
     
     static func error(_ message: String, _ caller: String) {
-        LogStore.shared.append(message, "ERR", caller)
+        LogStore.shared.append(message, "ERROR", caller)
     }
     
     static func debug(_ message: String, _ caller: String) {

@@ -76,22 +76,7 @@ public struct JavaVirtualMachine: Identifiable, Equatable {
         if magic == 0xBEBAFECA || magic == 0xBFBAFECA {
             return .fatFile
         }
-
-        var is64Bit = false
-        switch magic {
-            case 0xFEEDFACE, 0xCEFAEDFE:
-                is64Bit = false
-            case 0xFEEDFACF, 0xCFFAEDFE:
-                is64Bit = true
-            default:
-                return .unknown
-        }
-
-        if is64Bit {
-            _ = try? fh.seek(toOffset: 4)
-        } else {
-            _ = try? fh.seek(toOffset: 4)
-        }
+        
         guard let cputypeData = try? fh.read(upToCount: 4), cputypeData.count == 4 else { return .unknown }
         let cputype = cputypeData.withUnsafeBytes { $0.load(as: UInt32.self) }
 
