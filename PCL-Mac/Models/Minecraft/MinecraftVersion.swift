@@ -94,7 +94,7 @@ public final class SnapshotMinecraftVersion: MinecraftVersion {
         if _releaseDate == nil {
             _releaseDate = VersionManifest.getReleaseDate(self)
         }
-        return _releaseDate!
+        return _releaseDate ?? Date(timeIntervalSince1970: TimeInterval(0))
     }
 
     public init(year: Int, week: Int, id: Character) {

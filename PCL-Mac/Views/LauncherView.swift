@@ -13,14 +13,7 @@ struct LauncherView: View {
     @State private var instance: MinecraftInstance?
     
     var body: some View {
-        VStack {
-            MyButtonComponent(text: "测试弹出框") {
-                ContentView.setPopup(PopupOverlay("测试", "这是一行文本\n这也是一行文本\n这是一行很\(String(repeating: "长", count: 50))的文本", [.Ok]))
-            }
-            .frame(height: 40)
-            .padding()
-            Spacer()
-        }
+        Spacer()
         .onAppear {
             dataManager.leftTab(310) {
                 VStack {
@@ -28,15 +21,16 @@ struct LauncherView: View {
                     Text("YiZhiMCQiu")
                         .font(.custom("PCL English", size: 16))
                     Spacer()
-                    if let defaultInstance = LocalStorage.shared.defaultInstance {
-                        MyButtonComponent(text: "启动游戏", descriptionText: defaultInstance, foregroundStyle: Color(hex: 0x0A54CA)) {
+                    if let defaultInstance = LocalStorage.shared.defaultInstance,
+                       let instance = MinecraftInstance(runningDirectory: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft/versions/\(defaultInstance)")) {
+                        MyButtonComponent(text: "启动游戏", descriptionText: defaultInstance, foregroundStyle: LocalStorage.shared.theme.getTextStyle()) {
                             if self.instance == nil {
-                                let versionUrl = URL(fileURLWithUserPath: "~/PCL-Mac-minecraft/versions/\(defaultInstance)")
-                                self.instance = MinecraftInstance(runningDirectory: versionUrl)
+                                self.instance = instance
                             }
+                            
                             if self.instance!.process == nil {
                                 Task {
-                                    await instance!.run()
+                                    await self.instance!.run()
                                 }
                             }
                         }

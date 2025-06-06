@@ -8,22 +8,22 @@
 import Foundation
 
 public final class ProgressiveDownloader: NSObject, URLSessionDownloadDelegate {
-    public let task: InstallTask
+    public let task: InstallTask?
     public let urls: [URL]
     public let destinations: [URL]
     public let concurrentLimit: Int
     public let skipIfExists: Bool
     public let progressCallback: ((Int, Int, Double, Double) -> Void)?
-    public let completion: (() -> Void)?
+    public var completion: (() -> Void)?
     public var finishedCount = 0
     private var session: URLSession!
     private var startTime: Date?
-    private var fileSizeMap: [Int: Int64] = [:]
-    private var bytesMap: [Int: Int64] = [:]
+    private var fileSizeMap: [Int : Int64] = [:]
+    private var bytesMap: [Int : Int64] = [:]
     private let lock = NSLock()
     private var nextIndex: Int = 0
 
-    public init(task: InstallTask, urls: [URL], destinations: [URL], concurrentLimit: Int = 4, skipIfExists: Bool = false,
+    public init(task: InstallTask? = nil, urls: [URL], destinations: [URL], concurrentLimit: Int = 4, skipIfExists: Bool = false,
                 progress: ((Int, Int, Double, Double) -> Void)? = nil,
                 completion: (() -> Void)? = nil) {
         self.task = task
@@ -58,15 +58,17 @@ public final class ProgressiveDownloader: NSObject, URLSessionDownloadDelegate {
             guard index < urls.count else { return }
             let dest = destinations[index]
             if skipIfExists && FileManager.default.fileExists(atPath: dest.path) {
+                debug("\(dest.path) 已存在，跳过")
                 lock.lock()
                 finishedCount += 1
-                task.completeOneFile()
+                task?.completeOneFile()
                 lock.unlock()
                 updateProgress()
                 if finishedCount == urls.count {
                     session.invalidateAndCancel()
                     DispatchQueue.main.async {
                         self.completion?()
+                        self.completion = nil
                     }
                 }
                 continue
@@ -154,7 +156,7 @@ public final class ProgressiveDownloader: NSObject, URLSessionDownloadDelegate {
 
         lock.lock()
         finishedCount += 1
-        task.completeOneFile()
+        task?.completeOneFile()
         if fileSize > 0, (fileSizeMap[index] ?? 0) < fileSize {
             fileSizeMap[index] = fileSize
             bytesMap[index] = fileSize
@@ -166,6 +168,7 @@ public final class ProgressiveDownloader: NSObject, URLSessionDownloadDelegate {
             session.invalidateAndCancel()
             DispatchQueue.main.async {
                 self.completion?()
+                self.completion = nil
             }
         }
     }

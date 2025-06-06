@@ -8,6 +8,7 @@
 import Foundation
 
 public class MinecraftInstance: Identifiable {
+    private static let RequiredJava16: any MinecraftVersion = SnapshotMinecraftVersion.fromString("21w19a")!
     private static let RequiredJava17: any MinecraftVersion = ReleaseMinecraftVersion.fromString("1.18")!
     private static let RequiredJava21: any MinecraftVersion = SnapshotMinecraftVersion.fromString("24w14a")!
     
@@ -32,8 +33,18 @@ public class MinecraftInstance: Identifiable {
         }
         let configPath = runningDirectory.appending(path: ".PCL_Mac.json")
         
-        if let config = config {
-            self.config = config
+        if FileManager.default.fileExists(atPath: configPath.path) {
+            do {
+                let handle = try FileHandle(forReadingFrom: configPath)
+                let decoder = JSONDecoder()
+                decoder.dateDecodingStrategy = .iso8601
+                self.config = try decoder.decode(MinecraftConfig.self, from: handle.readToEnd()!)
+            } catch {
+                err("无法加载配置: \(error.localizedDescription)")
+                return nil
+            }
+        } else {
+            self.config = config ?? MinecraftConfig(name: runningDirectory.lastPathComponent)
             // 保存配置
             let encoder = JSONEncoder()
             encoder.outputFormatting = .prettyPrinted
@@ -45,22 +56,7 @@ public class MinecraftInstance: Identifiable {
                 )
                 try encoder.encode(config).write(to: configPath, options: .atomic)
             } catch {
-                err("无法保存配置: \(error)")
-                // 不返回 nil，能跑就行
-            }
-        } else {
-            do {
-                guard FileManager.default.fileExists(atPath: configPath.path) else {
-                    err("在传入的 config 为 nil 时，应有对应的配置文件")
-                    return nil
-                }
-                let handle = try FileHandle(forReadingFrom: configPath)
-                let decoder = JSONDecoder()
-                decoder.dateDecodingStrategy = .iso8601
-                self.config = try! decoder.decode(MinecraftConfig.self, from: handle.readToEnd()!)
-            } catch {
-                err("无法加载客户端配置: \(error)")
-                return nil
+                err("无法保存配置: \(error.localizedDescription)")
             }
         }
         
@@ -71,12 +67,15 @@ public class MinecraftInstance: Identifiable {
     }
     
     public static func findSuitableJava(_ version: any MinecraftVersion) -> JavaVirtualMachine? {
+        let needsJava16: Bool = version >= RequiredJava16
         let needsJava17: Bool = version >= RequiredJava17
         let needsJava21: Bool = version >= RequiredJava21
         
         var suitableJava: JavaVirtualMachine?
         for jvm in DataManager.shared.javaVirtualMachines.sorted(by: { $0.version < $1.version }) {
-            if (jvm.version < 17 && needsJava17) || (jvm.version < 21 && needsJava21) {
+            if (jvm.version < 16 && needsJava16)
+            || (jvm.version < 17 && needsJava17)
+            || (jvm.version < 21 && needsJava21) {
                 continue
             }
             
@@ -86,6 +85,15 @@ public class MinecraftInstance: Identifiable {
                 break
             }
         }
+        
+        if suitableJava == nil {
+            warn("未找到可用 Java")
+            debug("版本: \(version.getDisplayName())")
+            debug("需要 Java 16: \(needsJava16)")
+            debug("需要 Java 17: \(needsJava21)")
+            debug("需要 Java 21: \(needsJava21)")
+        }
+        
         return suitableJava
     }
     

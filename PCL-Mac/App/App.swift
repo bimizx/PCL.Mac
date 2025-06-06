@@ -14,11 +14,8 @@ struct PCL_MacApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .padding(.top, -28)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(WindowAccessor())
         }
-        .windowStyle(.hiddenTitleBar)
     }
 }
 
@@ -27,15 +24,16 @@ struct WindowAccessor: NSViewRepresentable {
         let nsView = NSView()
         DispatchQueue.main.async {
             if let window = nsView.window {
-                window.titleVisibility = .hidden
-                window.titlebarAppearsTransparent = true
-                window.standardWindowButton(.closeButton)?.isHidden = true
-                window.standardWindowButton(.miniaturizeButton)?.isHidden = true
-                window.standardWindowButton(.zoomButton)?.isHidden = true
                 window.setContentSize(NSSize(width: 815, height: 465))
-                window.isMovableByWindowBackground = false
-                window.styleMask.remove(.resizable)
-                window.isMovable = false
+                window.isOpaque = false
+                window.backgroundColor = NSColor.clear
+                window.styleMask = [.borderless]
+                
+                if let contentView = window.contentView {
+                    contentView.wantsLayer = true
+                    contentView.layer?.cornerRadius = 10
+                    contentView.layer?.masksToBounds = true
+                }
             }
         }
         return nsView

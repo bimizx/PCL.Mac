@@ -8,6 +8,8 @@
 import Foundation
 import Testing
 import PCL_Mac
+import SwiftUI
+import UserNotifications
 
 struct PCL_MacTests {
     @Test func testRun() async throws {
@@ -51,5 +53,29 @@ struct PCL_MacTests {
         DispatchQueue.main.schedule(after: DispatchQueue.SchedulerTimeType(DispatchTime(uptimeNanoseconds: 2000000000))) {
             print("22w16a 最合适的 Java 版本是: " + MinecraftInstance.findSuitableJava(fromVersionString("25w14craftmine")!)!.executableUrl.path())
         }
+    }
+    
+    @Test func testMsLogin() async throws {
+        await MsLogin.login()
+        print(LocalStorage.shared.accessToken!)
+    }
+    
+    @Test func testNotifaction() async throws {
+        UNUserNotificationCenter.current().setNotificationCategories([])
+        
+        let content = UNMutableNotificationContent()
+        content.title = "登录"
+        content.body = "请将剪切板中的内容粘贴到输入框中"
+        
+        let request = UNNotificationRequest(
+            identifier: UUID().uuidString,
+            content: content,
+            trigger: nil // 立即触发
+        )
+        try await UNUserNotificationCenter.current().add(request)
+    }
+    
+    @Test func testNetwork() async throws {
+        print(NetworkTest.shared.hasNetworkConnection())
     }
 }

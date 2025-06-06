@@ -65,6 +65,8 @@ struct GenericTitleBarComponent<Content: View>: View {
 }
 
 struct TitleBarComponent: View {
+    @ObservedObject private var dataManager: DataManager = DataManager.shared
+    
     var body: some View {
         GenericTitleBarComponent {
             Group {
@@ -75,7 +77,6 @@ struct TitleBarComponent: View {
                     .bold()
                 Tag(text: "Mac", color: .white)
                     .foregroundStyle(LocalStorage.shared.theme.gradientOr(Color(hex: 0x1269E4)))
-                    .padding(.leading, 10)
                 Spacer()
                 MenuItemButton(route: .launcher, parent: self)
                 MenuItemButton(route: .download, parent: self)
@@ -96,12 +97,14 @@ struct SubviewTitleBarComponent: View {
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(height: 18)
+                .foregroundStyle(.white)
                 .onTapGesture {
                     dataManager.router.removeLast()
                 }
                 .padding(.trailing, 5)
             Text(getTitle())
-                .font(.custom("PCL English", size: 16))
+                .font(.custom("PCLEnglish", size: 16))
+                .foregroundStyle(.white)
         }
     }
     
@@ -110,7 +113,7 @@ struct SubviewTitleBarComponent: View {
         case .installing(_): return "下载管理"
         case .versionList: return "版本选择"
         default:
-            return "发现问题请在 https://github.com/PCL-Community/PCL-Mac/issues/new 上反馈"
+            return "发现问题请在 https://github.com/PCL-Community/PCL-Mac/issues/new 上反馈！"
         }
     }
 }
@@ -196,5 +199,5 @@ struct Tag: View {
 }
 
 #Preview {
-    SubviewTitleBarComponent()
+    TitleBarComponent()
 }

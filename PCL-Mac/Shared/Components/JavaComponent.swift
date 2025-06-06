@@ -13,20 +13,19 @@ struct JavaComponent: View {
     
     var body: some View {
         HStack {
-            VStack {
-                Text("Java \(jvm.version) (\(jvm.displayVersion)) \(jvm.arch) 运行方式: \(jvm.callMethod.getDisplayName())\n\(jvm.executableUrl.path())")
+            VStack(alignment: .leading) {
+                Text("Java \(jvm.version) (\(jvm.displayVersion)) \(jvm.arch) 运行方式: \(jvm.callMethod.getDisplayName())")
+                Text(jvm.executableUrl.path)
             }
             Spacer()
             if jvm.isAddedByUser {
                 Image(systemName: "trash")
                     .onTapGesture {
                         LocalStorage.shared.userAddedJvmPaths.removeAll { $0 == jvm.executableUrl }
-                        Task {
-                            do {
-                                try await JavaSearch.searchAndSet()
-                            } catch {
-                                err("在删除手动添加的 Java 并刷新 Java 列表时发生错误: \(error)")
-                            }
+                        do {
+                            try JavaSearch.searchAndSet()
+                        } catch {
+                            err("在删除手动添加的 Java 并刷新 Java 列表时发生错误: \(error)")
                         }
                     }
             }
