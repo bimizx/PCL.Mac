@@ -23,4 +23,9 @@
 
 ## 兼容性
 
-需要 **macOS 13.0+** 才能运行本 App。~~除非其他系统强兼 SwiftUI~~
+需要 **macOS 13.0+** 才能运行本 App。
+
+## 鸣谢
+
+- FUNCTY
+- [AMagicPear](https://github.com/AMagicPear)
