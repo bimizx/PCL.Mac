@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct JavaVirtualMachine: Identifiable, Equatable {
+public class JavaVirtualMachine: Identifiable, Equatable {
     static let Error = JavaVirtualMachine(arch: .unknown, version: -1, displayVersion: "错误", executableUrl: URL(fileURLWithPath: "Error"), callMethod: .incompatible, _isError: true)
     
     public let arch: ExecArchitectury
@@ -29,6 +29,20 @@ public struct JavaVirtualMachine: Identifiable, Equatable {
     private var _isAddedByUser: Bool?
     
     public let id = UUID()
+    
+    init(arch: ExecArchitectury, version: Int, displayVersion: String, executableUrl: URL, callMethod: CallMethod, _isError: Bool? = nil, _isAddedByUser: Bool? = nil) {
+        self.arch = arch
+        self.version = version
+        self.displayVersion = displayVersion
+        self.executableUrl = executableUrl
+        self.callMethod = callMethod
+        self._isError = _isError
+        self._isAddedByUser = _isAddedByUser
+    }
+    
+    private func asyncDetectVersion() async {
+        (version, displayVersion) = JavaVirtualMachine.detectVersion(url: executableUrl)
+    }
     
     public static func of(_ executableUrl: URL, _ addedByUser: Bool? = nil) -> JavaVirtualMachine {
         guard FileManager.default.fileExists(atPath: executableUrl.path) else {
@@ -52,6 +66,7 @@ public struct JavaVirtualMachine: Identifiable, Equatable {
         let releaseUrl = executableUrl.parent().parent().appending(path: "release")
         var version: Int = 0
         var displayVersion: String = "未知"
+        var asyncDetect: Bool = false
         if FileManager.default.fileExists(atPath: releaseUrl.path) {
             let release = PropertiesParser.parse(fileUrl: releaseUrl)
             if let javaVersion = release["JAVA_VERSION"] {
@@ -61,9 +76,51 @@ public struct JavaVirtualMachine: Identifiable, Equatable {
                 err("加载 \(executableUrl.path()) 时出现错误: 未找到键 JAVA_VERSION 对应的值")
             }
         } else {
-            err("未找到 \(executableUrl.path()) 对应的版本文件")
+            asyncDetect = true
         }
-        return JavaVirtualMachine(arch: arch, version: version, displayVersion: displayVersion, executableUrl: executableUrl, callMethod: callMethod ?? .incompatible, _isAddedByUser: addedByUser)
+        let jvm = JavaVirtualMachine(arch: arch, version: version, displayVersion: displayVersion, executableUrl: executableUrl, callMethod: callMethod ?? .incompatible, _isAddedByUser: addedByUser)
+        if asyncDetect {
+            Task {
+                await jvm.asyncDetectVersion()
+            }
+        }
+        return jvm
+    }
+    
+    private static func detectVersion(url: URL) -> (version: Int, displayVersion: String) {
+        do {
+            let process = Process()
+            process.executableURL = url
+            process.arguments = ["--version"]
+            
+            let pipe = Pipe()
+            process.standardOutput = pipe
+            process.standardError = pipe
+
+            try process.run()
+            process.waitUntilExit()
+            
+            let data = pipe.fileHandleForReading.readDataToEndOfFile()
+            guard let output = String(data: data, encoding: .utf8) else {
+                throw NSError(domain: "JavaVersionDetector", code: 1, userInfo: [NSLocalizedDescriptionKey: "Output decoding failed"])
+            }
+            
+            let versionPattern = #"(?<=java |openjdk )([0-9]{1,3}(?:[\.\-][\w\.]+)?)"#
+            let regex = try NSRegularExpression(pattern: versionPattern, options: .caseInsensitive)
+            if let match = regex.firstMatch(in: output, options: [], range: NSRange(location: 0, length: output.utf16.count)),
+                let range = Range(match.range(at: 1), in: output) {
+                let displayVersion = String(output[range])
+            
+                let majorVersionString = displayVersion.split(separator: ".").first?.split(separator: "-").first ?? ""
+                if let majorVersion = Int(majorVersionString) {
+                    return (majorVersion, displayVersion)
+                }
+            }
+            throw NSError(domain: "JavaVersionDetector", code: 2, userInfo: [NSLocalizedDescriptionKey: "Java 版本未找到"])
+        } catch {
+            err("无法检测 java 版本: \(error)")
+        }
+        return (0, "未知")
     }
     
     private static func getArchOfFile(_ executableUrl: URL) -> ExecArchitectury {
