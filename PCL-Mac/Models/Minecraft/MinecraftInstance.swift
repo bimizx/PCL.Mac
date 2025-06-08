@@ -31,6 +31,7 @@ public class MinecraftInstance: Identifiable {
             err("无法加载客户端 JSON: \(error)")
             return nil
         }
+        
         let configPath = runningDirectory.appending(path: ".PCL_Mac.json")
         
         if FileManager.default.fileExists(atPath: configPath.path) {
@@ -41,6 +42,7 @@ public class MinecraftInstance: Identifiable {
                 self.config = try decoder.decode(MinecraftConfig.self, from: handle.readToEnd()!)
             } catch {
                 err("无法加载配置: \(error.localizedDescription)")
+                debug(configPath.path)
                 return nil
             }
         } else {

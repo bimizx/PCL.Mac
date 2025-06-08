@@ -16,6 +16,8 @@ struct MyCardComponent<Content: View>: View {
     @State private var isUnfolded: Bool = false // 带动画
     @State private var showContent: Bool = false // 无动画
     @State private var contentHeight: CGFloat = .zero
+    @State private var height: CGFloat = 9
+    @State private var topPadding: CGFloat = 0
 
     init(title: String, @ViewBuilder content: @escaping () -> Content) {
         self.title = title
@@ -40,21 +42,33 @@ struct MyCardComponent<Content: View>: View {
                 Color.clear
                     .contentShape(Rectangle())
                     .onTapGesture {
-                        let before: Bool = !showContent
-                        if before {
+                        if !showContent {
+                            // 弹出
                             showContent.toggle()
-                        }
-                        withAnimation(.spring(response: 0.4, dampingFraction: 0.85, blendDuration: 0)) {
-                            isUnfolded.toggle()
-                        }
-                        if !before {
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                            height += 9
+                            withAnimation(.linear(duration: 0.2)) {
+                                isUnfolded.toggle()
+                                height += contentHeight
+                            }
+                        } else {
+                            // 收回
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                isUnfolded.toggle()
+                                height = height - contentHeight - 18
+                                topPadding = 9
                                 showContent.toggle()
+                            }
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                                withAnimation(.easeInOut(duration: 0.2)) {
+                                    height += 9
+                                    topPadding = 0
+                                }
                             }
                         }
                     }
             }
             .frame(height: 9)
+            .padding(.top, topPadding)
 
             ZStack(alignment: .top) {
                 content
@@ -69,9 +83,8 @@ struct MyCardComponent<Content: View>: View {
             .frame(height: isUnfolded ? contentHeight : 0, alignment: .top)
             .clipped()
             .padding(.top, showContent ? 10 : 0)
-            .animation(.easeInOut(duration: 0.3), value: isUnfolded)
-            .animation(.easeInOut(duration: 0.3), value: contentHeight)
         }
+        .frame(height: height)
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 8)

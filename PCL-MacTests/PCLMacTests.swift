@@ -78,4 +78,8 @@ struct PCL_MacTests {
     @Test func testNetwork() async throws {
         print(NetworkTest.shared.hasNetworkConnection())
     }
+    
+    @Test func testTheme() async {
+        await ThemeDownloader.downloadTheme(.venti)
+    }
 }

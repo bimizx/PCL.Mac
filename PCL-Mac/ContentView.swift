@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ContentView: View {
-    @ObservedObject private var dataManager: DataManager = DataManager.shared
+    @ObservedObject private var dataManager: DataManager = .shared
     
     var body: some View {
         ZStack {
@@ -82,7 +82,7 @@ struct ContentView: View {
                 }
                 .frame(width: dataManager.leftTabWidth)
                 .zIndex(1)
-                .animation(.easeOut(duration: 0.1), value: dataManager.leftTabWidth)
+                .animation(.linear(duration: 0.05), value: dataManager.leftTabWidth)
                 
                 createSubviewFromRouter()
                     .foregroundStyle(Color(hex: 0x343D4A))
