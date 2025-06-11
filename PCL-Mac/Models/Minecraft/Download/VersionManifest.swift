@@ -39,26 +39,30 @@ public class VersionManifest: Codable {
     public let latest: LatestVersions
     public let versions: [GameVersion]
     
-    public static func fetchLatestData(_ callback: @escaping (VersionManifest) -> Void) {
+    public static func fetchLatestData() async -> VersionManifest? {
         debug("正在获取最新版本数据")
         var request = URLRequest(url: URL(string: "https://launchermeta.mojang.com/mc/game/version_manifest.json")!)
         request.httpMethod = "GET"
         
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            if let data = data, let result = String(data: data, encoding: .utf8) {
-                do {
-                    let decoder = JSONDecoder()
-                    decoder.dateDecodingStrategy = .iso8601
-                    
-                    let data = Data(result.utf8)
-                    let manifest = try decoder.decode(VersionManifest.self, from: data)
-                    
-                    callback(manifest)
-                } catch {
-                    err("解析失败: \(error)")
+        return await withCheckedContinuation { continuation in
+            URLSession.shared.dataTask(with: request) { data, response, error in
+                if let data = data, let result = String(data: data, encoding: .utf8) {
+                    do {
+                        let decoder = JSONDecoder()
+                        decoder.dateDecodingStrategy = .iso8601
+                        
+                        let data = Data(result.utf8)
+                        let manifest = try decoder.decode(VersionManifest.self, from: data)
+                        
+                        continuation.resume(returning: Optional(manifest))
+                        return
+                    } catch {
+                        err("解析失败: \(error)")
+                    }
                 }
-            }
-        }.resume()
+                continuation.resume(returning: nil)
+            }.resume()
+        }
     }
     
     public func getLatestRelease() -> GameVersion {

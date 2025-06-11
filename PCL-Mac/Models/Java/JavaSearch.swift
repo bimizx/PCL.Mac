@@ -10,21 +10,11 @@
 import Foundation
 
 public class JavaSearch {
-    public static var highestVersion: Int!
-    
     public static func searchAndSet() throws {
         let before = Date().timeIntervalSince1970
         DataManager.shared.javaVirtualMachines = try search()
         DataManager.shared.lastTimeUsed = Int((Date().timeIntervalSince1970 - before) * 1000)
         log("搜索 Java 耗时 \(DataManager.shared.lastTimeUsed)ms")
-        highestVersion = DataManager.shared.javaVirtualMachines.sorted { jvm1, jvm2 in
-            return jvm1.version > jvm2.version
-        }[0].version
-        
-        if var java = DataManager.shared.javaVirtualMachines.find ({ $0.executableUrl.path == "/usr/bin/java" }) {
-            java.version = highestVersion
-            java.displayVersion = String(highestVersion)
-        }
         
         loadCustomJVMs()
     }

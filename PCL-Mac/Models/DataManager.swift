@@ -34,22 +34,22 @@ class DataManager: ObservableObject {
     }
     
     func refreshVersionManifest() {
+        versionManifest = LocalStorage.shared.lastVersionManifest
         if NetworkTest.shared.hasNetworkConnection() {
-            let group = DispatchGroup()
-            var _versionManifest: VersionManifest? = nil
-            group.enter()
-            VersionManifest.fetchLatestData { versionManifest in
-                _versionManifest = versionManifest
-                group.leave()
+            Task {
+                if let _versionManifest = await VersionManifest.fetchLatestData() {
+                    await MainActor.run {
+                        self.versionManifest = _versionManifest
+                        LocalStorage.shared.lastVersionManifest = self.versionManifest
+                        log("版本清单获取成功")
+                    }
+                } else {
+                    warn("在获取版本清单时发生错误，使用最后一次获取到的版本清单")
+                }
             }
-            
-            group.wait()
-            versionManifest = _versionManifest
-            LocalStorage.shared.lastVersionManifest = versionManifest
         } else {
-            warn("无网络连接，使用最后一次获取到的版本清单")
-            if let lastVersionManifest = LocalStorage.shared.lastVersionManifest {
-                versionManifest = lastVersionManifest
+            if LocalStorage.shared.lastVersionManifest != nil {
+                warn("无网络连接，使用最后一次获取到的版本清单")
             } else {
                 err("无网络连接，但最后一次获取到的版本清单也为空，程序被迫终止")
                 NSApplication.shared.terminate(nil)

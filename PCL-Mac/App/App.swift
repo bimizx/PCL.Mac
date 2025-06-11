@@ -16,6 +16,7 @@ struct PCL_MacApp: App {
             ContentView()
                 .background(WindowAccessor())
         }
+        .windowStyle(.hiddenTitleBar)
     }
 }
 

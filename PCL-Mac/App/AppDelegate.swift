@@ -37,6 +37,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     func applicationDidFinishLaunching(_ notification: Notification) {
         LogStore.shared.clear()
+        let start = Date().timeIntervalSince1970
         log("App 已启动")
         log("正在初始化 Java 列表")
         
@@ -59,7 +60,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             LocalStorage.shared.defaultInstance = MinecraftDirectory(rootUrl: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft")).getInnerInstances().first?.config.name
         }
         
-        log("App 初始化完成")
+        log("App 初始化完成, 耗时 \(Int((Date().timeIntervalSince1970 - start) * 1000))ms")
     }
     
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
