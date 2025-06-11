@@ -32,3 +32,4 @@
 
 - FUNCTY
 - [AMagicPear](https://github.com/AMagicPear)
+- [Copilot](https://github.com/copilot)[ (?](https://www.bilibili.com/video/BV1GJ411x7h7)
