@@ -9,6 +9,7 @@ import Cocoa
 import Zip
 
 class AppDelegate: NSObject, NSApplicationDelegate {
+    // MARK: 注册字体
     private func registerCustomFonts() {
         guard let fontURL = Bundle.main.url(forResource: "PCL", withExtension: "ttf") else {
             err("Bundle 内未找到字体")
@@ -27,6 +28,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
     
+    // MARK: 初始化 Java 列表
     private func initJavaList() {
         do {
             try JavaSearch.searchAndSet()
@@ -35,6 +37,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
     
+    // MARK: 预初始化 App
     func applicationWillFinishLaunching(_ notification: Notification) {
         LogStore.shared.clear()
         log("App 已启动")
@@ -42,6 +45,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         Zip.addCustomFileExtension("jar")
     }
     
+    // MARK: 初始化 App
     func applicationDidFinishLaunching(_ notification: Notification) {
         let start = Date().timeIntervalSince1970
         log("正在初始化 Java 列表")

@@ -42,10 +42,6 @@ struct ContentView: View {
                     currentPopup
                         .padding()
                         .opacity(dataManager.showPopup ? 1 : 0)
-                    VStack {
-                        TitleBarComponent()
-                        Spacer()
-                    }
                 }
                 .animation(.easeInOut(duration: 0.3), value: dataManager.showPopup)
             }
@@ -55,7 +51,7 @@ struct ContentView: View {
     private func createSubviewFromRouter() -> some View {
         Group {
             switch dataManager.router.getLast() {
-            case .launcher: LauncherView()
+            case .launch: LaunchView()
             case .download: DownloadView()
             case .multiplayer: MultiplayerView()
             case .settings: SettingsView()
@@ -82,7 +78,7 @@ struct ContentView: View {
                 }
                 .frame(width: dataManager.leftTabWidth)
                 .zIndex(1)
-                .animation(.linear(duration: 0.05), value: dataManager.leftTabWidth)
+                .animation(.easeInOut(duration: 0.15), value: dataManager.leftTabWidth)
                 
                 createSubviewFromRouter()
                     .foregroundStyle(Color(hex: 0x343D4A))

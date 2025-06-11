@@ -9,7 +9,7 @@ import Foundation
 
 public enum AppRoute: Hashable {
     // 根页面
-    case launcher
+    case launch
     case download
     case multiplayer
     case settings
@@ -21,7 +21,7 @@ public enum AppRoute: Hashable {
     
     var isRoot: Bool {
         switch self {
-        case .launcher, .download, .multiplayer, .settings, .others:
+        case .launch, .download, .multiplayer, .settings, .others:
             return true
         default:
             return false
@@ -30,7 +30,7 @@ public enum AppRoute: Hashable {
 }
 
 public class AppRouter: ObservableObject {
-    @Published public private(set) var path: [AppRoute] = [.launcher]
+    @Published public private(set) var path: [AppRoute] = [.launch]
     
     public func append(_ route: AppRoute) {
         if route.isRoot && !self.path.isEmpty {
@@ -43,7 +43,7 @@ public class AppRouter: ObservableObject {
     public func removeLast() {
         self.path.removeLast()
         if self.path.isEmpty {
-            self.path.append(.launcher)
+            self.path.append(.launch)
         }
     }
     

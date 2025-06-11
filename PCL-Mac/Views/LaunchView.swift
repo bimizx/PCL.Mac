@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct LauncherView: View {
+struct LaunchView: View {
     @ObservedObject private var dataManager: DataManager = DataManager.shared
     
     @State private var instance: MinecraftInstance?
@@ -19,19 +19,18 @@ struct LauncherView: View {
                     VStack(spacing: 4) {
                         Text("你正在使用开发版本的 PCL-Mac！")
                             .font(.custom("PCL English", size: 14))
-                        HStack {
+                        HStack(spacing: 4) {
                             Text("如果遇到问题请")
                                 .font(.custom("PCL English", size: 14))
                             Text("点击此处反馈")
                                 .font(.custom("PCL English", size: 14))
                                 .onTapGesture {
-                                    NSWorkspace.shared.open(URL(string: "https://github.com/PCL-Community/PCL-Mac/issues")!)
+                                    NSWorkspace.shared.open(URL(string: "https://github.com/PCL-Community/PCL-Mac/issues/new?template=bug-反馈.md")!)
                                 }
                                 .foregroundStyle(LocalStorage.shared.theme.getTextStyle())
                         }
                     }
                     .foregroundStyle(Color(hex: 0x343D4A))
-                    .padding()
                 }
                 .padding()
             }

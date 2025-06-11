@@ -16,7 +16,10 @@ struct PCL_MacApp: App {
             ContentView()
                 .background(WindowAccessor())
         }
-        .windowStyle(.hiddenTitleBar)
+        .commands {
+            CommandGroup(replacing: .newItem) { } // 修复 #21
+        }
+        .windowStyle(.hiddenTitleBar) // 避免刚启动时闪一下标题栏
     }
 }
 

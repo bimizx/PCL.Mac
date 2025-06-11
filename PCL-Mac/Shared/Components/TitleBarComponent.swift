@@ -78,7 +78,7 @@ struct TitleBarComponent: View {
                 Tag(text: "Mac", color: .white)
                     .foregroundStyle(LocalStorage.shared.theme.gradientOr(Color(hex: 0x1269E4)))
                 Spacer()
-                MenuItemButton(route: .launcher, parent: self)
+                MenuItemButton(route: .launch, parent: self)
                 MenuItemButton(route: .download, parent: self)
                 MenuItemButton(route: .multiplayer, parent: self)
                 MenuItemButton(route: .settings, parent: self)
@@ -160,7 +160,7 @@ struct MenuItemButton: View {
     
     private func getImage() -> Image {
         let key = switch route {
-        case .launcher: "LaunchItem"
+        case .launch: "LaunchItem"
         case .download: "DownloadItem"
         case .multiplayer: "MultiplayerItem"
         case .settings: "SettingsItem"
@@ -172,7 +172,7 @@ struct MenuItemButton: View {
     
     private func getText() -> String {
         return switch route {
-        case .launcher: "启动"
+        case .launch: "启动"
         case .download: "下载"
         case .multiplayer: "联机"
         case .settings: "设置"
