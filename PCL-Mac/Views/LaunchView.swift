@@ -13,7 +13,7 @@ struct LaunchView: View {
     @State private var instance: MinecraftInstance?
     
     var body: some View {
-        VStack {
+        ScrollView {
             if SharedConstants.shared.isDevelopment {
                 StaticMyCardComponent(title: "警告") {
                     VStack(spacing: 4) {
@@ -33,9 +33,20 @@ struct LaunchView: View {
                     .foregroundStyle(Color(hex: 0x343D4A))
                 }
                 .padding()
+                
+                StaticMyCardComponent(title: "日志") {
+                    VStack(alignment: .leading, spacing: 4) {
+                        ForEach(LogStore.shared.streamlineLogs, id: \.self) { logLine in
+                            Text(logLine)
+                        }
+                    }
+                    .padding(.top, 5)
+                }
+                .padding()
             }
             Spacer()
         }
+        .scrollIndicators(.automatic)
         .onAppear {
             dataManager.leftTab(310) {
                 VStack {

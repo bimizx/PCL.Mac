@@ -12,6 +12,7 @@ final class LogStore {
     let dateFormatter = DateFormatter()
     static let shared = LogStore()
     private var logs: [String] = []
+    var streamlineLogs: [String] = []
     private let maxCapacity = 10_000
     private let writeImmediately = true
     
@@ -27,8 +28,12 @@ final class LogStore {
         queue.async {
             if self.logs.count >= self.maxCapacity {
                 self.logs.removeFirst(1000)
+                self.streamlineLogs.removeFirst(1000)
             }
             self.logs.append(logLine)
+            if SharedConstants.shared.isDevelopment {
+                self.streamlineLogs.append("[\(level)] \(caller): \(message)")
+            }
             if self.writeImmediately {
                 self.appendToDisk(logLine + "\n")
             }
