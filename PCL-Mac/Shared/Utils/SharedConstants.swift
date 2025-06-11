@@ -27,6 +27,6 @@ public struct SharedConstants {
         self.dateFormatter.dateFormat = "yyyy/MM/dd HH:mm"
         self.dateFormatter.timeZone = TimeZone(identifier: "Asia/Shanghai")
         
-        self.isDevelopment = (Bundle.main.object(forInfoDictionaryKey: "CLIENT_ID") as! String) == "false" ? false : true
+        self.isDevelopment = (Bundle.main.object(forInfoDictionaryKey: "IS_DEVELOPMENT") as! String) == "false" ? false : true
     }
 }
