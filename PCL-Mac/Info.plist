@@ -4,6 +4,8 @@
 <dict>
 	<key>CLIENT_ID</key>
 	<string>$(CLIENT_ID)</string>
+	<key>IS_DEVELOPMENT</key>
+	<string>$(IS_DEVELOPMENT)</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>

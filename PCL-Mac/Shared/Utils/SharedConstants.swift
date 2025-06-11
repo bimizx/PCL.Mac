@@ -17,6 +17,8 @@ public struct SharedConstants {
     
     public let dateFormatter = DateFormatter()
     
+    public let isDevelopment: Bool
+    
     private init() {
         self.applicationContentsUrl = Bundle.main.bundleURL.appending(path: "Contents")
         self.applicationResourcesUrl = self.applicationContentsUrl.appending(path: "Resources")
@@ -24,5 +26,7 @@ public struct SharedConstants {
         
         self.dateFormatter.dateFormat = "yyyy/MM/dd HH:mm"
         self.dateFormatter.timeZone = TimeZone(identifier: "Asia/Shanghai")
+        
+        self.isDevelopment = (Bundle.main.object(forInfoDictionaryKey: "CLIENT_ID") as! String) == "false" ? false : true
     }
 }

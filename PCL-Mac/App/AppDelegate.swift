@@ -35,16 +35,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
     
-    func applicationDidFinishLaunching(_ notification: Notification) {
+    func applicationWillFinishLaunching(_ notification: Notification) {
         LogStore.shared.clear()
-        let start = Date().timeIntervalSince1970
         log("App 已启动")
+        registerCustomFonts()
+        Zip.addCustomFileExtension("jar")
+    }
+    
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        let start = Date().timeIntervalSince1970
         log("正在初始化 Java 列表")
         
-        registerCustomFonts()
         initJavaList()
-        
-        Zip.addCustomFileExtension("jar")
         
         DataManager.shared.refreshVersionManifest()
         

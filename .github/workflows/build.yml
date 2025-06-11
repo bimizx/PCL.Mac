@@ -25,7 +25,9 @@ jobs:
           fi
       
       - name: Generate Secrets.xcconfig
-        run: echo "CLIENT_ID = $CLIENT_ID" > Secrets.xcconfig
+        run: |
+            echo "CLIENT_ID = $CLIENT_ID" > Secrets.xcconfig
+            echo "IS_DEVELOPMENT = false" > Secrets.xcconfig
         env:
           CLIENT_ID: ${{ secrets.CLIENT_ID }}
 

@@ -13,7 +13,30 @@ struct LauncherView: View {
     @State private var instance: MinecraftInstance?
     
     var body: some View {
-        Spacer()
+        VStack {
+            if SharedConstants.shared.isDevelopment {
+                StaticMyCardComponent(title: "警告") {
+                    VStack(spacing: 4) {
+                        Text("你正在使用开发版本的 PCL-Mac！")
+                            .font(.custom("PCL English", size: 14))
+                        HStack {
+                            Text("如果遇到问题请")
+                                .font(.custom("PCL English", size: 14))
+                            Text("点击此处反馈")
+                                .font(.custom("PCL English", size: 14))
+                                .onTapGesture {
+                                    NSWorkspace.shared.open(URL(string: "https://github.com/PCL-Community/PCL-Mac/issues")!)
+                                }
+                                .foregroundStyle(LocalStorage.shared.theme.getTextStyle())
+                        }
+                    }
+                    .foregroundStyle(Color(hex: 0x343D4A))
+                    .padding()
+                }
+                .padding()
+            }
+            Spacer()
+        }
         .onAppear {
             dataManager.leftTab(310) {
                 VStack {
