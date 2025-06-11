@@ -5,6 +5,7 @@
   
   [![QQ Group](https://img.shields.io/badge/QQ群-1047463389-blue)](https://jq.qq.com/?_wv=1027&k=5X6X9X8X)
   [![Platform](https://img.shields.io/badge/macOS-13.0+-blue)](https://developer.apple.com/macos/)
+  [![](https://hits.zkitefly.eu.org/?tag=https://github.com/PCL-Community/PCL-Mac)](https://hits.zkitefly.eu.org/?tag=https://github.com/PCL-Community/PCL-Mac&web=true)
   
 </div>
 
