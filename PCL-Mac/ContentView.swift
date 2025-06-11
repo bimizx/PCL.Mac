@@ -46,6 +46,13 @@ struct ContentView: View {
                 .animation(.easeInOut(duration: 0.3), value: dataManager.showPopup)
             }
         }
+        .onAppear {
+            if !AppStartTracker.shared.finished { // 避免多次 onAppear
+                AppStartTracker.shared.finished = true
+                let cost = Int(Double(Date().timeIntervalSince1970 - AppStartTracker.shared.launchTime) * 1000.0)
+                log("主界面加载完成, App 启动总耗时 \(cost)ms")
+            }
+        }
     }
     
     private func createSubviewFromRouter() -> some View {

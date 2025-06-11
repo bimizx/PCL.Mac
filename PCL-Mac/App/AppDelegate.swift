@@ -37,17 +37,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
     
-    // MARK: 预初始化 App
+    // MARK: 初始化 App
     func applicationWillFinishLaunching(_ notification: Notification) {
         LogStore.shared.clear()
+        let start = Date().timeIntervalSince1970
         log("App 已启动")
         registerCustomFonts()
         Zip.addCustomFileExtension("jar")
-    }
-    
-    // MARK: 初始化 App
-    func applicationDidFinishLaunching(_ notification: Notification) {
-        let start = Date().timeIntervalSince1970
         log("正在初始化 Java 列表")
         
         initJavaList()
