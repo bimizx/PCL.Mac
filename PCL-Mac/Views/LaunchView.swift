@@ -35,11 +35,16 @@ struct LaunchView: View {
                 .padding()
                 
                 StaticMyCardComponent(title: "日志") {
-                    VStack(alignment: .leading, spacing: 4) {
-                        ForEach(LogStore.shared.streamlineLogs, id: \.self) { logLine in
-                            Text(logLine)
+                    ScrollView(.horizontal) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            ForEach(LogStore.shared.streamlineLogs, id: \.self) { logLine in
+                                logLineView(logLine)
+//                                Text(logLine)
+//                                    .font(.custom("PCL English", size: 14))
+                            }
                         }
                     }
+                    .scrollIndicators(.never)
                     .padding(.top, 5)
                 }
                 .padding()
@@ -96,6 +101,43 @@ struct LaunchView: View {
                     .frame(width: 300, height: 60)
                 }
                 .foregroundStyle(Color(hex: 0x343D4A))
+            }
+        }
+    }
+    
+    @ViewBuilder
+    func logLineView(_ line: String) -> some View {
+        let regex = #"\[(INFO|WARN|ERROR|DEBUG)\]"#
+        let nsLine = line as NSString
+        if let match = try? NSRegularExpression(pattern: regex)
+            .firstMatch(in: line, range: NSRange(location: 0, length: nsLine.length)),
+           let levelRange = Range(match.range(at: 1), in: line),
+           let tagRange = Range(match.range(at: 0), in: line)
+        {
+            let level = String(line[levelRange])
+            let tag = String(line[tagRange])
+            let rest = String(line[tagRange.upperBound...])
+            let color: Color = {
+                switch level {
+                    case "INFO": return .green
+                    case "WARN": return .yellow
+                    case "ERROR": return .red
+                    case "DEBUG": return .blue
+                    default: return .primary
+                }
+            }()
+
+            HStack(alignment: .firstTextBaseline, spacing: 4) {
+                Text(tag)
+                    .font(.custom("PCL English", size: 14))
+                    .foregroundColor(color)
+                Text(rest)
+                    .font(.custom("PCL English", size: 14))
+            }
+        } else {
+            HStack {
+                Text(line)
+                    .font(.custom("PCL English", size: 14))
             }
         }
     }
