@@ -7,31 +7,19 @@
 
 import SwiftUI
 
-struct DraggableWindowArea<Content: View>: NSViewRepresentable {
-    let content: Content
-
-    init(@ViewBuilder content: () -> Content) {
-        self.content = content()
+struct DraggableArea: NSViewRepresentable {
+    func makeNSView(context: Context) -> NSView {
+        let view = DraggableHelperView()
+        view.wantsLayer = true
+        view.layer?.backgroundColor = NSColor.clear.cgColor
+        return view
     }
-
-    func makeNSView(context: Context) -> NSHostingView<Content> {
-        let hostingView = NSHostingView(rootView: content)
-        hostingView.addSubview(DraggableHelperView())
-        hostingView.subviews.last?.frame = hostingView.bounds
-        hostingView.subviews.last?.autoresizingMask = [.width, .height]
-        return hostingView
-    }
-
-    func updateNSView(_ nsView: NSHostingView<Content>, context: Context) {
-        nsView.rootView = content
-    }
+    func updateNSView(_ nsView: NSView, context: Context) {}
 }
 
 class DraggableHelperView: NSView {
     override func mouseDown(with event: NSEvent) {
-        if let window = self.window {
-            window.performDrag(with: event)
-        }
+        window?.performDrag(with: event)
     }
     override func hitTest(_ point: NSPoint) -> NSView? {
         return self
@@ -44,9 +32,7 @@ struct GenericTitleBarComponent<Content: View>: View {
     var body: some View {
         VStack {
             ZStack {
-                DraggableWindowArea {
-                    Spacer()
-                }
+                DraggableArea()
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 HStack(alignment: .center) {
                     content()
