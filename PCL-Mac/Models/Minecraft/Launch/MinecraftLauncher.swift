@@ -67,7 +67,7 @@ public class MinecraftLauncher {
     private static func buildGameArguments(_ instance: MinecraftInstance) -> [String] {
         let values: [String: String] = [
             "auth_player_name": "PCL_Mac",
-            "version_name": instance.version.getDisplayName(),
+            "version_name": instance.version.displayName,
             "game_directory": instance.runningDirectory.path,
             "assets_root": instance.runningDirectory.parent().parent().appending(path: "assets").path,
             "assets_index_name": instance.manifest.assetIndex.id,

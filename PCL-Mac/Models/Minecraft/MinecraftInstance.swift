@@ -8,12 +8,12 @@
 import Foundation
 
 public class MinecraftInstance: Identifiable {
-    private static let RequiredJava16: any MinecraftVersion = SnapshotMinecraftVersion.fromString("21w19a")!
-    private static let RequiredJava17: any MinecraftVersion = ReleaseMinecraftVersion.fromString("1.18")!
-    private static let RequiredJava21: any MinecraftVersion = SnapshotMinecraftVersion.fromString("24w14a")!
+    private static let RequiredJava16: MinecraftVersion = MinecraftVersion(displayName: "21w19a", type: .snapshot)
+    private static let RequiredJava17: MinecraftVersion = MinecraftVersion(displayName: "1.18-pre2", type: .snapshot)
+    private static let RequiredJava21: MinecraftVersion = MinecraftVersion(displayName: "24w14a", type: .snapshot)
     
     public let runningDirectory: URL
-    public let version: any MinecraftVersion
+    public let version: MinecraftVersion
     public var process: Process?
     public let manifest: ClientManifest!
     public var config: MinecraftConfig
@@ -26,7 +26,7 @@ public class MinecraftInstance: Identifiable {
         do {
             let handle = try FileHandle(forReadingFrom: runningDirectory.appending(path: runningDirectory.lastPathComponent + ".json"))
             manifest = .decode(try handle.readToEnd()!)
-            version = fromVersionString(manifest.id)!
+            version = MinecraftVersion(displayName: manifest.id)
         } catch {
             err("无法加载客户端 JSON: \(error)")
             return nil
@@ -68,7 +68,7 @@ public class MinecraftInstance: Identifiable {
         }
     }
     
-    public static func findSuitableJava(_ version: any MinecraftVersion) -> JavaVirtualMachine? {
+    public static func findSuitableJava(_ version: MinecraftVersion) -> JavaVirtualMachine? {
         let needsJava16: Bool = version >= RequiredJava16
         let needsJava17: Bool = version >= RequiredJava17
         let needsJava21: Bool = version >= RequiredJava21
@@ -90,7 +90,7 @@ public class MinecraftInstance: Identifiable {
         
         if suitableJava == nil {
             warn("未找到可用 Java")
-            debug("版本: \(version.getDisplayName())")
+            debug("版本: \(version.displayName)")
             debug("需要 Java 16: \(needsJava16)")
             debug("需要 Java 17: \(needsJava21)")
             debug("需要 Java 21: \(needsJava21)")

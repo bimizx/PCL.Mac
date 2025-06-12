@@ -14,8 +14,10 @@ struct JavaComponent: View {
     var body: some View {
         HStack {
             VStack(alignment: .leading) {
-                Text("Java \(jvm.version) (\(jvm.displayVersion)) \(jvm.arch) 运行方式: \(jvm.callMethod.getDisplayName())")
+                Text("Java \(jvm.version) (\(jvm.displayVersion)) \(jvm.implementor) \(jvm.arch) 运行方式: \(jvm.callMethod.getDisplayName())")
+                    .font(.custom("PCL English", size: 14))
                 Text(jvm.executableUrl.path)
+                    .font(.custom("PCL English", size: 14))
             }
             Spacer()
             if jvm.isAddedByUser {

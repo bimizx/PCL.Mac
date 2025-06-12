@@ -35,17 +35,22 @@ struct LaunchView: View {
                 .padding()
                 
                 StaticMyCardComponent(title: "日志") {
-                    ScrollView(.horizontal) {
-                        VStack(alignment: .leading, spacing: 4) {
-                            ForEach(LogStore.shared.streamlineLogs, id: \.self) { logLine in
-                                logLineView(logLine)
-//                                Text(logLine)
-//                                    .font(.custom("PCL English", size: 14))
+                    VStack {
+                        ScrollView(.horizontal) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                ForEach(LogStore.shared.streamlineLogs, id: \.self) { logLine in
+                                    logLineView(logLine)
+                                }
                             }
                         }
+                        .scrollIndicators(.never)
+                        .padding(.top, 5)
+                        
+                        MyButtonComponent(text: "打开日志") {
+                            NSWorkspace.shared.activateFileViewerSelecting([SharedConstants.shared.applicationLogUrl])
+                        }
+                        .frame(height: 40)
                     }
-                    .scrollIndicators(.never)
-                    .padding(.top, 5)
                 }
                 .padding()
             }

@@ -44,11 +44,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         log("App 已启动")
         registerCustomFonts()
         Zip.addCustomFileExtension("jar")
-        log("正在初始化 Java 列表")
-        
-        initJavaList()
-        
         DataManager.shared.refreshVersionManifest()
+        
+        log("正在初始化 Java 列表")
+        initJavaList()
         
         let directory = MinecraftDirectory(rootUrl: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft"))
         

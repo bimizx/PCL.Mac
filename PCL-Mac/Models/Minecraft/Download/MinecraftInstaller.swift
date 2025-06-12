@@ -36,7 +36,7 @@ public class MinecraftInstaller {
     // MARK: 下载客户端清单
     private static func downloadClientManifest(_ task: InstallTask) async {
         task.updateStage(.clientJson)
-        let minecraftVersion = task.minecraftVersion.getDisplayName()
+        let minecraftVersion = task.minecraftVersion.displayName
         let clientJsonUrl = task.versionUrl.appending(path: "\(task.name).json")
         await withCheckedContinuation { continuation in
             let downloader = ProgressiveDownloader(
@@ -63,7 +63,7 @@ public class MinecraftInstaller {
         await withCheckedContinuation { continuation in
             let downloader = ProgressiveDownloader(
                 task: task,
-                urls: [URL(string: "https://bmclapi2.bangbang93.com/version/\(task.minecraftVersion.getDisplayName())/client")!],
+                urls: [URL(string: "https://bmclapi2.bangbang93.com/version/\(task.minecraftVersion.displayName)/client")!],
                 destinations: [clientJarUrl],
                 completion: {
                 continuation.resume()
@@ -232,12 +232,13 @@ public class MinecraftInstaller {
     
     // MARK: 收尾
     private static func finalWork(_ task: InstallTask) {
+        let _1_12_2 = MinecraftVersion(displayName: "1.12.2")
         // 拷贝 log4j2.xml
         let targetUrl: URL = task.versionUrl.appending(path: "log4j2.xml")
         if !FileManager.default.fileExists(atPath: targetUrl.path()) {
             do {
                 try FileManager.default.copyItem(
-                    at: SharedConstants.shared.applicationResourcesUrl.appending(path: task.minecraftVersion >= ReleaseMinecraftVersion.fromString("1.12.2")! ? "log4j2.xml" : "log4j2-1.12-.xml"),
+                    at: SharedConstants.shared.applicationResourcesUrl.appending(path: task.minecraftVersion >= _1_12_2 ? "log4j2.xml" : "log4j2-1.12-.xml"),
                     to: targetUrl)
             } catch {
                 err("无法拷贝 log4j2.xml: \(error.localizedDescription)")
@@ -276,7 +277,7 @@ public class MinecraftInstaller {
     }
     
     // MARK: 创建任务
-    public static func createTask(_ minecraftVersion: any MinecraftVersion, _ name: String, _ minecraftDirectory: MinecraftDirectory, _ callback: (() -> Void)? = nil) -> InstallTask {
+    public static func createTask(_ minecraftVersion: MinecraftVersion, _ name: String, _ minecraftDirectory: MinecraftDirectory, _ callback: (() -> Void)? = nil) -> InstallTask {
         let task = InstallTask(minecraftVersion: minecraftVersion, minecraftDirectory: MinecraftDirectory(rootUrl: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft")), name: name) { task in
             Task {
                 await downloadClientManifest(task)
@@ -317,11 +318,11 @@ public class InstallTask: ObservableObject, Identifiable, Hashable, Equatable {
             return URL(fileURLWithUserPath: "~/PCL-Mac-minecraft/versions").appending(path: self.name)
         }
     }
-    public let minecraftVersion: any MinecraftVersion
+    public let minecraftVersion: MinecraftVersion
     public let minecraftDirectory: MinecraftDirectory
     public let startTask: (InstallTask) -> Void
     
-    public init(minecraftVersion: any MinecraftVersion, minecraftDirectory: MinecraftDirectory, name: String, startTask: @escaping (InstallTask) -> Void) {
+    public init(minecraftVersion: MinecraftVersion, minecraftDirectory: MinecraftDirectory, name: String, startTask: @escaping (InstallTask) -> Void) {
         self.minecraftVersion = minecraftVersion
         self.minecraftDirectory = minecraftDirectory
         self.name = name

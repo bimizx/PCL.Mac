@@ -189,6 +189,7 @@ struct Tag: View {
     var body: some View {
         ZStack {
             Text(text)
+                .font(.custom("PCL English", size: 14))
                 .background(
                     RoundedRectangle(cornerRadius: 5)
                         .fill(color)

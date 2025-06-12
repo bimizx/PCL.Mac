@@ -33,6 +33,6 @@ struct MyTextFieldComponent: View {
 }
 
 #Preview {
-    DownloadView(currentDownloadPage: DownloadPage(ReleaseMinecraftVersion.fromString("1.21")!) {})
+    DownloadView(currentDownloadPage: DownloadPage(MinecraftVersion(displayName: "1.21")) {})
         .background(Color(hex: 0xC5D2E9))
 }

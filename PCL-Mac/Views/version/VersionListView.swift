@@ -27,7 +27,7 @@ struct VersionListView: View {
         
         init(instance: MinecraftInstance) {
             self.name = instance.config.name
-            self.description = instance.version.getDisplayName()
+            self.description = instance.version.displayName
             self.icon = .release
             self.instance = instance
         }

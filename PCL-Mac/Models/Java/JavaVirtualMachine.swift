@@ -13,6 +13,7 @@ public class JavaVirtualMachine: Identifiable, Equatable {
     public let arch: ExecArchitectury
     public var version: Int
     public var displayVersion: String
+    public var implementor: String
     public let executableUrl: URL
     public let callMethod: CallMethod
     public var isError: Bool {
@@ -30,10 +31,11 @@ public class JavaVirtualMachine: Identifiable, Equatable {
     
     public let id = UUID()
     
-    init(arch: ExecArchitectury, version: Int, displayVersion: String, executableUrl: URL, callMethod: CallMethod, _isError: Bool? = nil, _isAddedByUser: Bool? = nil) {
+    init(arch: ExecArchitectury, version: Int, displayVersion: String, implementor: String? = nil, executableUrl: URL, callMethod: CallMethod, _isError: Bool? = nil, _isAddedByUser: Bool? = nil) {
         self.arch = arch
         self.version = version
         self.displayVersion = displayVersion
+        self.implementor = implementor ?? "未知"
         self.executableUrl = executableUrl
         self.callMethod = callMethod
         self._isError = _isError
@@ -67,6 +69,7 @@ public class JavaVirtualMachine: Identifiable, Equatable {
         var version: Int = 0
         var displayVersion: String = "未知"
         var asyncDetect: Bool = false
+        var implementor: String?
         if FileManager.default.fileExists(atPath: releaseUrl.path) {
             let release = PropertiesParser.parse(fileUrl: releaseUrl)
             if let javaVersion = release["JAVA_VERSION"] {
@@ -75,10 +78,11 @@ public class JavaVirtualMachine: Identifiable, Equatable {
             } else {
                 err("加载 \(executableUrl.path()) 时出现错误: 未找到键 JAVA_VERSION 对应的值")
             }
+            implementor = release["IMPLEMENTOR"]
         } else {
             asyncDetect = true
         }
-        let jvm = JavaVirtualMachine(arch: arch, version: version, displayVersion: displayVersion, executableUrl: executableUrl, callMethod: callMethod ?? .incompatible, _isAddedByUser: addedByUser)
+        let jvm = JavaVirtualMachine(arch: arch, version: version, displayVersion: displayVersion, implementor: implementor, executableUrl: executableUrl, callMethod: callMethod ?? .incompatible, _isAddedByUser: addedByUser)
         if asyncDetect {
             Task {
                 await jvm.asyncDetectVersion()

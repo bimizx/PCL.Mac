@@ -40,11 +40,8 @@ struct PCL_MacTests {
     }
     
     @Test func testFetchVersionsManifest() async throws {
-        await withCheckedContinuation { continuation in
-            VersionManifest.fetchLatestData { manifest in
-                print(manifest.versions.first!.parse()!.getDisplayName())
-                continuation.resume()
-            }
+        if let manifest = await VersionManifest.fetchLatestData() {
+            print(manifest.versions.first!.parse()!.getDisplayName())
         }
     }
     
@@ -81,5 +78,14 @@ struct PCL_MacTests {
     
     @Test func testTheme() async {
         await ThemeDownloader.downloadTheme(.venti)
+    }
+    
+    @Test func testSymbolicLink() throws {
+        let start = DispatchTime.now()
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/libexec/java_home")
+        try! process.run()
+        process.waitUntilExit()
+        print("耗时: \(Double(DispatchTime.now().uptimeNanoseconds - start.uptimeNanoseconds) / 1_000_000) 毫秒")
     }
 }

@@ -146,18 +146,15 @@ struct DownloadView: View {
     }
     
     func onVersionClicked(_ version: VersionManifest.GameVersion) {
-        if let version = version.parse() {
-            self.currentDownloadPage = DownloadPage(version) {
-                self.currentDownloadPage = nil
-            }
-        } else {
-            err("无法解析版本: \(version.id)")
+        let version = version.parse()
+        self.currentDownloadPage = DownloadPage(version) {
+            self.currentDownloadPage = nil
         }
     }
 }
 
 struct DownloadPage: View {
-    let version: any MinecraftVersion
+    let version: MinecraftVersion
     let back: () -> Void
     
     @State private var icon: String = "Release"
@@ -165,9 +162,9 @@ struct DownloadPage: View {
     
     @ObservedObject private var currentTask: Holder<InstallTask> = Holder()
     
-    init(_ version: any MinecraftVersion, _ back: @escaping () -> Void) {
+    init(_ version: MinecraftVersion, _ back: @escaping () -> Void) {
         self.version = version
-        self.name = version.getDisplayName()
+        self.name = version.displayName
         self.back = back
     }
     
@@ -269,6 +266,6 @@ struct RoundedButton<Content: View>: View {
 }
 
 #Preview {
-    DownloadView(currentDownloadPage: DownloadPage(ReleaseMinecraftVersion.fromString("1.21")!) {})
+    DownloadView(currentDownloadPage: DownloadPage(MinecraftVersion(displayName: "1.21")) {})
         .background(Color(hex: 0xC5D2E9))
 }

@@ -53,7 +53,7 @@ struct InstallingView: View {
     var body: some View {
         HStack {
             VStack {
-                StaticMyCardComponent(title: "\(task.minecraftVersion.getDisplayName()) 安装") {
+                StaticMyCardComponent(title: "\(task.minecraftVersion.displayName) 安装") {
                     getEntries()
                 }
                 .padding()
@@ -120,5 +120,5 @@ private struct PanelView: View {
 }
 
 #Preview {
-    InstallingView(task: MinecraftInstaller.createTask(ReleaseMinecraftVersion.fromString("1.21.5")!, "测试", MinecraftDirectory(rootUrl: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft"))))
+    InstallingView(task: MinecraftInstaller.createTask(MinecraftVersion(displayName: "1.21.5"), "测试", MinecraftDirectory(rootUrl: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft"))))
 }
