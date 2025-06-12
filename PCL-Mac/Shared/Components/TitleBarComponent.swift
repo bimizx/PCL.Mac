@@ -40,9 +40,9 @@ struct GenericTitleBarComponent<Content: View>: View {
                     WindowControlButton.Miniaturize
                     WindowControlButton.Close
                 }
+                .padding()
             }
         }
-        .padding()
         .frame(maxWidth: .infinity, maxHeight: 47)
         .background(
             LocalStorage.shared.theme.getGradientView()
