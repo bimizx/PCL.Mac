@@ -68,7 +68,7 @@ struct MyCardComponent<Content: View>: View {
                     }
             }
             .frame(height: 9)
-            .padding(.top, topPadding)
+            .padding(.top, topPadding - (showContent ? 6 : 0))
 
             ZStack(alignment: .top) {
                 content
@@ -78,11 +78,10 @@ struct MyCardComponent<Content: View>: View {
                                 .preference(key: ContentHeightKey.self, value: proxy.size.height)
                         }
                     )
-                    .opacity(showContent ? 1 : 0)
             }
             .frame(height: isUnfolded ? contentHeight : 0, alignment: .top)
             .clipped()
-            .padding(.top, showContent ? 10 : 0)
+            .padding(.top, showContent ? topPadding : 0)
         }
         .frame(height: height)
         .padding()
