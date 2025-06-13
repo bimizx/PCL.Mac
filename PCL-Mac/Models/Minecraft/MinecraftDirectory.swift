@@ -34,7 +34,7 @@ public struct MinecraftDirectory {
                 (try? url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true
             }
             for folderUrl in folderUrls {
-                if let version = MinecraftInstance(runningDirectory: folderUrl) {
+                if let version = MinecraftInstance.create(runningDirectory: folderUrl) {
                     instances.append(version)
                 }
             }

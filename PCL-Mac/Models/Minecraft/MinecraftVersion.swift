@@ -18,7 +18,7 @@ public class MinecraftVersion: Comparable {
         return _releaseDate ?? Date(timeIntervalSince1970: TimeInterval(0))
     }
     
-    init(displayName: String, type: VersionType? = nil) {
+    public init(displayName: String, type: VersionType? = nil) {
         self.displayName = displayName
         self.type = type ?? .parse(displayName)
     }

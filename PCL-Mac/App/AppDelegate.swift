@@ -52,7 +52,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let directory = MinecraftDirectory(rootUrl: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft"))
         
         if let defaultInstance = LocalStorage.shared.defaultInstance,
-           MinecraftInstance(runningDirectory: directory.versionsUrl.appending(path: defaultInstance)) == nil {
+           MinecraftInstance.create(runningDirectory: directory.versionsUrl.appending(path: defaultInstance)) == nil {
             warn("无效的 defaultInstance 配置")
             LocalStorage.shared.defaultInstance = nil
         }

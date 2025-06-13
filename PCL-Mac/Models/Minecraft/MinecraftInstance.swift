@@ -8,6 +8,8 @@
 import Foundation
 
 public class MinecraftInstance: Identifiable {
+    private static var cache: [URL : MinecraftInstance] = [:]
+    
     private static let RequiredJava16: MinecraftVersion = MinecraftVersion(displayName: "21w19a", type: .snapshot)
     private static let RequiredJava17: MinecraftVersion = MinecraftVersion(displayName: "1.18-pre2", type: .snapshot)
     private static let RequiredJava21: MinecraftVersion = MinecraftVersion(displayName: "24w14a", type: .snapshot)
@@ -20,7 +22,22 @@ public class MinecraftInstance: Identifiable {
     
     public let id: UUID = UUID()
     
-    public init?(runningDirectory: URL, config: MinecraftConfig? = nil) {
+    public static func create(runningDirectory: URL, config: MinecraftConfig? = nil, _ caller: String = #file, _ line: Int = #line) -> MinecraftInstance? {
+        if let cached = cache[runningDirectory] {
+            warn("正在创建被缓存的实例", file: caller, line: line)
+            return cached
+        }
+        
+        if let instance: MinecraftInstance = .init(runningDirectory: runningDirectory, config: config) {
+            cache[runningDirectory] = instance
+            return instance
+        }
+        
+        return nil
+    }
+    
+    private init?(runningDirectory: URL, config: MinecraftConfig? = nil) {
+        
         self.runningDirectory = runningDirectory
         
         do {

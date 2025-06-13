@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Cocoa
 
 public class MinecraftLauncher {
     public static func launch(_ instance: MinecraftInstance) {
@@ -32,6 +33,25 @@ public class MinecraftLauncher {
             }
             
             try process.run()
+            
+            Task { // 轮询判断窗口是否出现
+                while true {
+                    let options = CGWindowListOption(arrayLiteral: .excludeDesktopElements, .optionOnScreenOnly)
+                    guard let windowInfoList = CGWindowListCopyWindowInfo(options, kCGNullWindowID) as? [[String: Any]] else {
+                        throw NSError()
+                    }
+                    
+                    for info in windowInfoList {
+                        if let windowPID = info["kCGWindowOwnerPID"] as? Int32,
+                           windowPID == process.processIdentifier {
+                            log("窗口已出现")
+                            return
+                        }
+                    }
+                    try await Task.sleep(for: .seconds(1))
+                }
+            }
+            
             process.waitUntilExit()
             log("\(instance.config.name) 进程已退出, 退出代码 \(process.terminationStatus)")
             instance.process = nil
@@ -63,7 +83,7 @@ public class MinecraftLauncher {
             
         ]
         
-        instance.manifest.getAllowedLibraries().forEach { library in
+        instance.manifest.getNeededLibraries().forEach { library in
             if let artifact = library.getArtifact() {
                 let path: String = instance.runningDirectory.parent().parent().appending(path: "libraries").appending(path: artifact.path).path
                 urls.append(path)
@@ -102,4 +122,8 @@ public class MinecraftLauncher {
             return result
         }
     }
+}
+
+public class LaunchState: ObservableObject {
+    @Published public var isLaunched: Bool = false
 }
