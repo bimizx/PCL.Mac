@@ -8,11 +8,20 @@
 import Foundation
 import SwiftUI
 
+class LogLine: Identifiable {
+    let id: UUID = UUID()
+    let string: String
+    
+    init(_ string: String) {
+        self.string = string
+    }
+}
+
 final class LogStore {
     let dateFormatter = DateFormatter()
     static let shared = LogStore()
     private var logs: [String] = []
-    var streamlineLogs: [String] = []
+    var logLines: [LogLine] = []
     private let maxCapacity = 10_000
     private let writeImmediately = true
     
@@ -24,20 +33,26 @@ final class LogStore {
     }
     
     func append(_ message: String, _ level: String, _ caller: String) {
-        let logLine = "\(dateFormatter.string(from: Date())) [\(level)] \(caller): \(message)"
+        appendRaw(
+            "\(dateFormatter.string(from: Date())) [\(level)] \(caller): \(message)",
+            LogLine("[\(level)] \(caller): \(message)")
+        )
+    }
+    
+    func appendRaw(_ message: String, _ line: LogLine? = nil) {
         queue.async {
             if self.logs.count >= self.maxCapacity {
                 self.logs.removeFirst(1000)
-                self.streamlineLogs.removeFirst(1000)
+                self.logLines.removeFirst(1000)
             }
-            self.logs.append(logLine)
+            self.logs.append(message)
             if SharedConstants.shared.isDevelopment {
-                self.streamlineLogs.append("[\(level)] \(caller): \(message)")
+                self.logLines.append(line ?? LogLine(message))
             }
             if self.writeImmediately {
-                self.appendToDisk(logLine + "\n")
+                self.appendToDisk(message + "\n")
             }
-            print(logLine)
+            print(message)
         }
     }
     
@@ -73,38 +88,24 @@ final class LogStore {
     }
 }
 
-final class Logger {
-    static func log(_ message: String, _ caller: String) {
-        LogStore.shared.append(message, "INFO", caller)
-    }
-    
-    static func warn(_ message: String, _ caller: String) {
-        LogStore.shared.append(message, "WARN", caller)
-    }
-    
-    static func error(_ message: String, _ caller: String) {
-        LogStore.shared.append(message, "ERROR", caller)
-    }
-    
-    static func debug(_ message: String, _ caller: String) {
-#if DEBUG
-        LogStore.shared.append(message, "DEBUG", caller)
-#endif
-    }
-}
-
 func log(_ message: Any, file: String = #file, line: Int = #line) {
-    Logger.log(String(describing: message), file.split(separator: "/").last! + ":" + String(line))
+    LogStore.shared.append(String(describing: message), "INFO", file.split(separator: "/").last! + ":" + String(line))
 }
 
 func warn(_ message: Any, file: String = #file, line: Int = #line) {
-    Logger.warn(String(describing: message), file.split(separator: "/").last! + ":" + String(line))
+    LogStore.shared.append(String(describing: message), "WARN", file.split(separator: "/").last! + ":" + String(line))
 }
 
 func err(_ message: Any, file: String = #file, line: Int = #line) {
-    Logger.error(String(describing: message), file.split(separator: "/").last! + ":" + String(line))
+    LogStore.shared.append(String(describing: message), "ERROR", file.split(separator: "/").last! + ":" + String(line))
 }
 
 func debug(_ message: Any, file: String = #file, line: Int = #line) {
-    Logger.debug(String(describing: message), file.split(separator: "/").last! + ":" + String(line))
+#if DEBUG
+    LogStore.shared.append(String(describing: message), "DEBUG", file.split(separator: "/").last! + ":" + String(line))
+#endif
+}
+
+func raw(_ message: Any) {
+    LogStore.shared.appendRaw(String(describing: message))
 }

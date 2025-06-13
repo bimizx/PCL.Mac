@@ -21,8 +21,19 @@ public class MinecraftLauncher {
         
         instance.process = process
         do {
+            let pipe = Pipe()
+            process.standardOutput = pipe
+            process.standardError = pipe
+            
+            pipe.fileHandleForReading.readabilityHandler = { handle in
+                for line in String(data: handle.availableData, encoding: .utf8)!.split(separator: "\n") {
+                    raw(line.replacing("\t", with: "    "))
+                }
+            }
+            
             try process.run()
             process.waitUntilExit()
+            log("\(instance.config.name) 进程已退出, 退出代码 \(process.terminationStatus)")
             instance.process = nil
         } catch {
             err(error.localizedDescription)

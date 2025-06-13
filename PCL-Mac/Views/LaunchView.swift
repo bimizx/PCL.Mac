@@ -38,8 +38,8 @@ struct LaunchView: View {
                     VStack {
                         ScrollView(.horizontal) {
                             VStack(alignment: .leading, spacing: 4) {
-                                ForEach(LogStore.shared.streamlineLogs, id: \.self) { logLine in
-                                    logLineView(logLine)
+                                ForEach(LogStore.shared.logLines) { logLine in
+                                    logLineView(logLine.string)
                                 }
                             }
                         }
