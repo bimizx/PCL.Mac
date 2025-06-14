@@ -11,6 +11,7 @@
 		EC01E7E92DDC3BEA006EF529 /* log4j2-1.12-.xml in Resources */ = {isa = PBXBuildFile; fileRef = EC01E7E72DDC3BEA006EF529 /* log4j2-1.12-.xml */; };
 		EC23B6332DE5DC5B00CBEA9C /* PCL.ttf in Resources */ = {isa = PBXBuildFile; fileRef = EC23B6322DE5DC5B00CBEA9C /* PCL.ttf */; };
 		EC2E78572DE9387100876873 /* Zip in Frameworks */ = {isa = PBXBuildFile; productRef = EC2E78562DE9387100876873 /* Zip */; };
+		EC9507372DFCF17700018EE0 /* SwiftyJSON in Frameworks */ = {isa = PBXBuildFile; productRef = EC9507362DFCF17700018EE0 /* SwiftyJSON */; };
 		EC9A7DCA2DE150170018815F /* glfw-patcher.jar in Resources */ = {isa = PBXBuildFile; fileRef = EC9A7DC82DE1500F0018815F /* glfw-patcher.jar */; };
 /* End PBXBuildFile section */
 
@@ -64,6 +65,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EC9507372DFCF17700018EE0 /* SwiftyJSON in Frameworks */,
 				EC2E78572DE9387100876873 /* Zip in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -137,6 +139,7 @@
 			name = "PCL-Mac";
 			packageProductDependencies = (
 				EC2E78562DE9387100876873 /* Zip */,
+				EC9507362DFCF17700018EE0 /* SwiftyJSON */,
 			);
 			productName = "PCL-Mac";
 			productReference = EC9EAEC92DD85E48006CEDCC /* PCL-Mac.app */;
@@ -196,6 +199,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				EC2E78552DE9387100876873 /* XCRemoteSwiftPackageReference "Zip" */,
+				EC9507352DFCF17700018EE0 /* XCRemoteSwiftPackageReference "SwiftyJSON" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = EC9EAECA2DD85E48006CEDCC /* Products */;
@@ -512,6 +516,14 @@
 				minimumVersion = 2.1.2;
 			};
 		};
+		EC9507352DFCF17700018EE0 /* XCRemoteSwiftPackageReference "SwiftyJSON" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SwiftyJSON/SwiftyJSON";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.0.2;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -519,6 +531,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = EC2E78552DE9387100876873 /* XCRemoteSwiftPackageReference "Zip" */;
 			productName = Zip;
+		};
+		EC9507362DFCF17700018EE0 /* SwiftyJSON */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = EC9507352DFCF17700018EE0 /* XCRemoteSwiftPackageReference "SwiftyJSON" */;
+			productName = SwiftyJSON;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

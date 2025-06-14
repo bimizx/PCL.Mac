@@ -1,391 +1,291 @@
 //
-//  MinecraftManifest.swift
+//  NewClientManifest.swift
+//  PCL-Mac
+//
+//  Created by YiZhiMCQiu on 2025/6/14.
+//
+
+//
+//  ClientManifest.swift
 //  PCL-Mac
 //
 //  Created by YiZhiMCQiu on 2025/5/20.
 //
 
 import Foundation
+import SwiftyJSON
 
-public struct ClientManifest: Codable {
-    public struct AssetIndex: Codable {
+public class ClientManifest {
+    public let id: String
+    public let mainClass: String
+    public let type: String
+    public let assetIndex: AssetIndex
+    public let assets: String
+    public let downloads: [String: DownloadInfo]
+    public let libraries: [Library]
+    public let arguments: Arguments?
+    public let minecraftArguments: String?
+
+    public init(json: JSON) {
+        self.id = json["id"].stringValue
+        self.mainClass = json["mainClass"].stringValue
+        self.type = json["type"].stringValue
+        self.assets = json["assets"].stringValue
+        self.assetIndex = AssetIndex(json: json["assetIndex"])
+        self.downloads = json["downloads"].dictionaryValue.mapValues { DownloadInfo(json: $0) }
+        self.libraries = json["libraries"].arrayValue.map { Library(json: $0) }
+        self.arguments = json["arguments"].exists() ? Arguments(json: json["arguments"]) : nil
+        self.minecraftArguments = json["minecraftArguments"].string
+    }
+
+    public struct AssetIndex {
         public let id: String
         public let sha1: String
         public let size: Int
         public let totalSize: Int
         public let url: String
+        public init(json: JSON) {
+            id = json["id"].stringValue
+            sha1 = json["sha1"].stringValue
+            size = json["size"].intValue
+            totalSize = json["totalSize"].intValue
+            url = json["url"].stringValue
+        }
     }
-    
-    public struct DownloadInfo: Codable {
+
+    public struct DownloadInfo {
+        public let path: String
         public let sha1: String
         public let size: Int
         public let url: String
+        public init(json: JSON) {
+            path = json["path"].stringValue
+            sha1 = json["sha1"].stringValue
+            size = json["size"].intValue
+            url = json["url"].stringValue
+        }
     }
-    
-    public struct Library: Codable, Hashable {
-        public static func == (lhs: Library, rhs: Library) -> Bool {
-            return lhs.name == rhs.name
-        }
-        
-        public func hash(into hasher: inout Hasher) {
-            hasher.combine(name)
-        }
-        
-        public struct Downloads: Codable {
-            public struct Artifact: Codable {
-                public let path: String
-                public let sha1: String
-                public let size: Int
-                public let url: String
-            }
-            
-            public struct Classifiers: Codable {
-                public let nativesMacOS: Artifact?
-                public let nativesOsx: Artifact?
-                
-                public enum CodingKeys: String, CodingKey {
-                    case nativesMacOS = "natives-macos"
-                    case nativesOsx = "natives-osx"
-                }
-            }
-            
-            public let artifact: Artifact?
-            public let classifiers: Classifiers?
-        }
-        
-        public struct Natives: Codable {
-            public let osx: String?
-        }
-        
+
+    public struct Library: Hashable {
         public let name: String
-        public let downloads: Downloads
-        public let rules: [Rule]?
-        public let natives: Natives?
-        
-        public func getArtifact() -> Downloads.Artifact? {
-            return self.downloads.artifact
-        }
-        
-        public func getNativeArtifact() -> Downloads.Artifact? {
-            if let key = natives?.osx,
-               let classifiers = downloads.classifiers {
-                let nativeArtifact: Downloads.Artifact? = switch key {
-                case "natives-osx": classifiers.nativesOsx
-                case "natives-macos": classifiers.nativesMacOS
-                default: nil
+        public let rules: [Rule]
+        public let natives: [String: String]
+        public let downloads: [String: DownloadInfo]
+        public let artifact: DownloadInfo?
+        public let classifiers: [String: DownloadInfo]
+
+        public init(json: JSON) {
+            name = json["name"].stringValue
+            rules = json["rules"].arrayValue.map { Rule(json: $0) }
+            natives = json["natives"].dictionaryObject as? [String: String] ?? [:]
+            var dls: [String: DownloadInfo] = [:]
+            if let downloadsJson = json["downloads"].dictionary {
+                for (k, v) in downloadsJson {
+                    if v.type == .dictionary {
+                        dls[k] = DownloadInfo(json: v)
+                    }
                 }
-                return nativeArtifact
             }
-            return nil
+            downloads = dls
+            artifact = json["downloads"]["artifact"].exists() ? DownloadInfo(json: json["downloads"]["artifact"]) : nil
+            if let cls = json["downloads"]["classifiers"].dictionary {
+                var result: [String: DownloadInfo] = [:]
+                for (k, v) in cls {
+                    result[k] = DownloadInfo(json: v)
+                }
+                classifiers = result
+            } else {
+                classifiers = [:]
+            }
         }
+
+        public func getArtifact() -> DownloadInfo? {
+            return artifact
+        }
+        public func getNativeArtifact() -> DownloadInfo? {
+            let key = natives["osx"]
+            guard let key, let nativeDl = classifiers[key] else { return nil }
+            return nativeDl
+        }
+        public static func ==(lhs: Library, rhs: Library) -> Bool { lhs.name == rhs.name }
+        public func hash(into hasher: inout Hasher) { hasher.combine(name) }
     }
-    
-    public enum VersionType: String, Codable {
-        case release = "release"
-        case snapshot = "snapshot"
-        case oldBeta = "old_beta"
-        case oldAlpha = "oldAlpha"
-    }
-    
-    
-    
-    public struct Arguments: Codable {
-        public enum Value: Codable {
-            case string(String)
-            case list([String])
-            
-            public init(from decoder: Decoder) throws {
-                let container = try decoder.singleValueContainer()
-                if let list = try? container.decode([String].self) {
-                    self = .list(list)
-                } else {
-                    self = .string(try container.decode(String.self))
-                }
-            }
-            
-            public func encode(to encoder: Encoder) throws {
-                var container = encoder.singleValueContainer()
-                switch self {
-                case .string(let value):
-                    try container.encode(value)
-                case .list(let value):
-                    try container.encode(value)
-                }
-            }
-        }
-        
-        public enum GameArgument: Codable {
-            case string(String)
-            case rules(RulesTag)
-            
-            public init(from decoder: Decoder) throws {
-                let container = try decoder.singleValueContainer()
-                if let stringValue = try? container.decode(String.self) {
-                    self = .string(stringValue)
-                } else {
-                    self = .rules(try container.decode(RulesTag.self))
-                }
-            }
-            
-            public func encode(to encoder: Encoder) throws {
-                var container = encoder.singleValueContainer()
-                switch self {
-                case .string(let value):
-                    try container.encode(value)
-                case .rules(let value):
-                    try container.encode(value)
-                }
-            }
-            
-            public struct RulesTag: Codable {
-                public struct Rule: Codable {
-                    public struct Features: Codable {
-                        public let isDemoUser: Bool?
-                        public let hasCustomResolution: Bool?
-                        public let hasQuickPlaysSupport: Bool?
-                        public let isQuickPlaySingleplayer: Bool?
-                        public let isQuickPlayMultiplayer: Bool?
-                        public let isQuickPlayRealms: Bool?
-                        
-                        public enum CodingKeys: String, CodingKey {
-                            case isDemoUser = "is_demo_user"
-                            case hasCustomResolution = "has_custom_resolution"
-                            case hasQuickPlaysSupport = "has_quick_play_support"
-                            case isQuickPlaySingleplayer = "is_quick_play_singleplayer"
-                            case isQuickPlayMultiplayer = "is_quick_play_multiplayer"
-                            case isQuickPlayRealms = "is_quick_play_realms"
-                        }
-                        
-                        public func match() -> Bool {
-                            if let isDemoUser = self.isDemoUser, isDemoUser {
-                                return false
-                            }
-                            
-                            if let hasCustomResolution = hasCustomResolution, hasCustomResolution {
-                                return false
-                            }
-                            
-                            if let hasQuickPlaysSupport = hasQuickPlaysSupport, hasQuickPlaysSupport {
-                                return false
-                            }
-                            
-                            if let isQuickPlaySingleplayer = isQuickPlaySingleplayer, isQuickPlaySingleplayer {
-                                return false
-                            }
-                            
-                            if let isQuickPlayMultiplayer = isQuickPlayMultiplayer, isQuickPlayMultiplayer {
-                                return false
-                            }
-                            
-                            if let isQuickPlayRealms = isQuickPlayRealms, isQuickPlayRealms {
-                                return false
-                            }
-                            
-                            return true
-                        }
-                    }
-                    
-                    public let action: Action
-                    public let features: Features
-                    
-                    public func match() -> Bool {
-                        return features.match() && action == .allow
-                    }
-                }
-                
-                public let rules: [Rule]
-                public let value: Value
-                
-                public func match() -> Bool {
-                    var match = true
-                    for rule in rules {
-                        match = match && rule.match()
-                    }
-                    return match
-                }
-            }
-        }
-        
-        public enum JvmArgument: Codable {
-            case rules(RulesTag)
-            case string(String)
-            
-            public struct RulesTag: Codable {
-                public let rules: [Rule]
-                public let value: Value
-            }
-            
-            public init(from decoder: Decoder) throws {
-                let container = try decoder.singleValueContainer()
-                if let stringValue = try? container.decode(String.self) {
-                    self = .string(stringValue)
-                } else {
-                    self = .rules(try container.decode(RulesTag.self))
-                }
-            }
-            
-            public func encode(to encoder: Encoder) throws {
-                var container = encoder.singleValueContainer()
-                switch self {
-                case .string(let value):
-                    try container.encode(value)
-                case .rules(let value):
-                    try container.encode(value)
-                }
-            }
-        }
-        
+
+    public struct Arguments {
         public let game: [GameArgument]
         public let jvm: [JvmArgument]
-        
-        public func getAllowedGameArguments() -> [String] {
-            let filted: [GameArgument] = game.filter { gameArgument in
-                return switch gameArgument {
-                case .rules(let rules): rules.match()
-                default: true
-                }
-            }
-            
-            var arguments: [String] = []
-            for argument in filted {
-                switch argument {
-                case .string(let string): arguments.append(string)
-                case .rules(let rules):
-                    if rules.match() {
-                        switch rules.value {
-                        case .string(let string): arguments.append(string)
-                        case .list(let list): arguments.append(contentsOf: list)
-                        }
-                    }
-                }
-            }
-            
-            return arguments // 什么史山
+
+        public init(json: JSON) {
+            game = json["game"].arrayValue.map { GameArgument(json: $0) }
+            jvm = json["jvm"].arrayValue.map { JvmArgument(json: $0) }
         }
         
-        public func getAllowedJVMArguments() -> [String] {
+        init(game: [GameArgument], jvm: [JvmArgument]) {
+            self.game = game
+            self.jvm = jvm
+        }
+        
+        public func getAllowedGameArguments() -> [String] {
+            let filtered = game.filter { $0.match() }
             var arguments: [String] = []
-            
-            jvm.filter { jvmArgument in
-                switch jvmArgument {
-                case .rules(let rules):
-                    return rules.rules.allMatch { $0.match() }
-                default: return true
-                }
-            }.forEach { jvmArgument in
-                switch jvmArgument {
-                case .string(let string):
-                    arguments.append(string)
-                case .rules(let rules):
-                    switch rules.value {
-                    case .list(let list):
-                        arguments.append(contentsOf: list)
-                    case .string(let string):
-                        arguments.append(string)
-                    }
-                }
+            for arg in filtered {
+                arguments.append(contentsOf: arg.values())
             }
             return arguments
         }
-    }
-    
-    public let arguments: Arguments?
-    public let minecraftArguments: String?
-    public let assetIndex: AssetIndex
-    public let assets: String
-    public let downloads: [String: DownloadInfo]
-    public let id: String
-    public let libraries: [Library]
-    public let mainClass: String
-    public let type: VersionType
-    
-    public static func decode(_ data: Data, _ decoder: JSONDecoder = JSONDecoder()) -> ClientManifest {
-        decoder.keyDecodingStrategy = .useDefaultKeys
-        decoder.dateDecodingStrategy = .iso8601
-        return try! decoder.decode(ClientManifest.self, from: data)
-    }
-    
-    public func getNeededLibraries() -> [Library] {
-        return getAllowedLibraries().filter { !$0.name.contains("natives") } // 不能有依赖名字里带 natives 罢
-    }
-    
-    public func getAllowedLibraries() -> [Library] {
-        return self.libraries.filter { library in
-            var isAllowed: Bool = true
-            for rule in library.rules ?? [] {
-                isAllowed = isAllowed && rule.os?.match() ?? true && rule.action != .disallow
-            }
-            return isAllowed
+        public func getAllowedJVMArguments() -> [String] {
+            let filtered = jvm.filter { $0.match() }
+            var arguments: [String] = []
+            for arg in filtered { arguments.append(contentsOf: arg.values()) }
+            return arguments
         }
-    }
-    
-    public func getNeededNatives() -> [Library : Library.Downloads.Artifact] {
-        var result: [Library : Library.Downloads.Artifact] = [:]
-        for library in self.getAllowedLibraries() {
-            if let artifact = library.getNativeArtifact() {
-                result[library] = artifact
-            } else {
-                if let artifact = library.getArtifact(),
-                   library.name.hasPrefix("org.lwjgl") && library.name.contains("natives") && (ExecArchitectury.SystemArch == .x64 || library.name.hasSuffix("-arm64")) {
-                    result[library] = artifact
-                }
+
+        public struct GameArgument {
+            public let string: String?
+            public let rules: RuleTag?
+
+            public init(json: JSON) {
+                if let str = json.string { string = str; rules = nil }
+                else { string = nil; rules = RuleTag(json: json) }
+            }
+            public func match() -> Bool { rules?.match() ?? true }
+            public func values() -> [String] {
+                if let string { return [string] }
+                if let rules, rules.match() { return rules.value }
+                return []
             }
         }
         
+        public struct JvmArgument {
+            public let string: String?
+            public let rules: RuleTag?
+
+            public init(json: JSON) {
+                if let str = json.string { string = str; rules = nil }
+                else { string = nil; rules = RuleTag(json: json) }
+            }
+            public func match() -> Bool { rules?.match() ?? true }
+            public func values() -> [String] {
+                if let string { return [string] }
+                if let rules, rules.match() { return rules.value }
+                return []
+            }
+        }
+        
+        public struct RuleTag {
+            public let rules: [Rule]
+            public let value: [String]
+            public init(json: JSON) {
+                rules = json["rules"].arrayValue.map { Rule(json: $0) }
+                if let str = json["value"].string {
+                    value = [str]
+                } else if let arr = json["value"].array {
+                    value = arr.compactMap { $0.string }
+                } else {
+                    value = []
+                }
+            }
+            public func match() -> Bool {
+                rules.allSatisfy { $0.match() }
+            }
+        }
+    }
+
+    public struct Rule {
+        public let action: String
+        public let os: OSRule?
+        public let features: Features?
+        public init(json: JSON) {
+            action = json["action"].stringValue
+            os = json["os"].exists() ? OSRule(json: json["os"]) : nil
+            features = json["features"].exists() ? Features(json: json["features"]) : nil
+        }
+        public func match() -> Bool {
+            (os?.match() ?? true) && (features?.match() ?? true) && action == "allow"
+        }
+        public struct OSRule {
+            public let name: String?
+            public let arch: String?
+            public init(json: JSON) {
+                name = json["name"].string
+                arch = json["arch"].string
+            }
+            public func match() -> Bool {
+                if let name, name != "osx" { return false }
+                // TODO: 处理 arch
+                return true
+            }
+        }
+        
+        public struct Features {
+            public let isDemoUser: Bool?
+            public let hasCustomResolution: Bool?
+            public let hasQuickPlaysSupport: Bool?
+            public let isQuickPlaySingleplayer: Bool?
+            public let isQuickPlayMultiplayer: Bool?
+            public let isQuickPlayRealms: Bool?
+            public init(json: JSON) {
+                isDemoUser = json["is_demo_user"].bool
+                hasCustomResolution = json["has_custom_resolution"].bool
+                hasQuickPlaysSupport = json["has_quick_play_support"].bool
+                isQuickPlaySingleplayer = json["is_quick_play_singleplayer"].bool
+                isQuickPlayMultiplayer = json["is_quick_play_multiplayer"].bool
+                isQuickPlayRealms = json["is_quick_play_realms"].bool
+            }
+            public func match() -> Bool {
+                if isDemoUser == true { return false }
+                if hasCustomResolution == true { return false }
+                if hasQuickPlaysSupport == true { return false }
+                if isQuickPlaySingleplayer == true { return false }
+                if isQuickPlayMultiplayer == true { return false }
+                if isQuickPlayRealms == true { return false }
+                return true
+            }
+        }
+    }
+
+    public static func parse(_ data: Data) throws -> ClientManifest {
+        let json = try JSON(data: data)
+        return ClientManifest(json: json)
+    }
+
+    public func getNeededLibraries() -> [Library] {
+        getAllowedLibraries().filter { !$0.name.contains("natives") }
+    }
+    public func getAllowedLibraries() -> [Library] {
+        libraries.filter { lib in
+            (lib.rules.isEmpty ? true : lib.rules.allSatisfy { $0.match() })
+        }
+    }
+    public func getNeededNatives() -> [Library: DownloadInfo] {
+        var result: [Library: DownloadInfo] = [:]
+        for lib in getAllowedLibraries() {
+            if let artifact = lib.getNativeArtifact() {
+                result[lib] = artifact
+            } else if let artifact = lib.getArtifact(),
+                      lib.name.hasPrefix("org.lwjgl"),
+                      lib.name.contains("natives") {
+                result[lib] = artifact
+            }
+        }
         return result
     }
-    
     public func getArguments() -> Arguments {
         if let arguments = self.arguments {
             return arguments
-        } else {
-            let minecraftArguments = self.minecraftArguments!
-            let gameArguments = minecraftArguments.split(separator: " ").map { minecraftArgument in
-                return Arguments.GameArgument.string(String(minecraftArgument))
-            }
-            
-            return Arguments(game: gameArguments, jvm: [
-                "-XX:+UseG1GC",
-                "-XX:-UseAdaptiveSizePolicy",
-                "-XX:-OmitStackTraceInFastThrow",
+        } else if let minecraftArguments = self.minecraftArguments {
+            let gameArgs = minecraftArguments.split(separator: " ").map { Arguments.GameArgument(json: JSON(stringLiteral: String($0))) }
+            let jvmArgs: [Arguments.JvmArgument] = [
+                "-XX:+UseG1GC", "-XX:-UseAdaptiveSizePolicy", "-XX:-OmitStackTraceInFastThrow",
                 "-Djava.library.path=${natives_directory}",
                 "-Dorg.lwjgl.system.SharedLibraryExtractPath=${natives_directory}",
                 "-Dio.netty.native.workdir=${natives_directory}",
                 "-Djna.tmpdir=${natives_directory}",
                 "-cp", "${classpath}"
-            ].map { Arguments.JvmArgument.string($0) }
-            )
+            ].map { Arguments.JvmArgument(json: JSON(stringLiteral: $0)) }
+            return Arguments(game: gameArgs, jvm: jvmArgs)
+        } else {
+            return Arguments(game: [], jvm: [])
         }
-    }
-}
-
-public enum Action: String, Codable {
-    case allow = "allow"
-    case disallow = "disallow"
-}
-
-public struct Rule: Codable {
-    public struct OSRule: Codable {
-        public let name: String?
-        public let arch: String?
-        
-        public func match() -> Bool {
-            var matches = true
-            
-            if let name = self.name {
-                matches = matches && (name == "osx")
-            }
-            
-            // TODO 判断转译是否启用及架构是否匹配
-            
-            return matches
-        }
-    }
-    
-    public let os: OSRule?
-    public let action: Action
-    
-    public func match() -> Bool {
-        return os?.match() ?? true && action == .allow
     }
 }

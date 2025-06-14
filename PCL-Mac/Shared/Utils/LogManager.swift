@@ -43,7 +43,9 @@ final class LogStore {
         queue.async {
             if self.logs.count >= self.maxCapacity {
                 self.logs.removeFirst(1000)
-                self.logLines.removeFirst(1000)
+            }
+            if self.logLines.count >= 200 {
+                self.logLines.removeFirst(100)
             }
             self.logs.append(message)
             if SharedConstants.shared.isDevelopment {
