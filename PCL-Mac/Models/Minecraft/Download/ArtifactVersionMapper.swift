@@ -1,81 +1,58 @@
 //
-//  LibraryVersionMapper.swift
+//  ArtifactVersionMapperV2.swift
 //  PCL-Mac
 //
-//  Created by YiZhiMCQiu on 2025/5/28.
+//  Created by YiZhiMCQiu on 2025/6/14.
 //
 
 import Foundation
 
 public struct ArtifactVersionMapper {
-    // MARK: 替换本地库下载链接中的架构和版本
-    public static func mapNativeUrl(_ name: String, _ downloadUrl: URL) -> URL {
-        let splitted: [String] = name.split(separator: ":").map(String.init)
-        let groupId: String = splitted[0]
-        let artifactId: String = splitted[1]
-        let version: String = splitted[2]
-        
-        let url = mapLwjglNativeUrl(groupId, artifactId, version, downloadUrl) ?? downloadUrl
-        
-        log("将 \(downloadUrl.path()) 替换为 \(url.path())")
-        
-        return url
-    }
-    
-    private static func mapLwjglNativeUrl(_ groupId: String, _ artifactId: String, _ version: String, _ downloadUrl: URL) -> URL? {
-        var version = version
-        if groupId != "org.lwjgl" {
-            return nil
+    public static func map(_ manifest: ClientManifest) {
+        if ExecArchitectury.SystemArch != .arm64 {
+            return
         }
         
-        var url: URL = downloadUrl
-        if version == "3.2.1" || version == "3.1.6" {
-            version = "3.3.1"
-        }
-        if ExecArchitectury.SystemArch == .arm64 {
-            if version.hasPrefix("2.") && artifactId == "lwjgl" {
-                url = URL(string: "https://repo1.maven.org/maven2/org/glavo/hmcl/lwjgl2-natives/2.9.3-rc1-osx-arm64/lwjgl2-natives-2.9.3-rc1-osx-arm64.jar")!
-            } else {
-                url = URL(string: "https://libraries.minecraft.net/org/lwjgl/\(artifactId)/\(version)/\(artifactId)-\(version)-natives-macos-arm64.jar")!
+        // MARK: - 替换依赖项版本
+        for library in manifest.getNeededLibraries() {
+            switch library.groupId {
+            case "org.lwjgl":
+                if library.version.starts(with: "3.") {
+                    library.version = "3.3.1"
+                }
+                library.artifact?.url = "https://libraries.minecraft.net/org/lwjgl/\(library.artifactId)/\(library.version)/\(library.artifactId)-\(library.version).jar"
+            
+            case "net.java.dev.jna":
+                if library.version == "4.4.0" { library.version = "5.14.0" }
+                library.artifact?.url = "https://libraries.minecraft.net/net/java/dev/jna/\(library.artifactId)/\(library.version)/\(library.artifactId)-\(library.version).jar"
+            case "ca.weblite":
+                if library.artifactId == "java-objc-bridge" {
+                    library.artifact?.url = "https://repo1.maven.org/maven2/org/glavo/hmcl/mmachina/java-objc-bridge/1.1.0-mmachina.1/java-objc-bridge-1.1.0-mmachina.1.jar" // 感谢 Glavo
+                }
+            default:
+                continue
             }
-        } else {
-            url = URL(string: "https://libraries.minecraft.net/org/lwjgl/\(artifactId)/\(version)/\(artifactId)-\(version)-natives-macos-patch.jar")!
-        }
-        return url
-    }
-    
-    private static func mapLwjglUrl(_ groupId: String, _ artifactId: String, _ version: String, _ downloadUrl: URL) -> URL? {
-        var version = version
-        if groupId != "org.lwjgl" {
-            return nil
         }
         
-        if version == "3.2.1" || version == "3.1.6" {
-            version = "3.3.1"
+        // MARK: - 替换本地库版本
+        for (library, artifact) in manifest.getNeededNatives() {
+            switch library.groupId {
+            case "org.lwjgl":
+                if library.version.starts(with: "3.") {
+                    library.version = "3.3.1"
+                }
+                library.artifact?.url = "https://libraries.minecraft.net/org/lwjgl/\(library.artifactId)/\(library.version)/\(library.artifactId)-\(library.version)-natives-macos-arm64.jar"
+            case "org.lwjgl.lwjgl":
+                if library.artifactId == "lwjgl-platform" {
+                    artifact.url = "https://repo1.maven.org/maven2/org/glavo/hmcl/lwjgl2-natives/2.9.3-rc1-osx-arm64/lwjgl2-natives-2.9.3-rc1-osx-arm64.jar" // 再次感谢 Glavo
+                }
+            case "ca.weblite":
+                if library.artifactId == "java-objc-bridge" {
+                    artifact.url = "https://repo1.maven.org/maven2/org/glavo/hmcl/mmachina/java-objc-bridge/1.1.0-mmachina.1/java-objc-bridge-1.1.0-mmachina.1.jar" // 再次感谢 Glavo
+                }
+            default:
+                continue
+            }
         }
-        
-        return URL(string: "https://libraries.minecraft.net/org/lwjgl/\(artifactId)/\(version)/\(artifactId)-\(version).jar")!
-    }
-    
-    private static func mapJnaUrl(_ groupId: String, _ artifactId: String, _ version: String, _ downloadUrl: URL) -> URL? {
-        var version = version
-        if groupId != "net.java.dev.jna" {
-            return nil
-        }
-        
-        if version == "4.4.0" {
-            version = "5.14.0"
-        }
-        return URL(string: "https://libraries.minecraft.net/net/java/dev/jna/\(artifactId)/\(version)/\(artifactId)-\(version).jar")
-    }
-
-    // MARK: 替换依赖项下载链接中的版本
-    public static func mapLibraryUrl(_ name: String, _ downloadUrl: URL) -> URL {
-        let splitted: [String] = name.split(separator: ":").map(String.init)
-        let groupId: String = splitted[0]
-        let artifactId: String = splitted[1]
-        let version: String = splitted[2]
-        
-        return mapLwjglUrl(groupId, artifactId, version, downloadUrl) ?? mapJnaUrl(groupId, artifactId, version, downloadUrl) ?? downloadUrl
     }
 }

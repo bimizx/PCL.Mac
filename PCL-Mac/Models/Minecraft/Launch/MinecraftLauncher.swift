@@ -35,7 +35,7 @@ public class MinecraftLauncher {
             try process.run()
             
             Task { // 轮询判断窗口是否出现
-                while true {
+                while process.isRunning {
                     let options = CGWindowListOption(arrayLiteral: .excludeDesktopElements, .optionOnScreenOnly)
                     guard let windowInfoList = CGWindowListCopyWindowInfo(options, kCGNullWindowID) as? [[String: Any]] else {
                         throw NSError()
@@ -84,7 +84,7 @@ public class MinecraftLauncher {
         ]
         
         instance.manifest.getNeededLibraries().forEach { library in
-            if let artifact = library.getArtifact() {
+            if let artifact = library.artifact {
                 let path: String = instance.runningDirectory.parent().parent().appending(path: "libraries").appending(path: artifact.path).path
                 urls.append(path)
             }
@@ -105,7 +105,8 @@ public class MinecraftLauncher {
             "auth_uuid": "a256e7ba1da830119b633a974279e906",
             "auth_access_token": "9856e9a933b5421cb6cf38f21553bd54",
             "user_type": "msa",
-            "version_type": "PCL Mac"
+            "version_type": "PCL Mac",
+            "user_properties": "\"{}\""
         ]
         return replaceTemplateStrings(instance.manifest.getArguments().getAllowedGameArguments(), with: values)
     }

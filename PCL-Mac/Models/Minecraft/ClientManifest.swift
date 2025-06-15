@@ -25,6 +25,7 @@ public class ClientManifest {
     public let libraries: [Library]
     public let arguments: Arguments?
     public let minecraftArguments: String?
+    public let javaVersion: Int?
 
     public init(json: JSON) {
         self.id = json["id"].stringValue
@@ -36,9 +37,10 @@ public class ClientManifest {
         self.libraries = json["libraries"].arrayValue.map { Library(json: $0) }
         self.arguments = json["arguments"].exists() ? Arguments(json: json["arguments"]) : nil
         self.minecraftArguments = json["minecraftArguments"].string
+        self.javaVersion = json["javaVersion"]["majorVersion"].int
     }
 
-    public struct AssetIndex {
+    public class AssetIndex {
         public let id: String
         public let sha1: String
         public let size: Int
@@ -53,11 +55,11 @@ public class ClientManifest {
         }
     }
 
-    public struct DownloadInfo {
+    public class DownloadInfo {
         public let path: String
         public let sha1: String
         public let size: Int
-        public let url: String
+        public var url: String
         public init(json: JSON) {
             path = json["path"].stringValue
             sha1 = json["sha1"].stringValue
@@ -66,8 +68,13 @@ public class ClientManifest {
         }
     }
 
-    public struct Library: Hashable {
+    public class Library: Hashable {
         public let name: String
+        private let splited: [String]
+        public var groupId: String
+        public var artifactId: String
+        public var version: String
+        public var classifier: String?
         public let rules: [Rule]
         public let natives: [String: String]
         public let downloads: [String: DownloadInfo]
@@ -78,6 +85,11 @@ public class ClientManifest {
             name = json["name"].stringValue
             rules = json["rules"].arrayValue.map { Rule(json: $0) }
             natives = json["natives"].dictionaryObject as? [String: String] ?? [:]
+            splited = name.split(separator: ":").map(String.init)
+            groupId = splited[0]
+            artifactId = splited[1]
+            version = splited[2]
+            classifier = splited.count >= 4 ? splited[3] : nil
             var dls: [String: DownloadInfo] = [:]
             if let downloadsJson = json["downloads"].dictionary {
                 for (k, v) in downloadsJson {
@@ -98,10 +110,6 @@ public class ClientManifest {
                 classifiers = [:]
             }
         }
-
-        public func getArtifact() -> DownloadInfo? {
-            return artifact
-        }
         public func getNativeArtifact() -> DownloadInfo? {
             let key = natives["osx"]
             guard let key, let nativeDl = classifiers[key] else { return nil }
@@ -111,7 +119,7 @@ public class ClientManifest {
         public func hash(into hasher: inout Hasher) { hasher.combine(name) }
     }
 
-    public struct Arguments {
+    public class Arguments {
         public let game: [GameArgument]
         public let jvm: [JvmArgument]
 
@@ -140,7 +148,7 @@ public class ClientManifest {
             return arguments
         }
 
-        public struct GameArgument {
+        public class GameArgument {
             public let string: String?
             public let rules: RuleTag?
 
@@ -156,7 +164,7 @@ public class ClientManifest {
             }
         }
         
-        public struct JvmArgument {
+        public class JvmArgument {
             public let string: String?
             public let rules: RuleTag?
 
@@ -172,7 +180,7 @@ public class ClientManifest {
             }
         }
         
-        public struct RuleTag {
+        public class RuleTag {
             public let rules: [Rule]
             public let value: [String]
             public init(json: JSON) {
@@ -191,7 +199,7 @@ public class ClientManifest {
         }
     }
 
-    public struct Rule {
+    public class Rule {
         public let action: String
         public let os: OSRule?
         public let features: Features?
@@ -203,7 +211,7 @@ public class ClientManifest {
         public func match() -> Bool {
             (os?.match() ?? true) && (features?.match() ?? true) && action == "allow"
         }
-        public struct OSRule {
+        public class OSRule {
             public let name: String?
             public let arch: String?
             public init(json: JSON) {
@@ -217,7 +225,7 @@ public class ClientManifest {
             }
         }
         
-        public struct Features {
+        public class Features {
             public let isDemoUser: Bool?
             public let hasCustomResolution: Bool?
             public let hasQuickPlaysSupport: Bool?
@@ -250,7 +258,7 @@ public class ClientManifest {
     }
 
     public func getNeededLibraries() -> [Library] {
-        getAllowedLibraries().filter { !$0.name.contains("natives") }
+        getAllowedLibraries().filter { !$0.name.contains("natives") && $0.artifact != nil }
     }
     public func getAllowedLibraries() -> [Library] {
         libraries.filter { lib in
@@ -262,7 +270,7 @@ public class ClientManifest {
         for lib in getAllowedLibraries() {
             if let artifact = lib.getNativeArtifact() {
                 result[lib] = artifact
-            } else if let artifact = lib.getArtifact(),
+            } else if let artifact = lib.artifact,
                       lib.name.hasPrefix("org.lwjgl"),
                       lib.name.contains("natives") {
                 result[lib] = artifact
@@ -276,7 +284,7 @@ public class ClientManifest {
         } else if let minecraftArguments = self.minecraftArguments {
             let gameArgs = minecraftArguments.split(separator: " ").map { Arguments.GameArgument(json: JSON(stringLiteral: String($0))) }
             let jvmArgs: [Arguments.JvmArgument] = [
-                "-XX:+UseG1GC", "-XX:-UseAdaptiveSizePolicy", "-XX:-OmitStackTraceInFastThrow",
+                "-XX:+UnlockExperimentalVMOptions", "-XX:+UseG1GC", "-XX:-UseAdaptiveSizePolicy", "-XX:-OmitStackTraceInFastThrow",
                 "-Djava.library.path=${natives_directory}",
                 "-Dorg.lwjgl.system.SharedLibraryExtractPath=${natives_directory}",
                 "-Dio.netty.native.workdir=${natives_directory}",
