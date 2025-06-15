@@ -17,6 +17,7 @@ struct MyCardComponent<Content: View>: View {
     @State private var showContent: Bool = false // 无动画
     @State private var internalContentHeight: CGFloat = .zero
     @State private var contentHeight: CGFloat = .zero
+    @State private var lastClick: Date = Date()
 
     init(title: String, @ViewBuilder content: @escaping () -> Content) {
         self.title = title
@@ -41,20 +42,24 @@ struct MyCardComponent<Content: View>: View {
                 Color.clear
                     .contentShape(Rectangle())
                     .onTapGesture {
+                        if Date().timeIntervalSince(lastClick) < 0.2 {
+                            return
+                        }
+                        lastClick = Date()
                         if !showContent {
-                            showContent.toggle()
+                            showContent = true
                             withAnimation(.linear(duration: 0.2)) {
-                                isUnfolded.toggle()
+                                isUnfolded = true
                                 contentHeight = internalContentHeight
                             }
                         } else {
-                            contentHeight = 2000
+                            contentHeight = min(2000, contentHeight)
                             withAnimation(.spring(response: 0.4, dampingFraction: 0.85, blendDuration: 0)) {
-                                isUnfolded.toggle()
+                                isUnfolded = false
                                 contentHeight = 0
                             }
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                                showContent.toggle()
+                                showContent = false
                             }
                         }
                     }
