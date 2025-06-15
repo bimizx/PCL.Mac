@@ -21,11 +21,10 @@ struct PCL_MacTests {
     }
     
     @Test func testLoadClientManifest() async throws {
-        let handle = try FileHandle(forReadingFrom: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft/versions/1.21/1.21.json"))
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
-        let manifest = try decoder.decode(ClientManifest.self, from: handle.readToEnd()!)
-        print(manifest.getArguments().getAllowedGameArguments())
+        let handle = try FileHandle(forReadingFrom: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft/versions/1.12.2/1.12.2.json"))
+        let manifest = try ClientManifest.parse(try handle.readToEnd()!)
+        ArtifactVersionMapper.map(manifest)
+        print(manifest.getNeededNatives().map { "\($0.key.name): \($0.value.url)" })
     }
     
     @Test func testDownload() async throws {

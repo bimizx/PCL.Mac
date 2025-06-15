@@ -48,6 +48,7 @@ public class MinecraftInstaller {
                 if let data = try? Data(contentsOf: clientJsonUrl),
                    let manifest: ClientManifest = try? .parse(data) {
                     task.manifest = manifest
+                    ArtifactVersionMapper.map(task.manifest!)
                 } else {
                     err("无法解析 JSON")
                 }
@@ -133,8 +134,8 @@ public class MinecraftInstaller {
         var destinations: [URL] = []
         
         for library in task.manifest!.getNeededLibraries() {
-            urls.append(ArtifactVersionMapper.mapLibraryUrl(library.name, URL(string: library.getArtifact()!.url)!))
-            destinations.append(task.minecraftDirectory.librariesUrl.appending(path: library.getArtifact()!.path))
+            urls.append(URL(string: library.artifact!.url)!)
+            destinations.append(task.minecraftDirectory.librariesUrl.appending(path: library.artifact!.path))
         }
         
         await withCheckedContinuation { continuation in
@@ -157,8 +158,8 @@ public class MinecraftInstaller {
         var urls: [URL] = []
         var destinations: [URL] = []
         
-        for (library, artifact) in task.manifest!.getNeededNatives() {
-            urls.append(ArtifactVersionMapper.mapNativeUrl(library.name, URL(string: artifact.url)!))
+        for (_, artifact) in task.manifest!.getNeededNatives() {
+            urls.append(URL(string: artifact.url)!)
             destinations.append(task.minecraftDirectory.librariesUrl.appending(path: artifact.path))
         }
         
@@ -255,7 +256,7 @@ public class MinecraftInstaller {
             process.executableURL = URL(fileURLWithPath: "/usr/bin/java")
             process.environment = ProcessInfo.processInfo.environment
             process.currentDirectoryURL = URL(fileURLWithPath: "/tmp")
-            process.arguments = ["-jar", SharedConstants.shared.applicationResourcesUrl.appending(path: "glfw-patcher.jar").path, task.minecraftDirectory.librariesUrl.appending(path: glfw.getArtifact()!.path).path]
+            process.arguments = ["-jar", SharedConstants.shared.applicationResourcesUrl.appending(path: "glfw-patcher.jar").path, task.minecraftDirectory.librariesUrl.appending(path: glfw.artifact!.path).path]
             do {
                 try process.run()
                 process.waitUntilExit()

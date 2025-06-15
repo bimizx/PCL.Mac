@@ -33,4 +33,6 @@
 
 - FUNCTY
 - [AMagicPear](https://github.com/AMagicPear)
+- [Glavo](https://github.com/Glavo)
+- [HMCL-Dev](https://github.com/HMCL-Dev)
 - [Copilot](https://github.com/copilot)[ (?](https://www.bilibili.com/video/BV1GJ411x7h7)
