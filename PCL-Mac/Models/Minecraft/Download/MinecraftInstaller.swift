@@ -107,9 +107,8 @@ public class MinecraftInstaller {
         var destinations: [URL] = []
         
         for object in objects {
-            let hash: String = object.hash
-            urls.append(URL(string: "https://resources.download.minecraft.net")!.appending(path: String(hash.prefix(2))).appending(path: hash))
-            destinations.append(task.minecraftDirectory.assetsUrl.appending(path: "objects").appending(path: String(hash.prefix(2))).appending(path: hash))
+            urls.append(object.appendTo(URL(string: "https://resources.download.minecraft.net")!))
+            destinations.append(object.appendTo(task.minecraftDirectory.assetsUrl))
         }
         
         await withCheckedContinuation { continuation in

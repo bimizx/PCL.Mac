@@ -23,6 +23,10 @@ public class AssetIndex {
             self.hash = json["hash"].stringValue
             self.size = json["size"].int32Value
         }
+        
+        public func appendTo(_ url: URL) -> URL {
+            return url.appending(path: String(hash.prefix(2))).appending(path: hash)
+        }
     }
     
     public static func parse(_ data: Data) throws -> AssetIndex {
