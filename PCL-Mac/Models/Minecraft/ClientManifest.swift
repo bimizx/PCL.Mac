@@ -33,8 +33,8 @@ public class ClientManifest {
         self.type = json["type"].stringValue
         self.assets = json["assets"].stringValue
         self.assetIndex = AssetIndex(json: json["assetIndex"])
-        self.downloads = json["downloads"].dictionaryValue.mapValues { DownloadInfo(json: $0) }
-        self.libraries = json["libraries"].arrayValue.map { Library(json: $0) }
+        self.downloads = json["downloads"].dictionaryValue.mapValues(DownloadInfo.init(json:))
+        self.libraries = json["libraries"].arrayValue.map(Library.init(json:))
         self.arguments = json["arguments"].exists() ? Arguments(json: json["arguments"]) : nil
         self.minecraftArguments = json["minecraftArguments"].string
         self.javaVersion = json["javaVersion"]["majorVersion"].int

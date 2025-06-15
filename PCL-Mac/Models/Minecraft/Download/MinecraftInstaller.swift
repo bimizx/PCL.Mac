@@ -88,8 +88,7 @@ public class MinecraftInstaller {
                 completion: {
                 do {
                     let data = try Data(contentsOf: destUrl)
-                    let dict = try JSONSerialization.jsonObject(with: data) as! [String : [String : [String : Any]]]
-                        task.assetIndex = dict
+                    task.assetIndex = try .parse(data)
                 } catch {
                     err("在解析 JSON 时发生错误: \(error.localizedDescription)")
                 }
@@ -102,13 +101,13 @@ public class MinecraftInstaller {
     // MARK: 下载散列资源文件
     private static func downloadHashResourcesFiles(_ task: InstallTask) async {
         task.updateStage(.clientResources)
-        let objects = task.assetIndex!["objects"]!
+        let objects = task.assetIndex!.objects
         
         var urls: [URL] = []
         var destinations: [URL] = []
         
         for object in objects {
-            let hash: String = object.value["hash"] as! String
+            let hash: String = object.hash
             urls.append(URL(string: "https://resources.download.minecraft.net")!.appending(path: String(hash.prefix(2))).appending(path: hash))
             destinations.append(task.minecraftDirectory.assetsUrl.appending(path: "objects").appending(path: String(hash.prefix(2))).appending(path: hash))
         }
@@ -272,7 +271,7 @@ public class MinecraftInstaller {
     // MARK: 获取进度
     public static func updateProgress(_ task: InstallTask) {
         DispatchQueue.main.async {
-            task.totalFiles = 3 + task.assetIndex!["objects"]!.count + task.manifest!.getNeededLibraries().count + task.manifest!.getNeededNatives().count
+            task.totalFiles = 3 + task.assetIndex!.objects.count + task.manifest!.getNeededLibraries().count + task.manifest!.getNeededNatives().count
             log("总文件数: \(task.totalFiles)")
             task.remainingFiles = task.totalFiles - 2
         }
@@ -313,7 +312,7 @@ public class InstallTask: ObservableObject, Identifiable, Hashable, Equatable {
     @Published public var totalFiles: Int = -1
     
     public var manifest: ClientManifest?
-    public var assetIndex: [String: [String: [String: Any]]]?
+    public var assetIndex: AssetIndex?
     public var name: String
     public var versionUrl: URL {
         get {
