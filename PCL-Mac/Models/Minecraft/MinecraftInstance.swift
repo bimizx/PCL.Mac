@@ -15,6 +15,7 @@ public class MinecraftInstance: Identifiable {
     private static let RequiredJava21: MinecraftVersion = MinecraftVersion(displayName: "24w14a", type: .snapshot)
     
     public let runningDirectory: URL
+    public let minecraftDirectory: MinecraftDirectory
     public let version: MinecraftVersion
     public var process: Process?
     public let manifest: ClientManifest!
@@ -37,8 +38,8 @@ public class MinecraftInstance: Identifiable {
     }
     
     private init?(runningDirectory: URL, config: MinecraftConfig? = nil) {
-        
         self.runningDirectory = runningDirectory
+        self.minecraftDirectory = MinecraftDirectory(rootUrl: runningDirectory.parent().parent())
         
         do {
             let handle = try FileHandle(forReadingFrom: runningDirectory.appending(path: runningDirectory.lastPathComponent + ".json"))
@@ -116,7 +117,12 @@ public class MinecraftInstance: Identifiable {
         return suitableJava
     }
     
-    public func run() async {
+    public func launch() async {
+        // 资源补全
+        await withCheckedContinuation { continuation in
+            let task = MinecraftInstaller.createCompleteTask(self, continuation.resume)
+            task.start()
+        }
         MinecraftLauncher.launch(self)
     }
 }

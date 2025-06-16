@@ -59,7 +59,7 @@ public class MinecraftInstaller {
     }
     
     // MARK: 下载客户端本体
-    private static func downloadClientJar(_ task: InstallTask) async {
+    private static func downloadClientJar(_ task: InstallTask, skipIfExists: Bool = false) async {
         task.updateStage(.clientJar)
         let clientJarUrl = task.versionUrl.appending(path: "\(task.name).jar")
         await withCheckedContinuation { continuation in
@@ -67,6 +67,7 @@ public class MinecraftInstaller {
                 task: task,
                 urls: [URL(string: "https://bmclapi2.bangbang93.com/version/\(task.minecraftVersion.displayName)/client")!],
                 destinations: [clientJarUrl],
+                skipIfExists: skipIfExists,
                 completion: {
                 continuation.resume()
             })
@@ -284,6 +285,24 @@ public class MinecraftInstaller {
                 await downloadAssetIndex(task)
                 updateProgress(task)
                 await downloadClientJar(task)
+                await downloadHashResourcesFiles(task)
+                await downloadLibraries(task)
+                await downloadNatives(task)
+                unzipNatives(task)
+                finalWork(task)
+                callback?()
+            }
+        }
+        return task
+    }
+    
+    // MARK: 创建补全资源任务
+    public static func createCompleteTask(_ instance: MinecraftInstance, _ callback: (() -> Void)? = nil) -> InstallTask {
+        let task = InstallTask(minecraftVersion: instance.version, minecraftDirectory: instance.minecraftDirectory, name: instance.config.name) { task in
+            Task {
+                task.manifest = instance.manifest
+                await downloadAssetIndex(task)
+                await downloadClientJar(task, skipIfExists: true)
                 await downloadHashResourcesFiles(task)
                 await downloadLibraries(task)
                 await downloadNatives(task)

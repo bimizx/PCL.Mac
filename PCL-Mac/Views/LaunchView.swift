@@ -27,7 +27,7 @@ fileprivate struct LeftTab: View {
                     
                     if self.instance!.process == nil {
                         Task {
-                            await self.instance!.run()
+                            await self.instance!.launch()
                         }
                     }
                 }

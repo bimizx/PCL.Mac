@@ -17,7 +17,7 @@ struct PCL_MacTests {
         try await Task.sleep(nanoseconds: 1_000_000_000)
         let versionUrl = URL(fileURLWithUserPath: "~/PCL-Mac-minecraft/versions/1.21 Test")
         let instance = MinecraftInstance.create(runningDirectory: versionUrl)
-        await instance!.run()
+        await instance!.launch()
     }
     
     @Test func testLoadClientManifest() async throws {
@@ -96,6 +96,13 @@ struct PCL_MacTests {
                 windowOwnerName.lowercased().contains("java") {
                 print(info)
             }
+        }
+    }
+    
+    @Test func testCompleteResource() async {
+        await withCheckedContinuation { continuation in
+            let task = MinecraftInstaller.createCompleteTask(MinecraftInstance.create(runningDirectory: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft/versions/1.21.5"))!, continuation.resume)
+            task.start()
         }
     }
 }
