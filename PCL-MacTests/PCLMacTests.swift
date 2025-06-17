@@ -105,4 +105,9 @@ struct PCL_MacTests {
             task.start()
         }
     }
+    
+    @Test func testFabricLoader() async throws {
+        let instance = MinecraftInstance.create(runningDirectory: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft/versions/1.21.5"))!
+        await ModLoaderInstaller.installFabric(instance, "0.16.14")
+    }
 }

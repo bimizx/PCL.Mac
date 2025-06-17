@@ -15,7 +15,7 @@ public class MinecraftLauncher {
         process.environment = ProcessInfo.processInfo.environment
         process.arguments = []
         process.arguments!.append(contentsOf: buildJvmArguments(instance))
-        process.arguments!.append(instance.manifest.mainClass)
+        process.arguments!.append(instance.config.mainClass)
         process.arguments!.append(contentsOf: buildGameArguments(instance))
         debug(process.executableURL!.path + " " + process.arguments!.joined(separator: " "))
         process.currentDirectoryURL = instance.runningDirectory
@@ -79,19 +79,42 @@ public class MinecraftLauncher {
     }
     
     private static func buildClasspath(_ instance: MinecraftInstance) -> String {
-        var urls: [String] = [
-            
-        ]
-        
-        instance.manifest.getNeededLibraries().forEach { library in
+        var latestMap: [String: (version: String, path: String)] = [:]
+
+        for library in instance.manifest.getNeededLibraries() {
             if let artifact = library.artifact {
-                let path: String = instance.runningDirectory.parent().parent().appending(path: "libraries").appending(path: artifact.path).path
-                urls.append(path)
+                let (groupId, artifactId, version) = MavenCoordinatesUtil.parse(library.name)
+                let key = "\(groupId):\(artifactId)"
+                if let old = latestMap[key] {
+                    if version.compare(old.version, options: .numeric) == .orderedDescending {
+                        latestMap[key] = (version, artifact.path)
+                    }
+                } else {
+                    latestMap[key] = (version, artifact.path)
+                }
             }
         }
-        
+
+        for coordinate in instance.config.additionalLibraries {
+            let (groupId, artifactId, version) = MavenCoordinatesUtil.parse(coordinate)
+            let key = "\(groupId):\(artifactId)"
+            let path = MavenCoordinatesUtil.toPath(coordinate)
+            if let old = latestMap[key] {
+                if version.compare(old.version, options: .numeric) == .orderedDescending {
+                    latestMap[key] = (version, path)
+                }
+            } else {
+                latestMap[key] = (version, path)
+            }
+        }
+
+        var urls: [String] = []
+        for (_, value) in latestMap {
+            let path = value.path
+            urls.append(instance.minecraftDirectory.librariesUrl.appending(path: path).path)
+        }
         urls.append(instance.runningDirectory.appending(path: "\(instance.config.name).jar").path)
-        
+
         return urls.joined(separator: ":")
     }
     
@@ -100,7 +123,7 @@ public class MinecraftLauncher {
             "auth_player_name": "PCL_Mac",
             "version_name": instance.version.displayName,
             "game_directory": instance.runningDirectory.path,
-            "assets_root": instance.runningDirectory.parent().parent().appending(path: "assets").path,
+            "assets_root": instance.minecraftDirectory.assetsUrl.path,
             "assets_index_name": instance.manifest.assetIndex.id,
             "auth_uuid": "a256e7ba1da830119b633a974279e906",
             "auth_access_token": "9856e9a933b5421cb6cf38f21553bd54",

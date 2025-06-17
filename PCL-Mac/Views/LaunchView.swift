@@ -18,16 +18,11 @@ fileprivate struct LeftTab: View {
             Text("PCL_Mac")
                 .font(.custom("PCL English", size: 16))
             Spacer()
-            if let defaultInstance = LocalStorage.shared.defaultInstance,
-               let instance = MinecraftInstance.create(runningDirectory: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft/versions/\(defaultInstance)")) {
-                MyButtonComponent(text: "启动游戏", descriptionText: defaultInstance, foregroundStyle: LocalStorage.shared.theme.getTextStyle()) {
-                    if self.instance == nil {
-                        self.instance = instance
-                    }
-                    
+            if let instance = self.instance {
+                MyButtonComponent(text: "启动游戏", descriptionText: instance.config.name, foregroundStyle: LocalStorage.shared.theme.getTextStyle()) {
                     if self.instance!.process == nil {
                         Task {
-                            await self.instance!.launch()
+                            await instance.launch()
                         }
                     }
                 }
@@ -60,6 +55,12 @@ fileprivate struct LeftTab: View {
             .frame(width: 300, height: 60)
         }
         .foregroundStyle(Color(hex: 0x343D4A))
+        .onAppear {
+            if let defaultInstance = LocalStorage.shared.defaultInstance,
+               let instance = MinecraftInstance.create(runningDirectory: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft/versions/\(defaultInstance)")) {
+                self.instance = instance
+            }
+        }
     }
 }
 
