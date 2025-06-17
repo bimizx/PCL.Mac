@@ -31,6 +31,9 @@ import Foundation
 
 public class ModLoaderInstaller {
     public static func installFabric(_ instance: MinecraftInstance, _ loaderVersion: String) async {
+        if instance.config.clientBrand != .vanilla {
+            err("无法安装 Fabric: 实例 \(instance.config.name) 已有 Mod 加载器: \(instance.config.clientBrand.rawValue)")
+        }
         if let data = await Requests.get(
             url: URL(string: "https://meta.fabricmc.net/v2/versions/loader/\(instance.version.displayName)")!
         ),
@@ -53,6 +56,7 @@ public class ModLoaderInstaller {
                 instance.config.additionalLibraries.insert(library)
             }
             instance.config.mainClass = manifest.mainClass
+            instance.config.clientBrand = .fabric
             instance.saveConfig()
         }
     }

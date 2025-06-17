@@ -135,17 +135,31 @@ public struct MinecraftConfig: Codable {
     public var mainClass: String
     public var additionalLibraries: Set<String> = []
     public var javaPath: String!
+    public var clientBrand: ClientBrand
     
     public init(_ json: JSON) {
         self.name = json["name"].stringValue
         self.mainClass = json["mainClass"].string ?? "net.minecraft.client.main.Main"
         self.additionalLibraries = .init(json["additionalLibraries"].array?.map { $0.stringValue } ?? [])
         self.javaPath = json["javaPath"].string
+        if let clientBrand = json["clientBrand"].string {
+            self.clientBrand = .init(rawValue: clientBrand)!
+        } else {
+            self.clientBrand = .vanilla
+        }
     }
     
     public init(name: String, mainClass: String = "net.minecraft.client.main.Main", javaPath: String? = nil) {
         self.name = name
         self.mainClass = mainClass
         self.javaPath = javaPath
+        self.clientBrand = .vanilla
     }
+}
+
+public enum ClientBrand: String, Codable {
+    case vanilla = "vanilla"
+    case fabric = "fabric"
+    case forge = "forge"
+    case neoforge = "neoforge"
 }
