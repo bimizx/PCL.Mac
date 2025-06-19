@@ -29,15 +29,16 @@
 
 import Foundation
 import Zip
+import Alamofire
 
 public class ModLoaderInstaller {
     public static func installFabric(_ instance: MinecraftInstance, _ loaderVersion: String) async {
         if instance.config.clientBrand != .vanilla {
             err("无法安装 Fabric: 实例 \(instance.config.name) 已有 Mod 加载器: \(instance.config.clientBrand.rawValue)")
         }
-        if let data = await Requests.get(
-            url: URL(string: "https://meta.fabricmc.net/v2/versions/loader/\(instance.version.displayName)")!
-        ),
+        if let data = try? await AF.request(
+            "https://meta.fabricmc.net/v2/versions/loader/\(instance.version.displayName)"
+        ).serializingResponse(using: .data).value,
            let manifests = try? FabricManifest.parse(data) {
             guard let manifest = manifests.find({ $0.loaderVersion == loaderVersion }) else {
                 err("找不到对应的 Fabric Loader 版本: \(loaderVersion)")
@@ -63,13 +64,13 @@ public class ModLoaderInstaller {
     }
     
     public static func installNeoforge(_ instance: MinecraftInstance, _ version: String) async {
-    //        if instance.config.clientBrand != .vanilla {
-    //            err("无法安装 NeoForge: 实例 \(instance.config.name) 已有 Mod 加载器: \(instance.config.clientBrand.rawValue)")
-    //            return
-    //        }
-        if let data = await Requests.get(
-            url: URL(string: "https://bmclapi2.bangbang93.com/neoforge/list/\(instance.version.displayName)")!
-        ),
+            if instance.config.clientBrand != .vanilla {
+                err("无法安装 NeoForge: 实例 \(instance.config.name) 已有 Mod 加载器: \(instance.config.clientBrand.rawValue)")
+                return
+            }
+        if let data = try? await AF.request(
+            "https://bmclapi2.bangbang93.com/neoforge/list/\(instance.version.displayName)"
+        ).serializingResponse(using: .data).value,
             let manifests = try? NeoforgeManifest.parse(data) {
             guard let manifest = manifests.find({ $0.version == version }) else {
                 err("找不到对应的 Neoforge 版本: \(version)")

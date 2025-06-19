@@ -11,6 +11,7 @@ import PCL_Mac
 import SwiftUI
 import Cocoa
 import UserNotifications
+import Alamofire
 
 struct PCL_MacTests {
     @Test func testRun() async throws {
@@ -113,5 +114,12 @@ struct PCL_MacTests {
     
     @Test func testMavenCoord() async {
         print(Util.toPath(mavenCoordinate: "net.neoforged:neoform:1.21.5-20250325.162830@txt"))
+    }
+    
+    @Test func testModSearch() async throws {
+        let summaries = await ModrinthModSearcher.default.search(query: "sodium")
+        for summary in summaries {
+            print("\(await summary.title) \(await summary.infoUrl)")
+        }
     }
 }
