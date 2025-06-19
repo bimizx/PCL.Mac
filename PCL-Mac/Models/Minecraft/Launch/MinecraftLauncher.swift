@@ -75,7 +75,7 @@ public class MinecraftLauncher {
         args.append("-Dorg.lwjgl.util.Debug=true")
 #endif
         args.append(contentsOf: instance.manifest.getArguments().getAllowedJVMArguments())
-        return replaceTemplateStrings(args, with: values)
+        return Util.replaceTemplateStrings(args, with: values)
     }
     
     private static func buildClasspath(_ instance: MinecraftInstance) -> String {
@@ -83,28 +83,28 @@ public class MinecraftLauncher {
 
         for library in instance.manifest.getNeededLibraries() {
             if let artifact = library.artifact {
-                let (groupId, artifactId, version) = MavenCoordinatesUtil.parse(library.name)
-                let key = "\(groupId):\(artifactId)"
+                let coord = Util.parse(mavenCoordinate: library.name)
+                let key = "\(coord.groupId):\(coord.artifactId)"
                 if let old = latestMap[key] {
-                    if version.compare(old.version, options: .numeric) == .orderedDescending {
-                        latestMap[key] = (version, artifact.path)
+                    if coord.version.compare(old.version, options: .numeric) == .orderedDescending {
+                        latestMap[key] = (coord.version, artifact.path)
                     }
                 } else {
-                    latestMap[key] = (version, artifact.path)
+                    latestMap[key] = (coord.version, artifact.path)
                 }
             }
         }
 
         for coordinate in instance.config.additionalLibraries {
-            let (groupId, artifactId, version) = MavenCoordinatesUtil.parse(coordinate)
-            let key = "\(groupId):\(artifactId)"
-            let path = MavenCoordinatesUtil.toPath(coordinate)
+            let coord = Util.parse(mavenCoordinate: coordinate)
+            let key = "\(coord.groupId):\(coord.artifactId)"
+            let path = Util.toPath(mavenCoordinate: coordinate)
             if let old = latestMap[key] {
-                if version.compare(old.version, options: .numeric) == .orderedDescending {
-                    latestMap[key] = (version, path)
+                if coord.version.compare(old.version, options: .numeric) == .orderedDescending {
+                    latestMap[key] = (coord.version, path)
                 }
             } else {
-                latestMap[key] = (version, path)
+                latestMap[key] = (coord.version, path)
             }
         }
 
@@ -131,20 +131,7 @@ public class MinecraftLauncher {
             "version_type": "PCL Mac",
             "user_properties": "\"{}\""
         ]
-        return replaceTemplateStrings(instance.manifest.getArguments().getAllowedGameArguments(), with: values)
-    }
-    
-    private static func replaceTemplateStrings(_ strings: [String], with dict: [String: String]) -> [String] {
-        return strings.map { original in
-            var result = original
-            for (key, value) in dict {
-                result = result.replacingOccurrences(
-                    of: "${\(key)}",
-                    with: value
-                )
-            }
-            return result
-        }
+        return Util.replaceTemplateStrings(instance.manifest.getArguments().getAllowedGameArguments(), with: values)
     }
 }
 

@@ -106,8 +106,12 @@ struct PCL_MacTests {
         }
     }
     
-    @Test func testFabricLoader() async throws {
-        let instance = MinecraftInstance.create(runningDirectory: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft/versions/1.21.5"))!
-        await ModLoaderInstaller.installFabric(instance, "0.16.14")
+    @Test func testModLoader() async throws {
+        let instance = MinecraftInstance.create(runningDirectory: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft/versions/1.21.5 NeoForge"))!
+        await ModLoaderInstaller.installNeoforge(instance, "21.5.0-beta")
+    }
+    
+    @Test func testMavenCoord() async {
+        print(Util.toPath(mavenCoordinate: "net.neoforged:neoform:1.21.5-20250325.162830@txt"))
     }
 }

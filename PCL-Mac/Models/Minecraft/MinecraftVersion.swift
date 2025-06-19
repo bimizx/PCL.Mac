@@ -37,6 +37,8 @@ public enum VersionType: String {
     case snapshot = "snapshot"
     case prerelease = "pre-release"
     case rc = "rc"
+    case alpha = "old_alpha"
+    case beta = "old_beta"
     
     public static func parse(_ displayVersion: String) -> VersionType {
         guard let manifest = DataManager.shared.versionManifest else {

@@ -31,13 +31,13 @@ public class FabricManifest {
                     for lib in libs {
                         let name = lib.dictionaryValue["name"]!.stringValue
                         self.libraryCoords.append(name)
-                        self.libraryUrls.append(URL(string: lib.dictionaryValue["url"]?.stringValue ?? "https://maven.fabricmc.net")!.appending(path: MavenCoordinatesUtil.toPath(name)))
+                        self.libraryUrls.append(URL(string: lib.dictionaryValue["url"]?.stringValue ?? "https://maven.fabricmc.net")!.appending(path: Util.toPath(mavenCoordinate: name)))
                     }
                 }
             }
         }
         
-        libraries = libraryCoords.map(MavenCoordinatesUtil.toPath(_:))
+        libraries = libraryCoords.map(Util.toPath(mavenCoordinate:))
         
         let mainClass = json["launcherMeta"].dictionaryValue["mainClass"]!
         if let dict = mainClass.dictionary {
