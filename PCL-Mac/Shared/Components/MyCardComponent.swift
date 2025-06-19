@@ -95,6 +95,8 @@ struct MyCardComponent<Content: View>: View {
         .onPreferenceChange(ContentHeightKey.self) { h in
             if h > 0 { internalContentHeight = h }
         }
+        .padding(.top, 4)
+        .padding(.bottom, -28)
     }
 }
 
@@ -131,6 +133,8 @@ struct StaticMyCardComponent<Content: View>: View {
         .onHover { hover in
             isHovered = hover
         }
+        .padding(.top, 4)
+        .padding(.bottom, -28)
     }
 }
 
@@ -152,6 +156,8 @@ struct TitlelessMyCardComponent<Content: View>: View {
         .onHover { hover in
             isHovered = hover
         }
+        .padding(.top, 4)
+        .padding(.bottom, -28)
     }
 }
 

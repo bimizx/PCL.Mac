@@ -95,6 +95,7 @@ struct DownloadView: View {
                                 }
                                 .padding(.top, 12)
                             }
+                            .padding()
                         }
                         
                         if let releases = self.versionViews["release"] {
@@ -106,7 +107,7 @@ struct DownloadView: View {
                                 }
                                 .padding(.top, 12)
                             }
-                            .padding(.top, 10)
+                            .padding()
                         }
                         
                         if let snapshots = self.versionViews["snapshot"] {
@@ -118,11 +119,11 @@ struct DownloadView: View {
                                 }
                                 .padding(.top, 12)
                             }
-                            .padding(.top, 10)
+                            .padding()
                         }
                         Spacer()
                     }
-                    .padding()
+                    //.padding()
                 }
                 .zIndex(0)
                 .transition(.move(edge: .leading).combined(with: .opacity))
