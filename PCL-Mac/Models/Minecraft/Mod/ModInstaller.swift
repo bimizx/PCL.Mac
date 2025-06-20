@@ -97,7 +97,6 @@ public class ModrinthModSearcher: ModSearching {
             let mods = json["hits"].arrayValue
             var result: [ModSummary] = []
             for mod in mods {
-                print(mod["project_type"].stringValue)
                 await result.append(
                     ModSummary(
                         title: mod["title"].stringValue,
