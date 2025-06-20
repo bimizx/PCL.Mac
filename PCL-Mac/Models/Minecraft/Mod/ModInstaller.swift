@@ -8,6 +8,7 @@
 import Foundation
 import Alamofire
 import SwiftyJSON
+import SwiftUI
 
 public struct ModPlatformKey: Hashable {
     let loader: ClientBrand
@@ -22,16 +23,31 @@ public struct ModVersion: Hashable {
 public typealias ModVersionMap = [ModPlatformKey: [ModVersion: URL]]
 
 @MainActor
-public class ModSummary: ObservableObject {
+public class ModSummary: ObservableObject, Identifiable {
+    public let id: UUID = UUID()
     public let title: String
+    public let description: String
     public let infoUrl: URL
     private let loadVersions: () async -> ModVersionMap
     @Published public var versions: ModVersionMap?
+    @Published public var icon: Image?
     
-    init(title: String, infoUrl: URL, loadVersions: @escaping () async -> ModVersionMap) {
+    init(title: String, description: String, infoUrl: URL, iconUrl: URL, loadVersions: @escaping () async -> ModVersionMap) {
         self.title = title
+        self.description = description
         self.infoUrl = infoUrl
         self.loadVersions = loadVersions
+        
+        Task {
+            do {
+                let (data, _) = try await URLSession.shared.data(from: iconUrl)
+                if let nsImage = NSImage(data: data) {
+                    self.icon = Image(nsImage: nsImage)
+                }
+            } catch {
+                self.icon = Image("ModDownloadItem")
+            }
+        }
     }
     
     public func getVersions() -> ModVersionMap? {
@@ -69,7 +85,9 @@ public class ModrinthModSearcher: ModSearching {
                 await result.append(
                     ModSummary(
                         title: mod["title"].stringValue,
+                        description: mod["description"].stringValue,
                         infoUrl: URL(string: "https://modrinth.com/mod/\(mod["slug"].stringValue)")!,
+                        iconUrl: URL(string: mod["icon_url"].stringValue)!,
                         loadVersions: { await self.getVersions(mod["slug"].stringValue) }
                     )
                 )

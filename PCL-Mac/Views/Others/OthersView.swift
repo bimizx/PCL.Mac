@@ -9,6 +9,12 @@ import SwiftUI
 
 fileprivate enum PageType: CaseIterable, Hashable {
     case about, debug
+    
+    static func getCases() -> [PageType] {
+        var cases = self.allCases
+        if !SharedConstants.shared.isDevelopment { cases.removeLast() }
+        return cases
+    }
 }
 
 struct OthersView: View {
@@ -33,6 +39,7 @@ struct OthersView: View {
                         createListItemView(type)
                             .foregroundStyle(isSelected ? AnyShapeStyle(LocalStorage.shared.theme.getTextStyle()) : AnyShapeStyle(Color(hex: 0x343D4A)))
                     }
+                    .padding(.top, 10)
                     Spacer()
                 }
             }

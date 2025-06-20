@@ -27,10 +27,13 @@ struct MyButtonComponent: View {
     
     var body: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 4)
-                .stroke(self.getForegroundStyle(), lineWidth: 1.3)
             RoundedRectangle(cornerRadius: 6)
+                .fill(isHovered ? Color(hex: 0xE1ECFB) : Color.clear)
                 .foregroundStyle(Color(hex: 0xFFFFFF, alpha: isHovered ? 0.5 : 0.3))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 4)
+                        .stroke(self.getForegroundStyle(), lineWidth: 1.3)
+                }
             VStack {
                 Spacer()
                 Text(text)
