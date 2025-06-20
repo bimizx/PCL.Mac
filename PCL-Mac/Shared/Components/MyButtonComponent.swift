@@ -22,18 +22,22 @@ struct MyButtonComponent: View {
         if let foregroundStyle = self.foregroundStyle {
             return AnyShapeStyle(foregroundStyle)
         }
-        return isHovered ? AnyShapeStyle(LocalStorage.shared.theme.getTextStyle()) : AnyShapeStyle(Color(hex: 0x343D4A))
+        return isHovered ? AnyShapeStyle(LocalStorage.shared.theme.getTextStyle()) : AnyShapeStyle(Color("TextColor"))
     }
     
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 6)
+<<<<<<< HEAD
                 .fill(isHovered ? Color(hex: 0xE1ECFB) : Color.clear)
                 .foregroundStyle(Color(hex: 0xFFFFFF, alpha: isHovered ? 0.5 : 0.3))
                 .overlay {
                     RoundedRectangle(cornerRadius: 4)
                         .stroke(self.getForegroundStyle(), lineWidth: 1.3)
                 }
+=======
+                .foregroundStyle(isHovered ? Color(hex: 0x1370F3, alpha: 0.1) : .clear)
+>>>>>>> main
             VStack {
                 Spacer()
                 Text(text)

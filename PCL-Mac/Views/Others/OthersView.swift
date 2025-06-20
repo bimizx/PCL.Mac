@@ -19,6 +19,7 @@ fileprivate enum PageType: CaseIterable, Hashable {
 
 struct OthersView: View {
     @ObservedObject private var dataManager: DataManager = .shared
+    
     @State private var pageType: PageType? = .about
     
     var body: some View {
@@ -37,7 +38,7 @@ struct OthersView: View {
                 VStack(alignment: .leading, spacing: 0) {
                     MyListComponent(selection: $pageType) { type, isSelected in
                         createListItemView(type)
-                            .foregroundStyle(isSelected ? AnyShapeStyle(LocalStorage.shared.theme.getTextStyle()) : AnyShapeStyle(Color(hex: 0x343D4A)))
+                            .foregroundStyle(isSelected ? AnyShapeStyle(LocalStorage.shared.theme.getTextStyle()) : AnyShapeStyle(Color("TextColor")))
                     }
                     .padding(.top, 10)
                     Spacer()

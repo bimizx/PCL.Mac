@@ -38,7 +38,7 @@ struct MyCardComponent<Content: View>: View {
                         .offset(x: -8, y: 4)
                         .rotationEffect(.degrees(isUnfolded ? 180 : 0), anchor: .center)
                 }
-                .foregroundStyle(isHovered ? AnyShapeStyle(LocalStorage.shared.theme.getTextStyle()) : AnyShapeStyle(.black))
+                .foregroundStyle(isHovered ? AnyShapeStyle(LocalStorage.shared.theme.getTextStyle()) : AnyShapeStyle(Color("TextColor")))
                 Color.clear
                     .contentShape(Rectangle())
                     .onTapGesture {
@@ -85,7 +85,7 @@ struct MyCardComponent<Content: View>: View {
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 8)
-                .fill(.white)
+                .fill(Color("MyCardBackgroundColor"))
                 .shadow(color: isHovered ? Color(hex: 0x0B5BCB) : .gray, radius: 2, x: 0.5, y: 0.5)
         )
         .animation(.easeInOut(duration: 0.2), value: isHovered)
@@ -107,7 +107,7 @@ fileprivate struct ContentHeightKey: PreferenceKey {
     }
 }
 struct StaticMyCardComponent<Content: View>: View {
-    @ObservedObject private var dataManager: DataManager = DataManager.shared
+    @ObservedObject private var dataManager: DataManager = .shared
     
     let title: String
     let content: () -> Content
@@ -118,7 +118,7 @@ struct StaticMyCardComponent<Content: View>: View {
             HStack {
                 Text(title)
                     .font(.custom("PCL English", size: 14))
-                    .foregroundStyle(isHovered ? AnyShapeStyle(LocalStorage.shared.theme.getTextStyle()) : AnyShapeStyle(.black))
+                    .foregroundStyle(isHovered ? AnyShapeStyle(LocalStorage.shared.theme.getTextStyle()) : AnyShapeStyle(Color("TextColor")))
                 Spacer()
             }
             content()
@@ -126,7 +126,7 @@ struct StaticMyCardComponent<Content: View>: View {
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 8)
-                .fill(.white)
+                .fill(Color("MyCardBackgroundColor"))
                 .shadow(color: isHovered ? Color(hex: 0x0B5BCB) : .gray, radius: isHovered ? 2 : 2, x: 0.5, y: 0.5)
         )
         .animation(.easeInOut(duration: 0.2), value: isHovered)
@@ -149,7 +149,7 @@ struct TitlelessMyCardComponent<Content: View>: View {
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 8)
-                .fill(.white)
+                .fill(Color("MyCardBackgroundColor"))
                 .shadow(color: isHovered ? Color(hex: 0x0B5BCB) : .gray, radius: isHovered ? 2 : 2, x: 0.5, y: 0.5)
         )
         .animation(.easeInOut(duration: 0.2), value: isHovered)

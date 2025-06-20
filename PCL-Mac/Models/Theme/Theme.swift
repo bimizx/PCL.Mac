@@ -52,9 +52,9 @@ public enum Theme: String, CaseIterable {
             return AnyShapeStyle(
                 LinearGradient(
                     gradient: Gradient(stops: [
-                        .init(color: Color(hex: 0xB1CFD5), location: 0.0),
-                        .init(color: Color(hex: 0xCBE1F8), location: 0.4),
-                        .init(color: Color(hex: 0xC0C5DD), location: 1.0)
+                        .init(color: Color("BackgroundGradient0"), location: 0.0),
+                        .init(color: Color("BackgroundGradient1"), location: 0.4),
+                        .init(color: Color("BackgroundGradient2"), location: 1.0)
                     ]),
                     startPoint: UnitPoint(x: 0.9, y: 0.0),
                     endPoint: UnitPoint(x: 0.1, y: 1.0)
@@ -110,12 +110,5 @@ public enum Theme: String, CaseIterable {
         default:
             return AnyView(EmptyView().background(getBackgroundStyle()))
         }
-    }
-    
-    public func gradientOr(_ color: Color) -> some ShapeStyle {
-        if self == .colorful || self == .venti {
-            return AnyShapeStyle(getStyle())
-        }
-        return AnyShapeStyle(color)
     }
 }

@@ -14,6 +14,7 @@ fileprivate enum PageType: CaseIterable, Hashable {
 
 struct DownloadView: View {
     @ObservedObject private var dataManager: DataManager = .shared
+    
     @State private var pageType: PageType? = .game
     
     var body: some View {
@@ -38,7 +39,7 @@ struct DownloadView: View {
                         .padding(.bottom, 4)
                     MyListComponent(selection: $pageType, cases: [.game]) { type, isSelected in
                         createListItemView(type)
-                            .foregroundStyle(isSelected ? AnyShapeStyle(LocalStorage.shared.theme.getTextStyle()) : AnyShapeStyle(Color(hex: 0x343D4A)))
+                            .foregroundStyle(isSelected ? AnyShapeStyle(LocalStorage.shared.theme.getTextStyle()) : AnyShapeStyle(Color("TextColor")))
                     }
                     Text("社区资源")
                         .font(.custom("PCL English", size: 12))
@@ -48,7 +49,7 @@ struct DownloadView: View {
                         .padding(.bottom, 4)
                     MyListComponent(selection: $pageType, cases: [.mod]) { type, isSelected in
                         createListItemView(type)
-                            .foregroundStyle(isSelected ? AnyShapeStyle(LocalStorage.shared.theme.getTextStyle()) : AnyShapeStyle(Color(hex: 0x343D4A)))
+                            .foregroundStyle(isSelected ? AnyShapeStyle(LocalStorage.shared.theme.getTextStyle()) : AnyShapeStyle(Color("TextColor")))
                     }
                     Spacer()
                 }

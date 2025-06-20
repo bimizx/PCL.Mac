@@ -62,7 +62,7 @@ struct TitleBarComponent: View {
                     .frame(height: 19)
                     .bold()
                 Tag(text: "Mac", color: .white)
-                    .foregroundStyle(LocalStorage.shared.theme.gradientOr(Color(hex: 0x1269E4)))
+                    .foregroundStyle(LocalStorage.shared.theme.getTextStyle())
                 Spacer()
                 MenuItemButton(route: .launch, parent: self)
                 MenuItemButton(route: .download, parent: self)
@@ -89,7 +89,7 @@ struct SubviewTitleBarComponent: View {
                 }
                 .padding(.trailing, 5)
             Text(getTitle())
-                .font(.custom("PCLEnglish", size: 16))
+                .font(.custom("PCL English", size: 16))
                 .foregroundStyle(.white)
         }
     }
@@ -123,13 +123,13 @@ struct MenuItemButton: View {
                     .interpolation(.high)
                     .resizable()
                     .foregroundStyle(dataManager.router.getRoot() == route ?
-                                     AnyShapeStyle(LocalStorage.shared.theme.gradientOr(Color(hex: 0x1269E4))) : AnyShapeStyle(.white))
+                                     AnyShapeStyle(LocalStorage.shared.theme.getTextStyle()) : AnyShapeStyle(.white))
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 16, height: 16)
                     .position(x: 17, y: 13)
                 Text(getText())
                     .foregroundStyle(dataManager.router.getRoot() == route ?
-                                     AnyShapeStyle(LocalStorage.shared.theme.gradientOr(Color(hex: 0x1269E4))) : AnyShapeStyle(.white))
+                                     AnyShapeStyle(LocalStorage.shared.theme.getTextStyle()) : AnyShapeStyle(.white))
                     .position(x: 9, y: 13)
             }
         }

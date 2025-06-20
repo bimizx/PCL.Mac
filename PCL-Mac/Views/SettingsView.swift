@@ -69,7 +69,7 @@ struct SettingsView: View {
                         }
                     }
                     .padding()
-                    .foregroundStyle(.black)
+                    .foregroundStyle(Color("TextColor"))
                 }
             }
         }

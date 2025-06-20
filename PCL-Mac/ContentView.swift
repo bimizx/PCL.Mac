@@ -79,7 +79,7 @@ struct ContentView: View {
             HStack {
                 ZStack {
                     Rectangle()
-                        .fill(Color(hex: 0xF5F7FB))
+                        .fill(Color("BackgroundColor"))
                         .shadow(radius: 2)
                     dataManager.leftTabContent
                 }

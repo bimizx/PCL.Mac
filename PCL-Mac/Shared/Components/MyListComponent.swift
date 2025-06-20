@@ -40,7 +40,7 @@ struct MyListComponent<EnumType, Content: View>: View where EnumType: CaseIterab
                         .animation(.easeInOut(duration: 0.2), value: selection)
                     Spacer()
                 }
-                .background(hovering == item ? Color(hex: 0xE1ECFB) : Color.clear)
+                .background(hovering == item ? Color(hex: 0x1370F3, alpha: 0.1) : Color.clear)
                 .animation(.spring(duration: 0.2), value: hovering)
                 .contentShape(Rectangle())
                 .onTapGesture {
