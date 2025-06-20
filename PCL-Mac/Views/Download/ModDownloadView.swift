@@ -80,16 +80,16 @@ struct ModDownloadView: View {
             }
             .padding()
             
-            TitlelessMyCardComponent {
-                VStack(spacing: 0) {
-                    if let summaries = summaries {
+            if let summaries = summaries {
+                TitlelessMyCardComponent {
+                    VStack(spacing: 0) {
                         ForEach(summaries) { summary in
                             ModListItem(summary: summary)
                         }
                     }
                 }
+                .padding()
             }
-            .padding()
         }
         .onAppear {
             searchMod()

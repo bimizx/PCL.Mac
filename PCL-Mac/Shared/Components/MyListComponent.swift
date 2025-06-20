@@ -46,7 +46,7 @@ struct MyListComponent<EnumType, Content: View>: View where EnumType: CaseIterab
                 .onTapGesture {
                     if selection == item { return }
                     selection = item
-                    indicatorHeight = 0
+                    indicatorHeight = 10
                     withAnimation(.spring(duration: 0.2)) {
                         indicatorHeight = 24
                     }

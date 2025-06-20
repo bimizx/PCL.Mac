@@ -41,6 +41,7 @@ struct MyButtonComponent: View {
                     .foregroundStyle(self.getForegroundStyle())
                     .padding(.leading)
                     .padding(.trailing)
+                    .frame(maxWidth: .infinity)
                 if let descriptionText = self.descriptionText {
                     Text(descriptionText)
                         .font(.custom("PCL English", size: 12))

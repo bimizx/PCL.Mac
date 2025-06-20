@@ -89,7 +89,8 @@ public class ModrinthModSearcher: ModSearching {
             method: .get,
             parameters: [
                 "query": query ?? "",
-                "facets": facetsString
+                "facets": facetsString,
+                "limit": 40
             ],
             encoding: URLEncoding.default
         ).serializingResponse(using: .data).value,
