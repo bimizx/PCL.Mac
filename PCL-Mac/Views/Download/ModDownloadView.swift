@@ -7,101 +7,36 @@
 
 import SwiftUI
 
-fileprivate struct ModListItem: View {
+struct ModDownloadView: View {
+    @ObservedObject private var dataManager: DataManager = .shared
     @ObservedObject var summary: ModSummary
     
     var body: some View {
-        HStack {
-            if let icon = summary.icon {
-                icon
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 64)
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
-            }
-            VStack(alignment: .leading, spacing: 4) {
-                Text(summary.title)
-                    .font(.custom("PCL English", size: 16))
-                    .foregroundStyle(Color(hex: 0x343D4A))
-                Text(summary.description)
-                    .font(.custom("PCL English", size: 14))
-                    .foregroundStyle(Color(hex: 0x8C8C8C))
-                    .lineLimit(1)
-                    .truncationMode(.tail)
-                Spacer()
-            }
-            Spacer()
-        }
-        .padding(4)
-        .background(
-            RoundedRectangle(cornerRadius: 5)
-                .fill(.clear)
-        )
-    }
-}
-
-struct ModDownloadView: View {
-    @State private var query: String = ""
-    @State private var summaries: [ModSummary]? = nil
-    
-    var body: some View {
         ScrollView {
-            StaticMyCardComponent(title: "搜索 Mod") {
-                VStack(spacing: 30) {
-                    HStack(spacing: 30) {
-                        Text("名称")
-                            .font(.custom("PCL English", size: 14))
-                        MyTextFieldComponent(text: $query)
-                            .frame(height: 8)
-                    }
-                    
-                    HStack(spacing: 30) {
-                        Text("版本")
-                            .font(.custom("PCL English", size: 14))
-                        MyTextFieldComponent(text: .constant("全部 (也可自行输入)"))
-                            .frame(height: 8)
-                    }
-                    
+            TitlelessMyCardComponent {
+                VStack {
+                    ModListItem(summary: summary)
                     HStack(spacing: 25) {
-                        MyButtonComponent(text: "搜索", foregroundStyle: LocalStorage.shared.theme.getTextStyle()) {
-                            searchMod()
+                        MyButtonComponent(text: "转到 Modrinth", foregroundStyle: LocalStorage.shared.theme.getTextStyle()) {
+                            NSWorkspace.shared.open(summary.infoUrl)
                         }
                         .frame(width: 160, height: 40)
                         
-                        MyButtonComponent(text: "重制条件") {
-                            query = ""
+                        MyButtonComponent(text: "复制名称") {
+                            NSPasteboard.general.setString(summary.title, forType: .string)
                         }
                         .frame(width: 160, height: 40)
                         Spacer()
                     }
                 }
-                .foregroundStyle(Color(hex: 0x343D4A))
-                .padding()
+                .padding(10)
             }
             .padding()
-            
-            if let summaries = summaries {
-                TitlelessMyCardComponent {
-                    VStack(spacing: 0) {
-                        ForEach(summaries) { summary in
-                            ModListItem(summary: summary)
-                        }
-                    }
-                }
-                .padding()
-            }
         }
+        .scrollIndicators(.never)
         .onAppear {
-            searchMod()
-        }
-    }
-    
-    private func searchMod() {
-        Task {
-            let result = await ModrinthModSearcher.default.search(query: self.query)
-            DispatchQueue.main.async {
-                self.summaries = result
-            }
+            dataManager.leftTab(0) { EmptyView() }
         }
     }
 }
+

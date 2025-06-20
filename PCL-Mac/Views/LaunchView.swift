@@ -114,7 +114,7 @@ struct LaunchView: View {
             }
             Spacer()
         }
-        .scrollIndicators(.automatic)
+        .scrollIndicators(.never)
         .onAppear {
             dataManager.leftTab(310) {
                 LeftTab()

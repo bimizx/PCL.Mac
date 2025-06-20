@@ -118,6 +118,7 @@ struct MinecraftDownloadView: View {
                 }
                 .zIndex(0)
                 .transition(.move(edge: .leading).combined(with: .opacity))
+                .scrollIndicators(.never)
             }
         }
         .animation(.easeInOut(duration: 0.2), value: currentDownloadPage == nil)

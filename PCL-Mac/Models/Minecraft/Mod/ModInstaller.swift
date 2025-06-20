@@ -23,7 +23,7 @@ public struct ModVersion: Hashable {
 public typealias ModVersionMap = [ModPlatformKey: [ModVersion: URL]]
 
 @MainActor
-public class ModSummary: ObservableObject, Identifiable {
+public class ModSummary: ObservableObject, Identifiable, Hashable, Equatable {
     public let id: UUID = UUID()
     public let title: String
     public let description: String
@@ -31,6 +31,16 @@ public class ModSummary: ObservableObject, Identifiable {
     private let loadVersions: () async -> ModVersionMap
     @Published public var versions: ModVersionMap?
     @Published public var icon: Image?
+    
+    nonisolated public static func == (lhs: ModSummary, rhs: ModSummary) -> Bool {
+        lhs.id == rhs.id
+    }
+    
+    nonisolated public func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+        hasher.combine(title)
+        hasher.combine(description)
+    }
     
     init(title: String, description: String, infoUrl: URL, iconUrl: URL?, loadVersions: @escaping () async -> ModVersionMap) {
         self.title = title
