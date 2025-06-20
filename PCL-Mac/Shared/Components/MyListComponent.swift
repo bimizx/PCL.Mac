@@ -11,7 +11,7 @@ struct MyListComponent<EnumType, Content: View>: View where EnumType: CaseIterab
     @Binding var selection: EnumType?
     let content: (EnumType, Bool) -> Content
     let cases: [EnumType]
-    @State private var indiactorHeight: CGFloat = 24
+    @State private var indicatorHeight: CGFloat = 24
     @State private var hovering: EnumType? = nil
 
     init(selection: Binding<EnumType?>, cases: [EnumType] = Array(EnumType.allCases), @ViewBuilder content: @escaping (EnumType, Bool) -> Content) {
@@ -32,7 +32,7 @@ struct MyListComponent<EnumType, Content: View>: View where EnumType: CaseIterab
                             Color.clear
                         }
                     }
-                    .frame(width: 4, height: indiactorHeight)
+                    .frame(width: 4, height: indicatorHeight)
                     
                     content(item, selection == item)
                         .frame(height: 32)
@@ -46,9 +46,9 @@ struct MyListComponent<EnumType, Content: View>: View where EnumType: CaseIterab
                 .onTapGesture {
                     if selection == item { return }
                     selection = item
-                    indiactorHeight = 0
+                    indicatorHeight = 0
                     withAnimation(.spring(duration: 0.2)) {
-                        indiactorHeight = 24
+                        indicatorHeight = 24
                     }
                 }
                 .onHover { hover in
