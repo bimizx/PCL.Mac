@@ -32,21 +32,25 @@ public class ModSummary: ObservableObject, Identifiable {
     @Published public var versions: ModVersionMap?
     @Published public var icon: Image?
     
-    init(title: String, description: String, infoUrl: URL, iconUrl: URL, loadVersions: @escaping () async -> ModVersionMap) {
+    init(title: String, description: String, infoUrl: URL, iconUrl: URL?, loadVersions: @escaping () async -> ModVersionMap) {
         self.title = title
         self.description = description
         self.infoUrl = infoUrl
         self.loadVersions = loadVersions
         
-        Task {
-            do {
-                let (data, _) = try await URLSession.shared.data(from: iconUrl)
-                if let nsImage = NSImage(data: data) {
-                    self.icon = Image(nsImage: nsImage)
+        if let iconUrl = iconUrl {
+            Task {
+                do {
+                    let (data, _) = try await URLSession.shared.data(from: iconUrl)
+                    if let nsImage = NSImage(data: data) {
+                        self.icon = Image(nsImage: nsImage)
+                    }
+                } catch {
+                    self.icon = Image("ModIconPlaceholder")
                 }
-            } catch {
-                self.icon = Image("ModDownloadItem")
             }
+        } else {
+            self.icon = Image("ModIconPlaceholder")
         }
     }
     
@@ -87,7 +91,7 @@ public class ModrinthModSearcher: ModSearching {
                         title: mod["title"].stringValue,
                         description: mod["description"].stringValue,
                         infoUrl: URL(string: "https://modrinth.com/mod/\(mod["slug"].stringValue)")!,
-                        iconUrl: URL(string: mod["icon_url"].stringValue)!,
+                        iconUrl: URL(string: mod["icon_url"].stringValue),
                         loadVersions: { await self.getVersions(mod["slug"].stringValue) }
                     )
                 )
