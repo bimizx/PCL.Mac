@@ -73,12 +73,23 @@ public class ModrinthModSearcher: ModSearching {
     public static let `default` = ModrinthModSearcher()
     
     public func search(query: String? = nil, version: MinecraftVersion? = nil) async -> [ModSummary] {
+        var facets = [
+            ["project_type:mod"],
+        ]
+        
+        if let version = version {
+            facets.append(["version:\(version.displayName)"])
+        }
+        
+        let facetsData = try! JSONSerialization.data(withJSONObject: facets)
+        let facetsString = String(data: facetsData, encoding: .utf8)!
+        
         if let data = try? await AF.request(
             "https://api.modrinth.com/v2/search",
             method: .get,
             parameters: [
                 "query": query ?? "",
-                "project_type": "mod"
+                "facets": facetsString
             ],
             encoding: URLEncoding.default
         ).serializingResponse(using: .data).value,
@@ -86,6 +97,7 @@ public class ModrinthModSearcher: ModSearching {
             let mods = json["hits"].arrayValue
             var result: [ModSummary] = []
             for mod in mods {
+                print(mod["project_type"].stringValue)
                 await result.append(
                     ModSummary(
                         title: mod["title"].stringValue,
