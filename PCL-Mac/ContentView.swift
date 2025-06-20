@@ -77,23 +77,23 @@ struct ContentView: View {
                     .foregroundStyle(Color("TextColor"))
                     .frame(minWidth: 815 - dataManager.leftTabWidth, minHeight: 418)
                     .zIndex(0)
-                    .overlay {
-                        if SharedConstants.shared.isDevelopment {
-                            VStack {
-                                HStack {
-                                    Text(dataManager.router.getDebugText())
-                                        .font(.custom("PCL English", size: 14))
-                                        .foregroundStyle(Color("TextColor"))
-                                    Spacer()
-                                }
-                                Spacer()
-                            }
-                        }
-                    }
             }
             .background(
                 LocalStorage.shared.theme.getBackgroundView()
             )
+            .overlay {
+                if SharedConstants.shared.isDevelopment {
+                    VStack {
+                        HStack {
+                            Text(dataManager.router.getDebugText())
+                                .font(.custom("PCL English", size: 14))
+                                .foregroundStyle(Color("TextColor"))
+                            Spacer()
+                        }
+                        Spacer()
+                    }
+                }
+            }
         }
         .ignoresSafeArea(.container, edges: .top)
     }
