@@ -27,7 +27,7 @@ struct MyListComponent<EnumType, Content: View>: View where EnumType: CaseIterab
                     Group {
                         if selection == item {
                             RoundedRectangle(cornerRadius: 5)
-                                .fill(Color(hex: 0x1370F3))
+                                .foregroundStyle(AnyShapeStyle(LocalStorage.shared.theme.getTextStyle()))
                         } else {
                             Color.clear
                         }

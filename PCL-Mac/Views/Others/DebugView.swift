@@ -1,13 +1,13 @@
 //
-//  OthersView.swift
+//  DebugView.swift
 //  PCL-Mac
 //
-//  Created by YiZhiMCQiu on 2025/5/18.
+//  Created by YiZhiMCQiu on 2025/6/20.
 //
 
 import SwiftUI
 
-struct OthersView: View {
+struct DebugView: View {
     @ObservedObject private var dataManager: DataManager = .shared
     
     var body: some View {
@@ -26,9 +26,6 @@ struct OthersView: View {
             .padding()
             .padding(.bottom, -23)
             Spacer()
-        }
-        .onAppear {
-            dataManager.leftTab(0) { EmptyView() }
         }
     }
 }
