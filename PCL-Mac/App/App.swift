@@ -35,7 +35,7 @@ struct WindowAccessor: NSViewRepresentable {
                 window.setContentSize(NSSize(width: 815, height: 465))
                 window.isOpaque = false
                 window.backgroundColor = NSColor.clear
-                window.styleMask = [.borderless]
+                window.styleMask = [.borderless, .miniaturizable]
                 
                 if let contentView = window.contentView {
                     contentView.wantsLayer = true
