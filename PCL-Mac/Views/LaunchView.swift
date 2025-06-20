@@ -17,6 +17,7 @@ fileprivate struct LeftTab: View {
             Spacer()
             Text("PCL_Mac")
                 .font(.custom("PCL English", size: 16))
+                .foregroundStyle(Color("TextColor"))
             Spacer()
             if let defaultInstance = LocalStorage.shared.defaultInstance,
                let instance = MinecraftInstance.create(runningDirectory: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft/versions/\(defaultInstance)")) {
@@ -65,6 +66,7 @@ fileprivate struct LeftTab: View {
 
 struct LaunchView: View {
     @ObservedObject private var dataManager: DataManager = DataManager.shared
+    @Environment(\.colorScheme) var colorScheme
     
     var body: some View {
         ScrollView {
@@ -84,7 +86,7 @@ struct LaunchView: View {
                                 .foregroundStyle(LocalStorage.shared.theme.getTextStyle())
                         }
                     }
-                    .foregroundStyle(Color(hex: 0x343D4A))
+                    .foregroundStyle(Color("TextColor"))
                 }
                 .padding()
                 
@@ -94,6 +96,7 @@ struct LaunchView: View {
                             VStack(alignment: .leading, spacing: 4) {
                                 ForEach(LogStore.shared.logLines) { logLine in
                                     logLineView(logLine.string)
+                                        .foregroundStyle(Color("TextColor"))
                                 }
                             }
                         }

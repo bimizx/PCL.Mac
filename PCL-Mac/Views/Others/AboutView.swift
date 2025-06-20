@@ -24,7 +24,7 @@ fileprivate struct ProfileCard: View {
             VStack(alignment: .leading) {
                 Text(name)
                     .font(.custom("PCL English", size: 12))
-                    .foregroundStyle(Color(hex: 0x343D4A))
+                    .foregroundStyle(Color("TextColor"))
                 Text(description)
                     .font(.custom("PCL English", size: 12))
                     .foregroundStyle(Color(hex: 0x8C8C8C))

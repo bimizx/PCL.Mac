@@ -41,38 +41,29 @@ struct MinecraftDownloadView: View {
             self.version = version
         }
         
-        @State private var isHovered: Bool = false
-        
         var body: some View {
-            HStack {
-                Image(self.icon.rawValue)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 35)
-                    .padding(.leading, 5)
-                VStack(alignment: .leading) {
-                    Text(self.name)
-                        .font(.custom("PCL English", size: 14))
-                        .foregroundStyle(Color(hex: 0x343D4A))
-                        .padding(.top, 5)
-                    Text(self.description)
-                        .font(.custom("PCL English", size: 14))
-                        .foregroundStyle(Color(hex: 0x7F8790))
-                        .padding(.bottom, 5)
+            MyListItemComponent {
+                HStack {
+                    Image(self.icon.rawValue)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 35)
+                        .padding(.leading, 5)
+                    VStack(alignment: .leading) {
+                        Text(self.name)
+                            .font(.custom("PCL English", size: 14))
+                            .foregroundStyle(Color("TextColor"))
+                            .padding(.top, 5)
+                        Text(self.description)
+                            .font(.custom("PCL English", size: 14))
+                            .foregroundStyle(Color(hex: 0x7F8790))
+                            .padding(.bottom, 5)
+                    }
+                    Spacer()
                 }
-                Spacer()
-            }
-            .background(
-                RoundedRectangle(cornerRadius: 5)
-                    .fill(self.isHovered ? Color(hex: 0xE6EDFE) : .white)
-                    .frame(height: 40)
-            )
-            .animation(.easeInOut(duration: 0.2), value: self.isHovered)
-            .onHover { hover in
-                self.isHovered = hover
-            }
-            .onTapGesture {
-                self.parent.onVersionClicked(version)
+                .onTapGesture {
+                    self.parent.onVersionClicked(version)
+                }
             }
             .padding(.top, -8)
         }
