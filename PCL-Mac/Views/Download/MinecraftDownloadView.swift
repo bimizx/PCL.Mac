@@ -1,17 +1,17 @@
 //
-//  DownloadView.swift
+//  MinecraftDownloadView.swift
 //  PCL-Mac
 //
-//  Created by YiZhiMCQiu on 2025/5/18.
+//  Created by YiZhiMCQiu on 2025/6/20.
 //
 
 import SwiftUI
 
-struct DownloadView: View {
-    @ObservedObject var dataManager = DataManager.shared
+struct MinecraftDownloadView: View {
+    @ObservedObject private var dataManager: DataManager = .shared
     
-    @State var versionViews: [String: [VersionView]] = [:]
-    @State var currentDownloadPage: DownloadPage?
+    @State private var versionViews: [String: [VersionView]] = [:]
+    @State private var currentDownloadPage: DownloadPage?
     
     struct VersionView: View, Identifiable {
         enum IconType: String {
@@ -22,12 +22,12 @@ struct DownloadView: View {
         let name: String
         let description: String
         let icon: IconType
-        let parent: DownloadView
+        let parent: MinecraftDownloadView
         let version: VersionManifest.GameVersion
         
         let id: UUID = UUID()
         
-        init(version: VersionManifest.GameVersion, isLatest: Bool = false, parent: DownloadView) {
+        init(version: VersionManifest.GameVersion, isLatest: Bool = false, parent: MinecraftDownloadView) {
             self.name = version.id
             
             var description = SharedConstants.shared.dateFormatter.string(from: version.releaseTime)
@@ -131,9 +131,6 @@ struct DownloadView: View {
         }
         .animation(.easeInOut(duration: 0.2), value: currentDownloadPage == nil)
         .onAppear {
-            dataManager.leftTab(170) {
-                EmptyView()
-            }
             self.versionViews["release"] = createViewsFromVersion(type: "release")
             self.versionViews["snapshot"] = createViewsFromVersion(type: "snapshot")
         }
@@ -154,7 +151,7 @@ struct DownloadView: View {
     }
 }
 
-struct DownloadPage: View {
+fileprivate struct DownloadPage: View {
     let version: MinecraftVersion
     let back: () -> Void
     
@@ -229,44 +226,4 @@ struct DownloadPage: View {
             }
         }
     }
-}
-
-struct RoundedButton<Content: View>: View {
-    let content: () -> Content
-    let onClick: () -> Void
-    
-    @State private var isHovered: Bool = false
-    @State private var isPressed: Bool = false
-    
-    var body: some View {
-        content()
-            .padding()
-            .background(
-                RoundedRectangle(cornerRadius: .infinity)
-                    .fill(Color(hex: 0x1370F3))
-            )
-            .scaleEffect(isPressed ? 0.85 : 1.0)
-            .animation(.easeInOut(duration: 0.2), value: isHovered)
-            .animation(.easeInOut(duration: 0.2), value: isPressed)
-            .onHover {
-                isHovered = $0
-            }
-            .gesture(
-                DragGesture(minimumDistance: 0)
-                    .onChanged { _ in
-                        isPressed = true
-                    }
-                    .onEnded { value in
-                        if isPressed {
-                            onClick()
-                        }
-                        isPressed = false
-                    }
-            )
-    }
-}
-
-#Preview {
-    DownloadView(currentDownloadPage: DownloadPage(MinecraftVersion(displayName: "1.21")) {})
-        .background(Color(hex: 0xC5D2E9))
 }
