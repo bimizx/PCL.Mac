@@ -32,7 +32,3 @@ struct MyTextFieldComponent: View {
     }
 }
 
-#Preview {
-    DownloadView(currentDownloadPage: DownloadPage(MinecraftVersion(displayName: "1.21")) {})
-        .background(Color(hex: 0xC5D2E9))
-}
