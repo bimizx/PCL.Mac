@@ -9,35 +9,28 @@ import SwiftUI
 
 struct MyButtonComponent: View {
     @ObservedObject private var dataManager: DataManager = DataManager.shared
-    
+
     let text: String
     var descriptionText: String? = nil
     var foregroundStyle: (any ShapeStyle)? = nil
     let action: () -> Void
-    
+
     @State private var isHovered: Bool = false
     @State private var isPressed: Bool = false
-    
+
     private func getForegroundStyle() -> some ShapeStyle {
         if let foregroundStyle = self.foregroundStyle {
             return AnyShapeStyle(foregroundStyle)
         }
         return isHovered ? AnyShapeStyle(LocalStorage.shared.theme.getTextStyle()) : AnyShapeStyle(Color("TextColor"))
     }
-    
+
     var body: some View {
         ZStack {
+            RoundedRectangle(cornerRadius: 4)
+                .stroke(self.getForegroundStyle(), lineWidth: 1.3)
             RoundedRectangle(cornerRadius: 6)
-<<<<<<< HEAD
-                .fill(isHovered ? Color(hex: 0xE1ECFB) : Color.clear)
-                .foregroundStyle(Color(hex: 0xFFFFFF, alpha: isHovered ? 0.5 : 0.3))
-                .overlay {
-                    RoundedRectangle(cornerRadius: 4)
-                        .stroke(self.getForegroundStyle(), lineWidth: 1.3)
-                }
-=======
                 .foregroundStyle(isHovered ? Color(hex: 0x1370F3, alpha: 0.1) : .clear)
->>>>>>> main
             VStack {
                 Spacer()
                 Text(text)
