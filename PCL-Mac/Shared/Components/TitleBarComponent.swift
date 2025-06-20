@@ -79,15 +79,7 @@ struct SubviewTitleBarComponent: View {
 
     var body: some View {
         GenericTitleBarComponent {
-            Image("Back")
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(height: 18)
-                .foregroundStyle(.white)
-                .onTapGesture {
-                    dataManager.router.removeLast()
-                }
-                .padding(.trailing, 5)
+            WindowControlButton.Back
             Text(getTitle())
                 .font(.custom("PCL English", size: 16))
                 .foregroundStyle(.white)

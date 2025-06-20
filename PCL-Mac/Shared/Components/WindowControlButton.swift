@@ -8,25 +8,51 @@
 import SwiftUI
 
 struct WindowControlButton: View {
-    static let Close: WindowControlButton = WindowControlButton(systemName: "xmark") {
+    static let Close: WindowControlButton = .init(
+    Image(systemName: "xmark")
+        .resizable()
+        .aspectRatio(contentMode: .fit)
+        .frame(width: 13)
+        .foregroundStyle(.white)
+        .bold()
+    ) {
         NSApplication.shared.terminate(nil)
     }
-    static let Miniaturize: WindowControlButton = WindowControlButton(systemName: "minus") {
+    
+    static let Miniaturize: WindowControlButton = .init(
+    Image(systemName: "minus")
+        .resizable()
+        .aspectRatio(contentMode: .fit)
+        .frame(width: 13)
+        .foregroundStyle(.white)
+        .bold()
+    ) {
         NSApplication.shared.windows.first!.miniaturize(nil)
     }
-    let systemName: String
+    
+    static let Back: WindowControlButton = .init(
+    Image("Back")
+        .resizable()
+        .aspectRatio(contentMode: .fit)
+        .frame(height: 18)
+        .foregroundStyle(.white)
+        .padding(.top, 3)
+    ) {
+        DataManager.shared.router.removeLast()
+    }
+    
     let action: () -> Void
+    private let view: any View
     @State private var isHovered = false
+    
+    init(_ view: any View, action: @escaping () -> Void) {
+        self.view = view
+        self.action = action
+    }
 
     var body: some View {
         VStack {
-            Image(systemName: systemName)
-                .renderingMode(.template)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 13)
-                .foregroundStyle(.white)
-                .bold()
+            AnyView(view)
                 .background(
                     RoundedRectangle(cornerRadius: 15)
                         .fill(isHovered ? Color(hex: 0xFFFFFF, alpha: 0.17) : Color.clear)
