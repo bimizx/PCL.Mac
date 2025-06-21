@@ -85,7 +85,7 @@ public class MsLogin {
                     ), let dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                        let accessToken = dict["access_token"] as? String,
                        let refreshToken = dict["refresh_token"] as? String {
-                        LocalStorage.shared.refreshToken = refreshToken
+                        AppSettings.shared.refreshToken = refreshToken
                         finish(accessToken)
                         return
                     }
@@ -119,8 +119,8 @@ public class MsLogin {
         ), let dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
            let accessToken = dict["access_token"] as? String,
            let refreshToken = dict["refresh_token"] as? String {
-            LocalStorage.shared.refreshToken = refreshToken
-            LocalStorage.shared.lastRefreshToken = Date()
+            AppSettings.shared.refreshToken = refreshToken
+            AppSettings.shared.lastRefreshToken = Date()
             return accessToken
         }
         
@@ -189,8 +189,8 @@ public class MsLogin {
     public static func login() async {
         var accessToken: String!
         
-        if let refreshToken = LocalStorage.shared.refreshToken {
-            if abs(Date().timeIntervalSince(LocalStorage.shared.lastRefreshToken)) < 86400 {
+        if let refreshToken = AppSettings.shared.refreshToken {
+            if abs(Date().timeIntervalSince(AppSettings.shared.lastRefreshToken)) < 86400 {
                 log("无需刷新 Access Token")
                 return
             }
@@ -203,7 +203,7 @@ public class MsLogin {
             }
         }
         
-        LocalStorage.shared.accessToken = await getMinecraftAccessToken(accessToken)
+        AppSettings.shared.accessToken = await getMinecraftAccessToken(accessToken)
         log("已刷新 Access Token")
     }
 }

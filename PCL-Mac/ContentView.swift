@@ -93,7 +93,7 @@ struct ContentView: View {
                     .zIndex(0)
             }
             .background(
-                LocalStorage.shared.theme.getBackgroundView()
+                AppSettings.shared.theme.getBackgroundView()
             )
         }
         .ignoresSafeArea(.container, edges: .top)

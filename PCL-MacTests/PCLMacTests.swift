@@ -50,7 +50,7 @@ struct PCL_MacTests {
     
     @Test func testMsLogin() async throws {
         await MsLogin.login()
-        print(LocalStorage.shared.accessToken!)
+        print(AppSettings.shared.accessToken!)
     }
     
     @Test func testNotifaction() async throws {

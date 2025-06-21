@@ -19,9 +19,9 @@ fileprivate struct LeftTab: View {
                 .font(.custom("PCL English", size: 16))
                 .foregroundStyle(Color("TextColor"))
             Spacer()
-            if let defaultInstance = LocalStorage.shared.defaultInstance,
+            if let defaultInstance = AppSettings.shared.defaultInstance,
                let instance = MinecraftInstance.create(runningDirectory: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft/versions/\(defaultInstance)")) {
-                MyButtonComponent(text: "启动游戏", descriptionText: defaultInstance, foregroundStyle: LocalStorage.shared.theme.getTextStyle()) {
+                MyButtonComponent(text: "启动游戏", descriptionText: defaultInstance, foregroundStyle: AppSettings.shared.theme.getTextStyle()) {
                     if self.instance == nil {
                         self.instance = instance
                     }
@@ -47,9 +47,9 @@ fileprivate struct LeftTab: View {
                 MyButtonComponent(text: "版本选择") {
                     dataManager.router.append(.versionList)
                 }
-                .frame(width: LocalStorage.shared.defaultInstance == nil ? 280 : 135, height: 35)
-                .padding(.leading, LocalStorage.shared.defaultInstance == nil ? 0 : 10)
-                if LocalStorage.shared.defaultInstance != nil {
+                .frame(width: AppSettings.shared.defaultInstance == nil ? 280 : 135, height: 35)
+                .padding(.leading, AppSettings.shared.defaultInstance == nil ? 0 : 10)
+                if AppSettings.shared.defaultInstance != nil {
                     Spacer()
                     MyButtonComponent(text: "版本设置") {
                         
@@ -83,7 +83,7 @@ struct LaunchView: View {
                                 .onTapGesture {
                                     NSWorkspace.shared.open(URL(string: "https://github.com/PCL-Community/PCL-Mac/issues/new?template=bug-反馈.md")!)
                                 }
-                                .foregroundStyle(LocalStorage.shared.theme.getTextStyle())
+                                .foregroundStyle(AppSettings.shared.theme.getTextStyle())
                         }
                     }
                     .foregroundStyle(Color("TextColor"))

@@ -9,6 +9,7 @@ import SwiftUI
 
 struct DebugView: View {
     @ObservedObject private var dataManager: DataManager = .shared
+    @ObservedObject private var settings: AppSettings = .shared
     
     var body: some View {
         VStack {
@@ -19,12 +20,27 @@ struct DebugView: View {
             .padding()
             .padding(.bottom, -23)
             MyButtonComponent(text: "测试主题更换") {
-                LocalStorage.shared.theme = LocalStorage.shared.theme == .colorful ? .pcl : .colorful
+                settings.theme = settings.theme == .colorful ? .pcl : .colorful
                 DataManager.shared.objectWillChange.send()
             }
             .frame(height: 40)
             .padding()
             .padding(.bottom, -23)
+            MyButtonComponent(text: "测试配色方案更换") {
+                settings.colorScheme = (settings.colorScheme == .light ? .dark : .light)
+            }
+            .frame(height: 40)
+            .padding()
+            .padding(.bottom, -23)
+            MyComboBoxComponent(
+                options: [ColorSchemeOption.light, ColorSchemeOption.dark, ColorSchemeOption.system],
+                selection: $settings.colorScheme,
+                label: { $0.getLabel() }) { content in
+                HStack(spacing: 10) {
+                    content
+                }
+            }
+            .padding()
             Spacer()
         }
     }

@@ -32,7 +32,7 @@ struct OthersView: View {
                 VStack(alignment: .leading, spacing: 0) {
                     MyListComponent(selection: $pageType) { type, isSelected in
                         createListItemView(type)
-                            .foregroundStyle(isSelected ? AnyShapeStyle(LocalStorage.shared.theme.getTextStyle()) : AnyShapeStyle(Color("TextColor")))
+                            .foregroundStyle(isSelected ? AnyShapeStyle(AppSettings.shared.theme.getTextStyle()) : AnyShapeStyle(Color("TextColor")))
                     }
                     Spacer()
                 }

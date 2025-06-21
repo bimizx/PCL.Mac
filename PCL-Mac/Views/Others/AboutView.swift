@@ -23,10 +23,10 @@ fileprivate struct ProfileCard: View {
                 .clipShape(Circle())
             VStack(alignment: .leading) {
                 Text(name)
-                    .font(.custom("PCL English", size: 12))
+                    .font(.custom("PCL English", size: 14))
                     .foregroundStyle(Color("TextColor"))
                 Text(description)
-                    .font(.custom("PCL English", size: 12))
+                    .font(.custom("PCL English", size: 14))
                     .foregroundStyle(Color(hex: 0x8C8C8C))
             }
             Spacer()

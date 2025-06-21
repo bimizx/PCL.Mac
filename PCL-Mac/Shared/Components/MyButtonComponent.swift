@@ -22,7 +22,7 @@ struct MyButtonComponent: View {
         if let foregroundStyle = self.foregroundStyle {
             return AnyShapeStyle(foregroundStyle)
         }
-        return isHovered ? AnyShapeStyle(LocalStorage.shared.theme.getTextStyle()) : AnyShapeStyle(Color("TextColor"))
+        return isHovered ? AnyShapeStyle(AppSettings.shared.theme.getTextStyle()) : AnyShapeStyle(Color("TextColor"))
     }
     
     var body: some View {

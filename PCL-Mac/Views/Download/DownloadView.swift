@@ -39,7 +39,7 @@ struct DownloadView: View {
                         .padding(.bottom, 4)
                     MyListComponent(selection: $pageType, cases: [.game]) { type, isSelected in
                         createListItemView(type)
-                            .foregroundStyle(isSelected ? AnyShapeStyle(LocalStorage.shared.theme.getTextStyle()) : AnyShapeStyle(Color("TextColor")))
+                            .foregroundStyle(isSelected ? AnyShapeStyle(AppSettings.shared.theme.getTextStyle()) : AnyShapeStyle(Color("TextColor")))
                     }
                     Text("社区资源")
                         .font(.custom("PCL English", size: 12))
@@ -49,7 +49,7 @@ struct DownloadView: View {
                         .padding(.bottom, 4)
                     MyListComponent(selection: $pageType, cases: [.mod]) { type, isSelected in
                         createListItemView(type)
-                            .foregroundStyle(isSelected ? AnyShapeStyle(LocalStorage.shared.theme.getTextStyle()) : AnyShapeStyle(Color("TextColor")))
+                            .foregroundStyle(isSelected ? AnyShapeStyle(AppSettings.shared.theme.getTextStyle()) : AnyShapeStyle(Color("TextColor")))
                     }
                     Spacer()
                 }
