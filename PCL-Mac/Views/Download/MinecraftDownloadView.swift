@@ -205,7 +205,12 @@ fileprivate struct DownloadPage: View {
                         }
                         
                         if DataManager.shared.inprogressInstallTask != nil { return }
-                        self.currentTask.setObject(MinecraftInstaller.createTask(version, name, MinecraftDirectory(rootUrl: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft"))))
+                        self.currentTask.setObject(MinecraftInstaller.createTask(version, name, MinecraftDirectory(rootUrl: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft"))) {
+                            DispatchQueue.main.async {
+                                DataManager.shared.router.removeLast()
+                                DataManager.shared.inprogressInstallTask = nil
+                            }
+                        })
                         DataManager.shared.inprogressInstallTask = self.currentTask.object!
                         DataManager.shared.router.append(.installing(task: self.currentTask.object!))
                         self.currentTask.object!.start()

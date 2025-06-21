@@ -264,8 +264,6 @@ public class MinecraftInstaller {
                 err("无法修改 lwjgl-glfw: \(error)")
             }
         }
-        
-        task.complete()
     }
     
     // MARK: 获取进度
@@ -308,6 +306,7 @@ public class MinecraftInstaller {
                 await downloadNatives(task)
                 unzipNatives(task)
                 finalWork(task)
+                task.complete()
                 callback?()
             }
         }
