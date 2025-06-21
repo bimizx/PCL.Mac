@@ -61,11 +61,11 @@ struct MinecraftDownloadView: View {
                     }
                     Spacer()
                 }
-                .onTapGesture {
-                    self.parent.onVersionClicked(version)
-                }
             }
             .padding(.top, -8)
+            .onTapGesture {
+                self.parent.onVersionClicked(version)
+            }
         }
     }
     
