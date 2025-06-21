@@ -54,7 +54,7 @@ struct VersionListView: View {
                 }
             }
             .onTapGesture {
-                LocalStorage.shared.defaultInstance = instance.config.name
+                AppSettings.shared.defaultInstance = instance.config.name
                 DataManager.shared.router.removeLast()
             }
             .padding(.top, -8)

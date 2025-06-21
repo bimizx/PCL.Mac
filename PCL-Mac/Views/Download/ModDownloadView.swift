@@ -17,7 +17,7 @@ struct ModDownloadView: View {
                 VStack {
                     ModListItem(summary: summary)
                     HStack(spacing: 25) {
-                        MyButtonComponent(text: "转到 Modrinth", foregroundStyle: LocalStorage.shared.theme.getTextStyle()) {
+                        MyButtonComponent(text: "转到 Modrinth", foregroundStyle: AppSettings.shared.theme.getTextStyle()) {
                             NSWorkspace.shared.open(summary.infoUrl)
                         }
                         .frame(width: 160, height: 40)

@@ -79,7 +79,7 @@ struct ContentView: View {
                     .zIndex(0)
             }
             .background(
-                LocalStorage.shared.theme.getBackgroundView()
+                AppSettings.shared.theme.getBackgroundView()
             )
             .overlay {
                 if SharedConstants.shared.isDevelopment {

@@ -42,6 +42,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         LogStore.shared.clear()
         let start = Date().timeIntervalSince1970
         log("App 已启动")
+        AppSettings.shared.updateColorScheme()
         registerCustomFonts()
         Zip.addCustomFileExtension("jar")
         DataManager.shared.refreshVersionManifest()
@@ -51,14 +52,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         let directory = MinecraftDirectory(rootUrl: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft"))
         
-        if let defaultInstance = LocalStorage.shared.defaultInstance,
+        if let defaultInstance = AppSettings.shared.defaultInstance,
            MinecraftInstance.create(runningDirectory: directory.versionsUrl.appending(path: defaultInstance)) == nil {
             warn("无效的 defaultInstance 配置")
-            LocalStorage.shared.defaultInstance = nil
+            AppSettings.shared.defaultInstance = nil
         }
         
-        if LocalStorage.shared.defaultInstance == nil {
-            LocalStorage.shared.defaultInstance = MinecraftDirectory(rootUrl: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft")).getInnerInstances().first?.config.name
+        if AppSettings.shared.defaultInstance == nil {
+            AppSettings.shared.defaultInstance = MinecraftDirectory(rootUrl: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft")).getInnerInstances().first?.config.name
         }
         
         log("App 初始化完成, 耗时 \(Int((Date().timeIntervalSince1970 - start) * 1000))ms")

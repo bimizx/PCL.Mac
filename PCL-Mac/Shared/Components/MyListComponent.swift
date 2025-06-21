@@ -27,7 +27,7 @@ struct MyListComponent<Content: View>: View {
                     Group {
                         if dataManager.router.getLast() == item {
                             RoundedRectangle(cornerRadius: 5)
-                                .foregroundStyle(AnyShapeStyle(LocalStorage.shared.theme.getTextStyle()))
+                                .foregroundStyle(AnyShapeStyle(AppSettings.shared.theme.getTextStyle()))
                         } else {
                             Color.clear
                         }

@@ -60,12 +60,6 @@ struct InstallingView: View {
                 Spacer()
             }
         }
-        .onChange(of: task.stage) { stage in
-            if stage == .end {
-                DataManager.shared.router.removeLast()
-                DataManager.shared.inprogressInstallTask = nil
-            }
-        }
         .onAppear {
             dataManager.leftTab(220) {
                 LeftTabView(task: task)

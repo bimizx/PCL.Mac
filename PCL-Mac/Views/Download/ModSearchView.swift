@@ -65,7 +65,7 @@ struct ModSearchView: View {
                     }
                     
                     HStack(spacing: 25) {
-                        MyButtonComponent(text: "搜索", foregroundStyle: LocalStorage.shared.theme.getTextStyle()) {
+                        MyButtonComponent(text: "搜索", foregroundStyle: AppSettings.shared.theme.getTextStyle()) {
                             searchMod()
                         }
                         .frame(width: 160, height: 40)

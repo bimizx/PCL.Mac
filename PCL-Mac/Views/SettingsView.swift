@@ -42,7 +42,7 @@ struct SettingsView: View {
                                 if dataManager.javaVirtualMachines.filter({ $0.executableUrl == url }).isEmpty {
                                     let jvm = JavaVirtualMachine.of(url, true)
                                     if !jvm.isError {
-                                        LocalStorage.shared.userAddedJvmPaths.append(url)
+                                        AppSettings.shared.userAddedJvmPaths.append(url)
                                         dataManager.javaVirtualMachines.append(jvm)
                                     } else {
                                         err("发生错误，无法手动添加 Java")

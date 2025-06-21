@@ -7,8 +7,22 @@
 
 import SwiftUI
 
-public class LocalStorage: ObservableObject {
-    public static let shared = LocalStorage()
+public enum ColorSchemeOption: Codable {
+    case light, dark, system
+    func getLabel() -> String {
+        switch self {
+        case .light:
+            "浅色模式"
+        case .dark:
+            "深色模式"
+        case .system:
+            "跟随系统"
+        }
+    }
+}
+
+public class AppSettings: ObservableObject {
+    public static let shared = AppSettings()
     
     @AppStorage("user_added_jvm_paths") private var urlStringArray: String = "[]"
     public var userAddedJvmPaths: [URL] {
@@ -44,8 +58,17 @@ public class LocalStorage: ObservableObject {
     /// 上次刷新时间，用于判断是否需要刷新访问令牌
     @AppStorage("lastRefreshToken") public var lastRefreshToken: Date = Date(timeIntervalSince1970: 0)
     
+    /// 配色方案
+    @CodableAppStorage(wrappedValue: ColorSchemeOption.light, "colorScheme") public var colorScheme: ColorSchemeOption
+    
     /// 最后一次获取到的 VersionManifest，断网时使用
     @CodableAppStorage(wrappedValue: nil, "lastVersionManifest") public var lastVersionManifest: VersionManifest?
+    
+    public func updateColorScheme() {
+        if colorScheme != .system {
+            NSApp.appearance = colorScheme == .light ? NSAppearance(named: .aqua) : NSAppearance(named: .darkAqua)
+        }
+    }
     
     private init() {
         log("已加载持久化储存数据")

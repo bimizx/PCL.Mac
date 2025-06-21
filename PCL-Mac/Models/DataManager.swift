@@ -34,13 +34,13 @@ class DataManager: ObservableObject {
     }
     
     func refreshVersionManifest() {
-        versionManifest = LocalStorage.shared.lastVersionManifest
+        versionManifest = AppSettings.shared.lastVersionManifest
         if NetworkTest.shared.hasNetworkConnection() {
             Task {
                 if let _versionManifest = await VersionManifest.fetchLatestData() {
                     await MainActor.run {
                         self.versionManifest = _versionManifest
-                        LocalStorage.shared.lastVersionManifest = self.versionManifest
+                        AppSettings.shared.lastVersionManifest = self.versionManifest
                         log("版本清单获取成功")
                     }
                 } else {
@@ -48,7 +48,7 @@ class DataManager: ObservableObject {
                 }
             }
         } else {
-            if LocalStorage.shared.lastVersionManifest != nil {
+            if AppSettings.shared.lastVersionManifest != nil {
                 warn("无网络连接，使用最后一次获取到的版本清单")
             } else {
                 err("无网络连接，但最后一次获取到的版本清单也为空，程序被迫终止")

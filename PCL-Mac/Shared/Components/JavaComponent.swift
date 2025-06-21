@@ -23,7 +23,7 @@ struct JavaComponent: View {
                 if jvm.isAddedByUser {
                     Image(systemName: "trash")
                         .onTapGesture {
-                            LocalStorage.shared.userAddedJvmPaths.removeAll { $0 == jvm.executableUrl }
+                            AppSettings.shared.userAddedJvmPaths.removeAll { $0 == jvm.executableUrl }
                             do {
                                 try JavaSearch.searchAndSet()
                             } catch {

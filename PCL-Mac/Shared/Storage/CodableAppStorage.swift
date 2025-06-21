@@ -5,40 +5,41 @@
 //  Created by YiZhiMCQiu on 2025/6/3.
 //
 
-import SwiftUI
+import Foundation
 
 @propertyWrapper
-public struct CodableAppStorage<T: Codable>: DynamicProperty {
-    @State private var value: T?
+public struct CodableAppStorage<T: Codable> {
     private let key: String
     private let store: UserDefaults
+    private let defaultValue: T
 
-    public var wrappedValue: T? {
-        get { value }
-        nonmutating set {
-            value = newValue
-            if let newValue = newValue {
-                if let data = try? JSONEncoder().encode(newValue) {
-                    store.set(data, forKey: key)
-                }
+    public var wrappedValue: T {
+        get {
+            if let data = store.data(forKey: key),
+               let decoded = try? JSONDecoder().decode(T.self, from: data) {
+                return decoded
             } else {
-                store.removeObject(forKey: key)
+                return defaultValue
+            }
+        }
+        set {
+            if let data = try? JSONEncoder().encode(newValue) {
+                store.set(data, forKey: key)
+            }
+            DispatchQueue.main.async {
+                DataManager.shared.objectWillChange.send()
             }
         }
     }
 
-    public init(wrappedValue: T?, _ key: String, store: UserDefaults = .standard) {
+    public init(wrappedValue: T, _ key: String, store: UserDefaults = .standard) {
         self.key = key
         self.store = store
-        if let data = store.data(forKey: key),
-           let decoded = try? JSONDecoder().decode(T.self, from: data) {
-            self._value = State(initialValue: decoded)
-        } else {
-            self._value = State(initialValue: wrappedValue)
-            if let wrappedValue = wrappedValue,
-               let data = try? JSONEncoder().encode(wrappedValue) {
-                store.set(data, forKey: key)
-            }
+        self.defaultValue = wrappedValue
+        // 初始写入（仅当没有值时）
+        if store.data(forKey: key) == nil,
+           let data = try? JSONEncoder().encode(wrappedValue) {
+            store.set(data, forKey: key)
         }
     }
 }

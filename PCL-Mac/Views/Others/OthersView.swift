@@ -29,7 +29,7 @@ struct OthersView: View {
                 VStack(alignment: .leading, spacing: 0) {
                     MyListComponent(cases: SharedConstants.shared.isDevelopment ? [.about, .debug] : [.about]) { type, isSelected in
                         createListItemView(type)
-                            .foregroundStyle(isSelected ? AnyShapeStyle(LocalStorage.shared.theme.getTextStyle()) : AnyShapeStyle(Color("TextColor")))
+                            .foregroundStyle(isSelected ? AnyShapeStyle(AppSettings.shared.theme.getTextStyle()) : AnyShapeStyle(Color("TextColor")))
                     }
                     .padding(.top, 10)
                     Spacer()

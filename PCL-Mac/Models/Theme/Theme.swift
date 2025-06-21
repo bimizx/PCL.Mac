@@ -76,7 +76,7 @@ public enum Theme: String, CaseIterable {
         }
     }
     
-    public func getTextStyle() -> some ShapeStyle {
+    public func getTextStyle() -> AnyShapeStyle {
         switch self {
         case .pcl:
             return AnyShapeStyle(Color(hex: 0x1370F3))

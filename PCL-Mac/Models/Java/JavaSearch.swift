@@ -20,8 +20,8 @@ public class JavaSearch {
     }
     
     private static func loadCustomJVMs() {
-        LocalStorage.shared.userAddedJvmPaths.forEach{ DataManager.shared.javaVirtualMachines.append(JavaVirtualMachine.of($0, true)) }
-        log("加载了 \(LocalStorage.shared.userAddedJvmPaths.count) 个由用户添加的 Java")
+        AppSettings.shared.userAddedJvmPaths.forEach{ DataManager.shared.javaVirtualMachines.append(JavaVirtualMachine.of($0, true)) }
+        log("加载了 \(AppSettings.shared.userAddedJvmPaths.count) 个由用户添加的 Java")
     }
     
     public static func search() throws -> [JavaVirtualMachine] {

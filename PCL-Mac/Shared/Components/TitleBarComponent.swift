@@ -46,7 +46,7 @@ struct GenericTitleBarComponent<Content: View>: View {
         }
         .frame(maxWidth: .infinity, maxHeight: 47)
         .background(
-            LocalStorage.shared.theme.getGradientView()
+            AppSettings.shared.theme.getGradientView()
         )
     }
 }
@@ -63,7 +63,7 @@ struct TitleBarComponent: View {
                     .frame(height: 19)
                     .bold()
                 Tag(text: "Mac", color: .white)
-                    .foregroundStyle(LocalStorage.shared.theme.getTextStyle())
+                    .foregroundStyle(AppSettings.shared.theme.getTextStyle())
                 Spacer()
                 MenuItemButton(route: .launch, parent: self)
                 MenuItemButton(route: .download, parent: self)
@@ -117,13 +117,13 @@ struct MenuItemButton: View {
                     .interpolation(.high)
                     .resizable()
                     .foregroundStyle(dataManager.router.getRoot() == route ?
-                                     AnyShapeStyle(LocalStorage.shared.theme.getTextStyle()) : AnyShapeStyle(.white))
+                                     AnyShapeStyle(AppSettings.shared.theme.getTextStyle()) : AnyShapeStyle(.white))
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 16, height: 16)
                     .position(x: 17, y: 13)
                 Text(getText())
                     .foregroundStyle(dataManager.router.getRoot() == route ?
-                                     AnyShapeStyle(LocalStorage.shared.theme.getTextStyle()) : AnyShapeStyle(.white))
+                                     AnyShapeStyle(AppSettings.shared.theme.getTextStyle()) : AnyShapeStyle(.white))
                     .position(x: 9, y: 13)
             }
         }
