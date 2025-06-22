@@ -13,7 +13,7 @@ public class JavaVirtualMachine: Identifiable, Equatable {
     public let arch: ExecArchitectury
     public var version: Int
     public var displayVersion: String
-    public var implementor: String
+    public var implementor: String?
     public let executableUrl: URL
     public let callMethod: CallMethod
     public var isError: Bool {
@@ -35,7 +35,7 @@ public class JavaVirtualMachine: Identifiable, Equatable {
         self.arch = arch
         self.version = version
         self.displayVersion = displayVersion
-        self.implementor = implementor ?? "未知"
+        self.implementor = implementor
         self.executableUrl = executableUrl
         self.callMethod = callMethod
         self._isError = _isError

@@ -23,12 +23,20 @@ public enum AppRoute: Hashable {
     // MyList 导航
     case minecraftDownload
     case modSearch
+    
     case about
     case debug
     
+    case personalization
+    case javaSettings
+    case otherSettings
+    
     var isRoot: Bool {
         switch self {
-        case .launch, .download, .multiplayer, .settings, .others, .minecraftDownload, .modSearch, .about, .debug:
+        case .launch, .download, .multiplayer, .settings, .others,
+                .minecraftDownload, .modSearch,
+                .about, .debug,
+                .personalization, .javaSettings, .otherSettings:
             return true
         default:
             return false
@@ -37,18 +45,10 @@ public enum AppRoute: Hashable {
     
     var name: String {
         switch self {
-        case .launch: "launch"
-        case .download: "download"
-        case .multiplayer: "multiplayer"
-        case .settings: "settings"
-        case .others: "others"
         case .installing(let task): "installing?task=\(task.id)"
-        case .versionList: "versionList"
         case .modDownload(let summary): "modDownload?summary=\(summary.id)"
-        case .minecraftDownload: "minecraftDownload"
-        case .modSearch: "modSearch"
-        case .about: "about"
-        case .debug: "debug"
+        default:
+            String(describing: self)
         }
     }
 }
@@ -68,7 +68,7 @@ public class AppRouter: ObservableObject {
             DownloadView()
         case .multiplayer:
             MultiplayerView()
-        case .settings:
+        case .settings, .personalization, .javaSettings, .otherSettings:
             SettingsView()
         case .others, .about, .debug:
             OthersView()

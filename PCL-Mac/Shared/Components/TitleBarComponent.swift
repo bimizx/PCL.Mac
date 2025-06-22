@@ -62,7 +62,7 @@ struct TitleBarComponent: View {
                     .aspectRatio(contentMode: .fit)
                     .frame(height: 19)
                     .bold()
-                Tag(text: "Mac", color: .white)
+                MyTagComponent(label: "Mac", backgroundColor: .white)
                     .foregroundStyle(AppSettings.shared.theme.getTextStyle())
                 Spacer()
                 MenuItemButton(route: .launch, parent: self)
@@ -158,23 +158,6 @@ struct MenuItemButton: View {
         case .settings: "设置"
         case .others: "更多"
         default: ""
-        }
-    }
-}
-
-struct Tag: View {
-    let text: String
-    let color: Color
-    
-    var body: some View {
-        ZStack {
-            Text(text)
-                .font(.custom("PCL English", size: 14))
-                .background(
-                    RoundedRectangle(cornerRadius: 5)
-                        .fill(color)
-                        .frame(width: 32, height: 21)
-                )
         }
     }
 }
