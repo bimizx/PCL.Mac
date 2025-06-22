@@ -88,6 +88,7 @@ struct ContentView: View {
                             Text(dataManager.router.getDebugText())
                                 .font(.custom("PCL English", size: 14))
                                 .foregroundStyle(Color("TextColor"))
+                                .animation(.easeInOut(duration: 0.2), value: dataManager.router.path)
                             Spacer()
                         }
                         Spacer()

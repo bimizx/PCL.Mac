@@ -55,6 +55,8 @@ public class ModSummary: ObservableObject, Identifiable, Hashable, Equatable {
     public let id: UUID = UUID()
     public let title: String
     public let description: String
+    public var tags: [String] = []
+    public var loaders: [ClientBrand] = []
     public let infoUrl: URL
     private let loadVersions: () async -> ModVersionMap
     @Published public var versions: ModVersionMap?
@@ -70,11 +72,75 @@ public class ModSummary: ObservableObject, Identifiable, Hashable, Equatable {
         hasher.combine(description)
     }
     
-    init(title: String, description: String, infoUrl: URL, iconUrl: URL?, loadVersions: @escaping () async -> ModVersionMap) {
+    init(title: String, description: String, categories: [String], infoUrl: URL, iconUrl: URL?, loadVersions: @escaping () async -> ModVersionMap) {
         self.title = title
         self.description = description
         self.infoUrl = infoUrl
         self.loadVersions = loadVersions
+        
+        for category in categories {
+            if let clientBrand = ClientBrand(rawValue: category) {
+                self.loaders.append(clientBrand)
+                continue
+            }
+            
+            let tag: String? = switch category {
+            case "technology": "科技"
+            case "magic": "魔法"
+            case "adventure": "冒险"
+            case "utility": "实用"
+            case "optimization": "性能优化"
+            case "vanilla-like": "原版风"
+            case "realistic": "写实风"
+            case "worldgen": "世界元素"
+            case "food": "食物/烹饪"
+            case "game-mechanics": "游戏机制"
+            case "transportation": "运输"
+            case "storage": "仓储"
+            case "decoration": "装饰"
+            case "mobs": "生物"
+            case "equipment": "装备"
+            case "social": "服务器"
+            case "library": "支持库"
+            case "multiplayer": "多人"
+            case "challenging": "硬核"
+            case "combat": "战斗"
+            case "quests": "任务"
+            case "kitchen-sink": "水槽包"
+            case "lightweight": "轻量"
+            case "simplistic": "简洁"
+            case "tweaks": "改良"
+            case "8x-": "极简"
+            case "16x": "16x"
+            case "32x": "32x"
+            case "48x": "48x"
+            case "64x": "64x"
+            case "128x": "128x"
+            case "256x": "256x"
+            case "512x+": "超高清"
+            case "audio": "含声音"
+            case "fonts": "含字体"
+            case "models": "含模型"
+            case "gui": "含 UI"
+            case "locale": "含语言"
+            case "core-shaders": "核心着色器"
+            case "modded": "兼容 Mod"
+            case "fantasy": "幻想风"
+            case "semi-realistic": "半写实风"
+            case "cartoon": "卡通风"
+            case "colored-lighting": "彩色光照"
+            case "path-tracing": "路径追踪"
+            case "pbr": "PBR"
+            case "reflections": "反射"
+            case "iris": "Iris"
+            case "optifine": "OptiFine"
+            case "vanilla": "原版可用"
+            default: nil
+            }
+            if let tag = tag {
+                self.tags.append(tag)
+            }
+        }
         
         if let iconUrl = iconUrl {
             Task {
@@ -140,6 +206,7 @@ public class ModrinthModSearcher: ModSearching {
                     ModSummary(
                         title: mod["title"].stringValue,
                         description: mod["description"].stringValue,
+                        categories: mod["display_categories"].arrayValue.map { $0.stringValue },
                         infoUrl: URL(string: "https://modrinth.com/mod/\(mod["slug"].stringValue)")!,
                         iconUrl: URL(string: mod["icon_url"].stringValue),
                         loadVersions: { await self.getVersions(mod["slug"].stringValue) }

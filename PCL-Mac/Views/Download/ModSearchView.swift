@@ -24,11 +24,17 @@ struct ModListItem: View {
                     Text(summary.title)
                         .font(.custom("PCL English", size: 16))
                         .foregroundStyle(Color("TextColor"))
-                    Text(summary.description)
-                        .font(.custom("PCL English", size: 14))
-                        .foregroundStyle(Color(hex: 0x8C8C8C))
-                        .lineLimit(1)
-                        .truncationMode(.tail)
+                    HStack {
+                        ForEach(summary.tags, id: \.self) { tag in
+                            MyTagComponent(label: tag, backgroundColor: Color("TagColor"), fontSize: 12)
+                        }
+                        
+                        Text(summary.description)
+                            .font(.custom("PCL English", size: 14))
+                            .lineLimit(1)
+                            .truncationMode(.tail)
+                    }
+                    .foregroundStyle(Color(hex: 0x8C8C8C))
                     Spacer()
                 }
                 Spacer()
