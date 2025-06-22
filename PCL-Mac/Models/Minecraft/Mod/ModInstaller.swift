@@ -10,17 +10,45 @@ import Alamofire
 import SwiftyJSON
 import SwiftUI
 
-public struct ModPlatformKey: Hashable {
+public struct ModPlatformKey: Hashable, Comparable {
+    public static func < (lhs: ModPlatformKey, rhs: ModPlatformKey) -> Bool {
+        lhs.minecraftVersion < rhs.minecraftVersion
+    }
+    
     let loader: ClientBrand
     let minecraftVersion: MinecraftVersion
 }
 
-public struct ModVersion: Hashable {
+public struct ModVersion: Hashable, Identifiable {
+    public let id: UUID = .init()
+    
     let name: String
     let version: String
+    let releaseDate: Date
+    let type: String
+    let downloadUrl: URL
+    let filename: String
+    
+    func getDescription() -> String {
+        let formatter = RelativeDateTimeFormatter()
+        formatter.locale = Locale(identifier: "zh_CN")
+        formatter.unitsStyle = .full
+        let result = formatter.localizedString(for: releaseDate, relativeTo: Date()).replacingOccurrences(of: "(\\d+)", with: " $1 ", options: .regularExpression)
+        let typeText = switch type {
+        case "release":
+            "正式版"
+        case "beta", "alpha":
+            "测试版"
+        default:
+            "未知"
+        }
+        return filename[filename.startIndex...filename.index(filename.endIndex, offsetBy: -5)]
+        + "，更新于\(result)"
+        + "，\(typeText)"
+    }
 }
 
-public typealias ModVersionMap = [ModPlatformKey: [ModVersion: URL]]
+public typealias ModVersionMap = [ModPlatformKey: [ModVersion]]
 
 @MainActor
 public class ModSummary: ObservableObject, Identifiable, Hashable, Equatable {
@@ -136,14 +164,21 @@ public class ModrinthModSearcher: ModSearching {
                     minecraftVersion: MinecraftVersion(displayName: version["game_versions"].arrayValue.first!.stringValue)
                 )
                 
+                let formatter = ISO8601DateFormatter()
+                formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+                
                 let modVersion = ModVersion(
                     name: version["name"].stringValue,
-                    version: version["version_number"].stringValue
+                    version: version["version_number"].stringValue,
+                    releaseDate: formatter.date(from: version["date_published"].stringValue)!,
+                    type: version["version_type"].stringValue,
+                    downloadUrl: version["files"].arrayValue.first!["url"].url!,
+                    filename: version["files"].arrayValue.first!["filename"].stringValue.removingPercentEncoding!
                 )
                 if versions[key] == nil {
-                    versions[key] = [:]
+                    versions[key] = []
                 }
-                versions[key]![modVersion] = version["files"].arrayValue.first!["url"].url!
+                versions[key]!.append(modVersion)
             }
             
             return versions
