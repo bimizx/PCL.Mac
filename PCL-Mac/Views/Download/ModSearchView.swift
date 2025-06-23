@@ -53,9 +53,11 @@ struct ModListItem: View {
                     .foregroundStyle(Color(hex: 0x8C8C8C))
                     
                     ZStack(alignment: .leading) {
-                        ImageAndTextComponent(imageName: "SettingsItem", text: summary.supportDescription)
+                        if !summary.supportDescription.isEmpty {
+                            ImageAndTextComponent(imageName: "SettingsItem", text: summary.supportDescription)
+                        }
                         ImageAndTextComponent(imageName: "DownloadItem", text: summary.downloads)
-                            .offset(x: 200)
+                            .offset(x: summary.supportDescription.isEmpty ? 0 : 200)
                         ImageAndTextComponent(imageName: "UploadItem", text: summary.lastUpdate)
                             .offset(x: 300)
                     }

@@ -173,15 +173,14 @@ public class ModSummary: ObservableObject, Identifiable, Hashable, Equatable {
             }
         }
         
-        if loaders.count == 1 {
-            self.supportDescription.append("仅 \(self.loaders.first!.rawValue.capitalized)")
-        } else if loaders.count < 3 {
-            self.supportDescription.append(self.loaders.map { $0.rawValue.capitalized }.joined(separator: " / "))
-        }
-        
-        if !self.supportDescription.isEmpty { self.supportDescription.append(" ") }
-        
         if var supportedVersions = supportedVersions {
+            if loaders.count == 1 {
+                self.supportDescription.append("仅 \(self.loaders.first!.rawValue.capitalized)")
+            } else if loaders.count < 3 {
+                self.supportDescription.append(self.loaders.map { $0.rawValue.capitalized }.joined(separator: " / "))
+            }
+            
+            if !self.supportDescription.isEmpty { self.supportDescription.append(" ") }
             supportedVersions.removeAll(where: { $0.starts(with: "3D-Shareware") }) // 笑点解析: 3D-Shareware-v1.34 识别成 1.34
             self.supportDescription.append(ModSummary.describeGameVersions(
                 gameVersions: Set(supportedVersions
