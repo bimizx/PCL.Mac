@@ -10,14 +10,28 @@ import SwiftUI
 // 别问为什么抽出来，问就是 The compiler is unable to type-check this expression in reasonable time; try breaking up the expression into distinct sub-expressions
 fileprivate struct ModVersionListView: View {
     @ObservedObject private var dataManager: DataManager = .shared
+    @ObservedObject var summary: ModSummary
     let versions: ModVersionMap
     
     var body: some View {
         LazyVStack {
             ForEach(Array(versions.keys).filter { $0.minecraftVersion.type == .release }.sorted(by: { $0 > $1 }), id: \.self) { key in
+                let key: ModPlatformKey = key
                 MyCardComponent(title: "\(String(describing: key.loader).capitalized) \(key.minecraftVersion.displayName)") {
-                    VStack {
+                    VStack(alignment: .leading) {
+                        if !summary.dependencies.isEmpty {
+                            Text("前置资源")
+                                .font(.custom("PCL English", size: 14))
+                            ForEach(summary.dependencies) { dependency in
+                                if let summary = dependency.summary {
+                                    ModListItem(summary: summary)
+                                }
+                            }
+                            Text("版本列表")
+                                .font(.custom("PCL English", size: 14))
+                        }
                         ForEach(versions[key]!) { version in
+                            let version: ModVersion = version
                             MyListItemComponent {
                                 HStack {
                                     Image(version.type.capitalized + "Icon")
@@ -33,6 +47,9 @@ fileprivate struct ModVersionListView: View {
                                     
                                     Spacer()
                                 }
+                            }
+                            .onTapGesture {
+                                ContentView.setPopup(PopupOverlay("URL", version.downloadUrl.absoluteString, [.Ok]))
                             }
                         }
                     }
@@ -70,7 +87,7 @@ struct ModDownloadView: View {
             }
             .padding()
             if let versions = summary.getVersions() {
-                ModVersionListView(versions: versions)
+                ModVersionListView(summary: summary, versions: versions)
             }
         }
         .scrollIndicators(.never)

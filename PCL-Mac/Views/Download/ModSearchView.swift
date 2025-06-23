@@ -7,6 +7,22 @@
 
 import SwiftUI
 
+fileprivate struct ImageAndTextComponent: View {
+    let imageName: String
+    let text: String
+    
+    var body: some View {
+        HStack {
+            Image(imageName)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 16)
+            Text(text)
+                .font(.custom("PCL English", size: 12))
+        }
+    }
+}
+
 struct ModListItem: View {
     @ObservedObject var summary: ModSummary
     
@@ -34,6 +50,16 @@ struct ModListItem: View {
                             .lineLimit(1)
                             .truncationMode(.tail)
                     }
+                    .foregroundStyle(Color(hex: 0x8C8C8C))
+                    
+                    ZStack(alignment: .leading) {
+                        ImageAndTextComponent(imageName: "SettingsItem", text: summary.supportDescription)
+                        ImageAndTextComponent(imageName: "DownloadItem", text: summary.downloads)
+                            .offset(x: 200)
+                        ImageAndTextComponent(imageName: "UploadItem", text: summary.lastUpdate)
+                            .offset(x: 300)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                     .foregroundStyle(Color(hex: 0x8C8C8C))
                     Spacer()
                 }
