@@ -131,7 +131,9 @@ struct MenuItemButton: View {
         .animation(.easeInOut(duration: 0.2), value: isHovered)
         .animation(.easeInOut(duration: 0.2), value: dataManager.router.getRoot() == route)
         .onTapGesture {
-            dataManager.router.setRoot(route)
+            if dataManager.router.getRoot() != route {
+                dataManager.router.setRoot(route)
+            }
         }
         .onHover { hover in
             isHovered = hover
