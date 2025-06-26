@@ -19,6 +19,12 @@ struct DebugView: View {
             .frame(height: 40)
             .padding()
             .padding(.bottom, -23)
+            MyButtonComponent(text: "测试错误弹出框") {
+                ContentView.setPopup(PopupOverlay("测试", "这是一行文本\n这也是一行文本\n这是一行很\(String(repeating: "长", count: 50))的文本", [.Ok], .error))
+            }
+            .frame(height: 40)
+            .padding()
+            .padding(.bottom, -23)
             MyButtonComponent(text: "测试主题更换") {
                 settings.theme = settings.theme == .colorful ? .pcl : .colorful
                 DataManager.shared.objectWillChange.send()

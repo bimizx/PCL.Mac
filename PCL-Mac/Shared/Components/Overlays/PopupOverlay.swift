@@ -10,6 +10,7 @@ import SwiftUI
 
 enum PopupAnimationState {
     case beforePop, popped, afterCollapse
+    
     func getRotation() -> Angle {
         switch self {
         case .beforePop: Angle(degrees: -10)
@@ -17,11 +18,30 @@ enum PopupAnimationState {
         case .afterCollapse: Angle(degrees: 5)
         }
     }
+    
     func getRotationAnchor() -> UnitPoint {
         switch self {
         case .beforePop: UnitPoint(x: 1, y: 0)
         case .popped: UnitPoint(x: 0, y: 0)
         case .afterCollapse: UnitPoint(x: 0, y: 1)
+        }
+    }
+}
+
+enum PopupType {
+    case normal, error
+    
+    func getMaskColor() -> Color {
+        switch self {
+        case .normal: Color(hex: 0x000000, alpha: 0.7)
+        case .error: Color(hex: 0x470000, alpha: 0.7)
+        }
+    }
+    
+    func getTextColor() -> Color {
+        switch self {
+        case .normal: Color(hex: 0x1370F3)
+        case .error: Color(hex: 0xF50000)
         }
     }
 }
@@ -35,13 +55,15 @@ struct PopupOverlay: View, Identifiable, Equatable {
     public let title: String
     public let content: String
     public let buttons: [PopupButton]
+    public let type: PopupType
     
     public let id: UUID = UUID()
     
-    public init(_ title: String, _ content: String, _ buttons: [PopupButton]) {
+    public init(_ title: String, _ content: String, _ buttons: [PopupButton], _ type: PopupType = .normal) {
         self.title = title
         self.content = content
         self.buttons = buttons
+        self.type = type
     }
     
     public static func == (_ var1: PopupOverlay, _ var2: PopupOverlay) -> Bool {
@@ -58,10 +80,8 @@ struct PopupOverlay: View, Identifiable, Equatable {
                 VStack {
                     Text(title)
                         .font(.system(size: 30, design: .rounded))
-                        .foregroundStyle(AppSettings.shared.theme.getStyle())
                         .frame(maxWidth: Width - 40, alignment: .leading)
                     Rectangle()
-                        .foregroundStyle(AppSettings.shared.theme.getStyle())
                         .frame(width: Width - 20, height: 2)
                         .padding(.top, -10)
                     Text(content)
@@ -77,6 +97,7 @@ struct PopupOverlay: View, Identifiable, Equatable {
                         }
                     }
                 }
+                .foregroundStyle(type.getTextColor())
             }
             .frame(width: Width, height: Height)
         }

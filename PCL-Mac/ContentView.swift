@@ -37,7 +37,7 @@ struct ContentView: View {
             if let currentPopup = dataManager.currentPopup {
                 Group {
                     Rectangle()
-                        .fill(Color(hex: 0x000000, alpha: 0.7))
+                        .fill(currentPopup.type.getMaskColor())
                     currentPopup
                         .padding()
                 }
