@@ -27,6 +27,7 @@ class DraggableHelperView: NSView {
 }
 
 struct GenericTitleBarComponent<Content: View>: View {
+    @ObservedObject private var dataManager: DataManager = .shared
     @ViewBuilder let content: () -> Content
 
     var body: some View {
@@ -61,7 +62,7 @@ struct TitleBarComponent: View {
                     .aspectRatio(contentMode: .fit)
                     .frame(height: 19)
                     .bold()
-                Tag(text: "Mac", color: .white)
+                MyTagComponent(label: "Mac", backgroundColor: .white)
                     .foregroundStyle(AppSettings.shared.theme.getTextStyle())
                 Spacer()
                 MenuItemButton(route: .launch, parent: self)
@@ -90,6 +91,7 @@ struct SubviewTitleBarComponent: View {
         switch dataManager.router.getLast() {
         case .installing(_): return "下载管理"
         case .versionList: return "版本选择"
+        case .modDownload(let summary): return "资源下载 - \(summary.title)"
         default:
             return "发现问题请在 https://github.com/PCL-Community/PCL-Mac/issues/new 上反馈！"
         }
@@ -158,23 +160,6 @@ struct MenuItemButton: View {
         case .settings: "设置"
         case .others: "更多"
         default: ""
-        }
-    }
-}
-
-struct Tag: View {
-    let text: String
-    let color: Color
-    
-    var body: some View {
-        ZStack {
-            Text(text)
-                .font(.custom("PCL English", size: 14))
-                .background(
-                    RoundedRectangle(cornerRadius: 5)
-                        .fill(color)
-                        .frame(width: 32, height: 21)
-                )
         }
     }
 }

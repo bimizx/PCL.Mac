@@ -13,11 +13,22 @@ struct JavaComponent: View {
     var body: some View {
         MyListItemComponent {
             HStack {
-                VStack(alignment: .leading) {
-                    Text("Java \(jvm.version) (\(jvm.displayVersion)) \(jvm.implementor) \(jvm.arch) 运行方式: \(jvm.callMethod.getDisplayName())")
-                        .font(.custom("PCL English", size: 14))
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Java \(jvm.displayVersion)")
+                        .font(.custom("PCL English", size: 16))
+                        .padding(.leading, 2)
+                    HStack {
+                        if let implementor = jvm.implementor {
+                            MyTagComponent(label: implementor, backgroundColor: Color("TagColor"), fontSize: 12)
+                        }
+                        MyTagComponent(label: String(describing: jvm.arch), backgroundColor: Color("TagColor"), fontSize: 12)
+                        MyTagComponent(label: jvm.callMethod.getDisplayName(), backgroundColor: Color("TagColor"), fontSize: 12)
+                    }
+                    .foregroundStyle(Color(hex: 0x8C8C8C))
                     Text(jvm.executableUrl.path)
                         .font(.custom("PCL English", size: 14))
+                        .textSelection(.enabled)
+                        .foregroundStyle(Color(hex: 0x8C8C8C))
                 }
                 Spacer()
                 if jvm.isAddedByUser {
@@ -32,7 +43,7 @@ struct JavaComponent: View {
                         }
                 }
             }
-            .padding()
+            .padding(2)
         }
     }
 }

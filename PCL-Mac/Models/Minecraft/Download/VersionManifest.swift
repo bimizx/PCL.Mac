@@ -6,11 +6,25 @@
 //
 
 import Foundation
+import SwiftyJSON
 
 public class VersionManifest: Codable {
+    public let latest: LatestVersions
+    public let versions: [GameVersion]
+    
+    public init(_ json: JSON) {
+        self.latest = LatestVersions(json["latest"])
+        self.versions = json["versions"].arrayValue.map(GameVersion.init)
+    }
+    
     public struct LatestVersions: Codable {
         public let release: String
         public let snapshot: String
+        
+        public init(_ json: JSON) {
+            self.release = json["release"].stringValue
+            self.snapshot = json["snapshot"].stringValue
+        }
     }
     
     public struct GameVersion: Codable {
@@ -27,13 +41,19 @@ public class VersionManifest: Codable {
         public let time: Date
         public let releaseTime: Date
         
+        public init(_ json: JSON) {
+            let formatter = ISO8601DateFormatter()
+            self.id = json["id"].stringValue.replacing(" Pre-Release ", with: "-pre")
+            self.type = json["type"].stringValue
+            self.url = json["url"].stringValue
+            self.time = formatter.date(from: json["time"].stringValue)!
+            self.releaseTime = formatter.date(from: json["releaseTime"].stringValue)!
+        }
+        
         public func parse() -> MinecraftVersion {
             MinecraftVersion(displayName: id, type: .init(rawValue: type))
         }
     }
-    
-    public let latest: LatestVersions
-    public let versions: [GameVersion]
     
     public static func fetchLatestData() async -> VersionManifest? {
         debug("正在获取最新版本数据")
@@ -42,19 +62,10 @@ public class VersionManifest: Codable {
         
         return await withCheckedContinuation { continuation in
             URLSession.shared.dataTask(with: request) { data, response, error in
-                if let data = data, let result = String(data: data, encoding: .utf8) {
-                    do {
-                        let decoder = JSONDecoder()
-                        decoder.dateDecodingStrategy = .iso8601
-                        
-                        let data = Data(result.utf8)
-                        let manifest = try decoder.decode(VersionManifest.self, from: data)
-                        
-                        continuation.resume(returning: Optional(manifest))
-                        return
-                    } catch {
-                        err("解析失败: \(error)")
-                    }
+                if let data = data,
+                   let json = try? JSON(data: data) {
+                    continuation.resume(returning: .init(json))
+                    return
                 }
                 continuation.resume(returning: nil)
             }.resume()
