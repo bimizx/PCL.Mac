@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-public enum Theme: String, CaseIterable {
+public enum Theme: String, CaseIterable, Codable {
     case pcl, colorful, venti
     
     /// 获取主渐变色（如标题栏）

@@ -65,6 +65,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         log("App 初始化完成, 耗时 \(Int((Date().timeIntervalSince1970 - start) * 1000))ms")
     }
     
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        if AppSettings.shared.showPclMacPopup {
+            ContentView.setPopup(
+                PopupOverlay(
+                    "欢迎使用 PCL-Mac！",
+                    "若要反馈问题，请到 QQ 群 1047463389，或直接在 GitHub 上开 Issue，而不是去 CE 群！",
+                    [.init(text: "永久关闭") { AppSettings.shared.showPclMacPopup = false ; PopupButton.Close.onClick() }, .Ok]
+                )
+            )
+        }
+    }
+    
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
         LogStore.shared.save()
         return .terminateNow

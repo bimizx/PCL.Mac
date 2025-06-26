@@ -79,12 +79,13 @@ struct PopupOverlay: View, Identifiable, Equatable {
             HStack {
                 VStack {
                     Text(title)
-                        .font(.system(size: 30, design: .rounded))
+                        .font(.custom("PCL English", size: 30))
                         .frame(maxWidth: Width - 40, alignment: .leading)
                     Rectangle()
                         .frame(width: Width - 20, height: 2)
                         .padding(.top, -10)
                     Text(content)
+                        .font(.custom("PCL English", size: 14))
                         .foregroundStyle(Color("TextColor"))
                         .frame(maxWidth: Width - 40, alignment: .leading)
                     Spacer()
