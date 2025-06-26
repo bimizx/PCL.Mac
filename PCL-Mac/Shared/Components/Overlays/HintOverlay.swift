@@ -28,7 +28,7 @@ fileprivate struct HintComponent: View {
             HStack {
                 Text(hint.text)
                     .font(.custom("PCL English", size: 14))
-                    .foregroundStyle(Color("TextColor"))
+                    .foregroundStyle(Color(hex: 0xECEFF1))
             }
             .transition(
                 .asymmetric(
@@ -45,7 +45,7 @@ fileprivate struct HintComponent: View {
                         .offset(x: -20)
                         .onAppear {
                             offsetX = -geo.size.width
-                            withAnimation(.spring(response: 0.4, dampingFraction: 0.6, blendDuration: 0)) {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.6, blendDuration: 0)) {
                                 offsetX = 0
                             }
                         }
