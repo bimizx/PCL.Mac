@@ -49,6 +49,8 @@ enum PopupType {
 struct PopupOverlay: View, Identifiable, Equatable {
     @ObservedObject private var dataManager: DataManager = .shared
     
+    @State private var stateNoAnim: PopupAnimationState = DataManager.shared.popupState
+    
     private let Width: CGFloat = 560
     private let Height: CGFloat = 280
     
@@ -102,11 +104,16 @@ struct PopupOverlay: View, Identifiable, Equatable {
             }
             .frame(width: Width, height: Height)
         }
-        .rotationEffect(dataManager.popupState.getRotation(), anchor: dataManager.popupState.getRotationAnchor())
+        .rotationEffect(dataManager.popupState.getRotation(), anchor: stateNoAnim.getRotationAnchor())
         .opacity(dataManager.popupState == .popped ? 1 : 0)
-        .animation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0), value: dataManager.popupState)
+        .animation(.spring(response: 0.5, dampingFraction: 0.6, blendDuration: 0), value: dataManager.popupState)
         .onAppear {
             dataManager.popupState = .popped
+        }
+        .onChange(of: dataManager.popupState) { newState in
+            withAnimation(nil) {
+                stateNoAnim = newState
+            }
         }
     }
 }
