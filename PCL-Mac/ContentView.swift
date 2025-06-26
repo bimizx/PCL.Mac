@@ -34,6 +34,14 @@ struct ContentView: View {
                     }
                 }
             }
+            VStack {
+                Spacer()
+                HStack(alignment: .bottom) {
+                    HintOverlay()
+                    Spacer()
+                }
+                .padding(.bottom, 100)
+            }
             if let currentPopup = dataManager.currentPopup {
                 Group {
                     Rectangle()
