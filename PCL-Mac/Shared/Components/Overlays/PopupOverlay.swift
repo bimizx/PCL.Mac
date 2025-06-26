@@ -7,7 +7,27 @@
 
 import SwiftUI
 
+enum PopupAnimationState {
+    case beforePop, popped, afterCollapse
+    func getRotation() -> Angle {
+        switch self {
+        case .beforePop: Angle(degrees: -10)
+        case .popped: Angle(degrees: 0)
+        case .afterCollapse: Angle(degrees: 5)
+        }
+    }
+    func getRotationAnchor() -> UnitPoint {
+        switch self {
+        case .beforePop: UnitPoint(x: 1, y: 0)
+        case .popped: UnitPoint(x: 0, y: 0)
+        case .afterCollapse: UnitPoint(x: 0, y: 1)
+        }
+    }
+}
+
 struct PopupOverlay: View, Identifiable, Equatable {
+    @ObservedObject private var dataManager: DataManager = .shared
+    
     private let Width: CGFloat = 560
     private let Height: CGFloat = 280
     
@@ -30,20 +50,20 @@ struct PopupOverlay: View, Identifiable, Equatable {
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 10)
-                .fill(.white)
+                .fill(Color("MyCardBackgroundColor"))
                 .frame(width: Width + 20, height: Height + 20)
             HStack {
                 VStack {
                     Text(title)
                         .font(.system(size: 30, design: .rounded))
-                        .foregroundStyle(Color(hex: 0x0B5BCB))
+                        .foregroundStyle(AppSettings.shared.theme.getStyle())
                         .frame(maxWidth: Width - 40, alignment: .leading)
                     Rectangle()
-                        .foregroundStyle(Color(hex: 0x0B5BCB))
+                        .foregroundStyle(AppSettings.shared.theme.getStyle())
                         .frame(width: Width - 20, height: 2)
                         .padding(.top, -10)
                     Text(content)
-                        .foregroundStyle(Color(hex: 0x272727))
+                        .foregroundStyle(Color("TextColor"))
                         .frame(maxWidth: Width - 40, alignment: .leading)
                     Spacer()
                     HStack {
@@ -57,6 +77,12 @@ struct PopupOverlay: View, Identifiable, Equatable {
                 }
             }
             .frame(width: Width, height: Height)
+        }
+        .rotationEffect(dataManager.popupState.getRotation(), anchor: dataManager.popupState.getRotationAnchor())
+        .opacity(dataManager.popupState == .popped ? 1 : 0)
+        .animation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0), value: dataManager.popupState)
+        .onAppear {
+            dataManager.popupState = .popped
         }
     }
 }

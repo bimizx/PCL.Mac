@@ -25,10 +25,10 @@ struct PopupButton: View, Identifiable {
     var body: some View {
         ZStack {
             Text(text)
-                .foregroundStyle(color ?? .black)
+                .foregroundStyle(color ?? Color("TextColor"))
                 .overlay(
                     RoundedRectangle(cornerRadius: 3)
-                        .stroke(color ?? .black)
+                        .stroke(color ?? Color("TextColor"))
                         .background(
                             Color(hex: 0x000000, alpha: self.isHovered ? 0.1 : 0.0)
                                 .onHover { hovering in
@@ -47,11 +47,9 @@ struct PopupButton: View, Identifiable {
     }
     
     static let Close = PopupButton(text: "关闭") {
-        withAnimation(.easeInOut(duration: 0.1)) {
-            DataManager.shared.showPopup = false
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            DataManager.shared.currentPopup = nil
+        DataManager.shared.popupState = .afterCollapse
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            ContentView.setPopup(nil)
         }
     }
     

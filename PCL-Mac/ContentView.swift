@@ -38,12 +38,9 @@ struct ContentView: View {
                 Group {
                     Rectangle()
                         .fill(Color(hex: 0x000000, alpha: 0.7))
-                        .opacity(dataManager.showPopup ? 1 : 0)
                     currentPopup
                         .padding()
-                        .opacity(dataManager.showPopup ? 1 : 0)
                 }
-                .animation(.easeInOut(duration: 0.3), value: dataManager.showPopup)
             }
         }
         .onAppear {
@@ -100,10 +97,10 @@ struct ContentView: View {
     }
     
     static func setPopup(_ popup: PopupOverlay?) {
-        DataManager.shared.currentPopup = popup
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            DataManager.shared.showPopup = true
+        if popup != nil {
+            DataManager.shared.popupState = .beforePop
         }
+        DataManager.shared.currentPopup = popup
     }
 }
 
