@@ -13,14 +13,8 @@ struct VersionListView: View {
     let minecraftDirectory: MinecraftDirectory = MinecraftDirectory(rootUrl: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft"))
     
     struct VersionView: View, Identifiable {
-        enum IconType: String {
-            case release = "Release"
-            case snapshot = "Snapshot"
-        }
-        
         let name: String
         let description: String
-        let icon: IconType
         let instance: MinecraftInstance
         
         let id: UUID = UUID()
@@ -28,14 +22,13 @@ struct VersionListView: View {
         init(instance: MinecraftInstance) {
             self.name = instance.config.name
             self.description = instance.version.displayName
-            self.icon = .release
             self.instance = instance
         }
         
         var body: some View {
             MyListItemComponent {
                 HStack {
-                    Image(self.icon.rawValue)
+                    Image(self.instance.version.getIconName())
                         .resizable()
                         .scaledToFit()
                         .frame(width: 35)
@@ -66,7 +59,7 @@ struct VersionListView: View {
             VStack {
                 MyCardComponent(title: "常规版本") {
                     VStack {
-                        ForEach(minecraftDirectory.getInnerInstances()) { instance in
+                        ForEach(minecraftDirectory.getInnerInstances().sorted(by: { $0.version > $1.version })) { instance in
                             VersionView(instance: instance)
                         }
                     }

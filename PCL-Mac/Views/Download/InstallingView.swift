@@ -83,7 +83,7 @@ struct InstallingView: View {
                     }
                     Text(stage.getDisplayName())
                         .font(.custom("PCL English", size: 14))
-                        .foregroundStyle(Color(hex: 0x343D4A))
+                        .foregroundStyle(Color("TextColor"))
                     Spacer()
                 }
                 .frame(height: 20)
@@ -106,7 +106,7 @@ private struct PanelView: View {
                 .frame(width: 180, height: 2)
             Text(value)
                 .font(.custom("PCL English", size: 20))
-                .foregroundStyle(Color(hex: 0x343D4A))
+                .foregroundStyle(Color("TextColor"))
         }
         .padding(.top, 20)
         .padding(.bottom, 20)

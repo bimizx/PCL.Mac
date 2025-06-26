@@ -34,6 +34,15 @@ public class MinecraftVersion: Comparable, Hashable {
     public static func == (lhs: MinecraftVersion, rhs: MinecraftVersion) -> Bool {
         lhs.displayName == rhs.displayName && lhs.type == rhs.type
     }
+    
+    public func getIconName() -> String {
+        switch type.rawValue {
+        case "release": "ReleaseVersionIcon"
+        case "snapshot": "SnapshotVersionIcon"
+        case "old_beta", "old_alpha": "OldVersionIcon"
+        default: "Release"
+        }
+    }
 }
 
 public enum VersionType: String {

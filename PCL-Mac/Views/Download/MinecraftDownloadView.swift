@@ -14,14 +14,9 @@ struct MinecraftDownloadView: View {
     @State private var currentDownloadPage: DownloadPage?
     
     struct VersionView: View, Identifiable {
-        enum IconType: String {
-            case release = "Release"
-            case snapshot = "Snapshot"
-        }
-        
         let name: String
         let description: String
-        let icon: IconType
+        let icon: String
         let parent: MinecraftDownloadView
         let version: VersionManifest.GameVersion
         
@@ -36,7 +31,7 @@ struct MinecraftDownloadView: View {
             }
             self.description = description
             
-            self.icon = IconType(rawValue: version.type.capitalized)!
+            self.icon = version.parse().getIconName()
             self.parent = parent
             self.version = version
         }
@@ -44,7 +39,7 @@ struct MinecraftDownloadView: View {
         var body: some View {
             MyListItemComponent {
                 HStack {
-                    Image(self.icon.rawValue)
+                    Image(self.icon)
                         .resizable()
                         .scaledToFit()
                         .frame(width: 35)
@@ -112,6 +107,18 @@ struct MinecraftDownloadView: View {
                             }
                             .padding()
                         }
+                        
+                        if let old = self.versionViews["old"] {
+                            MyCardComponent(title: "远古版 (\(old.count))") {
+                                LazyVStack {
+                                    ForEach(old) { view in
+                                        view
+                                    }
+                                }
+                                .padding(.top, 12)
+                            }
+                            .padding()
+                        }
                         Spacer()
                     }
                     //.padding()
@@ -125,6 +132,7 @@ struct MinecraftDownloadView: View {
         .onAppear {
             self.versionViews["release"] = createViewsFromVersion(type: "release")
             self.versionViews["snapshot"] = createViewsFromVersion(type: "snapshot")
+            self.versionViews["old"] = createViewsFromVersion(type: "old_beta").union(createViewsFromVersion(type: "old_alpha"))
         }
     }
     
@@ -147,7 +155,6 @@ fileprivate struct DownloadPage: View {
     let version: MinecraftVersion
     let back: () -> Void
     
-    @State private var icon: String = "Release"
     @State private var name: String
     
     @ObservedObject private var currentTask: Holder<InstallTask> = Holder()
@@ -172,13 +179,13 @@ fileprivate struct DownloadPage: View {
                             .onTapGesture {
                                 back()
                             }
-                        Image(icon)
+                        Image(version.getIconName())
                             .resizable()
                             .scaledToFit()
                             .frame(width: 35)
                         MyTextFieldComponent(text: self.$name)
                             .frame(height: 12)
-                            .foregroundStyle(Color(hex: 0x343D4A))
+                            .foregroundStyle(Color("TextColor"))
                     }
                 }
                 .padding()
@@ -209,6 +216,8 @@ fileprivate struct DownloadPage: View {
                         if DataManager.shared.inprogressInstallTask != nil { return }
                         self.currentTask.setObject(MinecraftInstaller.createTask(version, name, MinecraftDirectory(rootUrl: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft"))) {
                             DispatchQueue.main.async {
+                                HintManager.default.add(.init(text: "\(name) 下载完成！", type: .finish))
+                                AppSettings.shared.defaultInstance = name
                                 DataManager.shared.router.removeLast()
                                 DataManager.shared.inprogressInstallTask = nil
                             }

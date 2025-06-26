@@ -40,7 +40,7 @@ struct ContentView: View {
                     HintOverlay()
                     Spacer()
                 }
-                .padding(.bottom, 100)
+                .padding(.bottom, 50)
             }
             if let currentPopup = dataManager.currentPopup {
                 Group {

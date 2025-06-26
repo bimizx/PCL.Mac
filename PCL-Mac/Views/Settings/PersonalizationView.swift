@@ -22,6 +22,9 @@ struct PersonalizationView: View {
                                 content
                             }
                         }
+                        .onChange(of: settings.colorScheme) { _ in
+                            HintManager.default.add(.init(text: "重启后生效", type: .info))
+                        }
                     Spacer()
                 }
                 .padding()
