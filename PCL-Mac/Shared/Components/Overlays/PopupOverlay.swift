@@ -4,6 +4,7 @@
 //
 //  Created by YiZhiMCQiu on 2025/5/19.
 //
+// 我是萌新，请问 PopupOverlay 是刷妈塔吗
 
 import SwiftUI
 
@@ -52,6 +53,7 @@ struct PopupOverlay: View, Identifiable, Equatable {
             RoundedRectangle(cornerRadius: 10)
                 .fill(Color("MyCardBackgroundColor"))
                 .frame(width: Width + 20, height: Height + 20)
+                .shadow(color: Color("TextColor"), radius: 2)
             HStack {
                 VStack {
                     Text(title)

@@ -48,7 +48,7 @@ struct PopupButton: View, Identifiable {
     
     static let Close = PopupButton(text: "关闭") {
         DataManager.shared.popupState = .afterCollapse
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
             ContentView.setPopup(nil)
         }
     }

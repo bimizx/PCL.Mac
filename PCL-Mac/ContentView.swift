@@ -98,7 +98,10 @@ struct ContentView: View {
     
     static func setPopup(_ popup: PopupOverlay?) {
         if popup != nil {
+            NSApp.windows.forEach { $0.isMovableByWindowBackground = true }
             DataManager.shared.popupState = .beforePop
+        } else {
+            NSApp.windows.forEach { $0.isMovableByWindowBackground = false }
         }
         DataManager.shared.currentPopup = popup
     }
