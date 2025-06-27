@@ -109,7 +109,7 @@ public class MinecraftInstaller {
         
         for object in objects {
             urls.append(object.appendTo(URL(string: "https://resources.download.minecraft.net")!))
-            destinations.append(object.appendTo(task.minecraftDirectory.assetsUrl))
+            destinations.append(object.appendTo(task.minecraftDirectory.assetsUrl.appending(path: "objects")))
         }
         
         await withCheckedContinuation { continuation in
