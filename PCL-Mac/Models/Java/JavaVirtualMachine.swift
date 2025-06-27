@@ -16,6 +16,7 @@ public class JavaVirtualMachine: Identifiable, Equatable {
     public var implementor: String?
     public let executableUrl: URL
     public let callMethod: CallMethod
+    public let isJdk: Bool?
     public var isError: Bool {
         get {
             return _isError ?? false
@@ -31,15 +32,23 @@ public class JavaVirtualMachine: Identifiable, Equatable {
     
     public let id = UUID()
     
-    init(arch: ExecArchitectury, version: Int, displayVersion: String, implementor: String? = nil, executableUrl: URL, callMethod: CallMethod, _isError: Bool? = nil, _isAddedByUser: Bool? = nil) {
+    public init(arch: ExecArchitectury, version: Int, displayVersion: String, implementor: String? = nil, executableUrl: URL, callMethod: CallMethod, isJdk: Bool? = nil, _isError: Bool? = nil, _isAddedByUser: Bool? = nil) {
         self.arch = arch
         self.version = version
         self.displayVersion = displayVersion
         self.implementor = implementor
         self.executableUrl = executableUrl
         self.callMethod = callMethod
+        self.isJdk = isJdk
         self._isError = _isError
         self._isAddedByUser = _isAddedByUser
+    }
+    
+    func getTypeLabel() -> String {
+        guard let isJdk = isJdk else {
+            return "Java"
+        }
+        return isJdk ? "JDK" : "JRE"
     }
     
     private func asyncDetectVersion() async {
@@ -47,6 +56,7 @@ public class JavaVirtualMachine: Identifiable, Equatable {
     }
     
     public static func of(_ executableUrl: URL, _ addedByUser: Bool? = nil) -> JavaVirtualMachine {
+        // 判断文件是否合法
         guard FileManager.default.fileExists(atPath: executableUrl.path) else {
             err("\(executableUrl) not found!")
             return Error
@@ -56,6 +66,7 @@ public class JavaVirtualMachine: Identifiable, Equatable {
             return Error
         }
         
+        // 设置架构及调用方式
         let arch = getArchOfFile(executableUrl)
         let callMethod: CallMethod?
         if arch == ExecArchitectury.SystemArch || arch == .fatFile {
@@ -65,6 +76,8 @@ public class JavaVirtualMachine: Identifiable, Equatable {
         } else {
             callMethod = .incompatible
         }
+        
+        // 获取版本信息
         let releaseUrl = executableUrl.parent().parent().appending(path: "release")
         var version: Int = 0
         var displayVersion: String = "未知"
@@ -82,7 +95,18 @@ public class JavaVirtualMachine: Identifiable, Equatable {
         } else {
             asyncDetect = true
         }
-        let jvm = JavaVirtualMachine(arch: arch, version: version, displayVersion: displayVersion, implementor: implementor, executableUrl: executableUrl, callMethod: callMethod ?? .incompatible, _isAddedByUser: addedByUser)
+        
+        // 检查是否为 JDK
+        var isJdk: Bool? = nil
+        if executableUrl.path != "/usr/bin/java" {
+            if FileManager.default.fileExists(atPath: executableUrl.parent().appending(path: "javac").path) {
+                isJdk = true
+            } else {
+                isJdk = false
+            }
+        }
+        
+        let jvm = JavaVirtualMachine(arch: arch, version: version, displayVersion: displayVersion, implementor: implementor, executableUrl: executableUrl, callMethod: callMethod ?? .incompatible, isJdk: isJdk, _isAddedByUser: addedByUser)
         if asyncDetect {
             Task {
                 await jvm.asyncDetectVersion()

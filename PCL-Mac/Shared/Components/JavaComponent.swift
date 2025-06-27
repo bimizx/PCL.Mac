@@ -14,7 +14,7 @@ struct JavaComponent: View {
         MyListItemComponent {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Java \(jvm.displayVersion)")
+                    Text("\(jvm.getTypeLabel()) \(jvm.displayVersion)")
                         .font(.custom("PCL English", size: 16))
                         .padding(.leading, 2)
                     HStack {
@@ -43,7 +43,7 @@ struct JavaComponent: View {
                         }
                 }
             }
-            .padding(2)
+            .padding(5)
         }
     }
 }
