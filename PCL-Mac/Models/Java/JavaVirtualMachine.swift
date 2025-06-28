@@ -78,22 +78,28 @@ public class JavaVirtualMachine: Identifiable, Equatable {
         }
         
         // 获取版本信息
-        let releaseUrl = executableUrl.parent().parent().appending(path: "release")
+        let releaseUrls = [
+            executableUrl.parent().parent().appending(path: "release"),
+            executableUrl.parent().parent().parent().appending(path: "release")
+        ]
         var version: Int = 0
         var displayVersion: String = "未知"
-        var asyncDetect: Bool = false
+        var asyncDetect: Bool = true
         var implementor: String?
-        if FileManager.default.fileExists(atPath: releaseUrl.path) {
-            let release = PropertiesParser.parse(fileUrl: releaseUrl)
-            if let javaVersion = release["JAVA_VERSION"] {
-                displayVersion = javaVersion
-                version = Int(displayVersion.split(separator: ".")[displayVersion.starts(with: "1.") ? 1 : 0])!
-            } else {
-                err("加载 \(executableUrl.path()) 时出现错误: 未找到键 JAVA_VERSION 对应的值")
+        
+        for releaseUrl in releaseUrls {
+            if FileManager.default.fileExists(atPath: releaseUrl.path) {
+                let release = PropertiesParser.parse(fileUrl: releaseUrl)
+                if let javaVersion = release["JAVA_VERSION"] {
+                    displayVersion = javaVersion
+                    version = Int(displayVersion.split(separator: ".")[displayVersion.starts(with: "1.") ? 1 : 0])!
+                } else {
+                    err("加载 \(executableUrl.path()) 时出现错误: 未找到键 JAVA_VERSION 对应的值")
+                }
+                implementor = release["IMPLEMENTOR"]
+                asyncDetect = false
+                break
             }
-            implementor = release["IMPLEMENTOR"]
-        } else {
-            asyncDetect = true
         }
         
         // 检查是否为 JDK
@@ -119,7 +125,7 @@ public class JavaVirtualMachine: Identifiable, Equatable {
         do {
             let process = Process()
             process.executableURL = url
-            process.arguments = ["--version"]
+            process.arguments = ["-version"]
             
             let pipe = Pipe()
             process.standardOutput = pipe
@@ -133,7 +139,7 @@ public class JavaVirtualMachine: Identifiable, Equatable {
                 throw NSError(domain: "JavaVersionDetector", code: 1, userInfo: [NSLocalizedDescriptionKey: "Output decoding failed"])
             }
             
-            let versionPattern = #"(?<=java |openjdk )([0-9]{1,3}(?:[\.\-][\w\.]+)?)"#
+            let versionPattern = #"(?:openjdk|java)\s+version\s+"([0-9]{1,3}(?:[\.\-\+][\w\.\+]+)?)""#
             let regex = try NSRegularExpression(pattern: versionPattern, options: .caseInsensitive)
             if let match = regex.firstMatch(in: output, options: [], range: NSRange(location: 0, length: output.utf16.count)),
                 let range = Range(match.range(at: 1), in: output) {
@@ -144,9 +150,9 @@ public class JavaVirtualMachine: Identifiable, Equatable {
                     return (majorVersion, displayVersion)
                 }
             }
-            throw NSError(domain: "JavaVersionDetector", code: 2, userInfo: [NSLocalizedDescriptionKey: "Java 版本未找到"])
+            throw NSError(domain: "JavaVersionDetector", code: 2, userInfo: [NSLocalizedDescriptionKey: "\(url.path) 中的 Java 版本未找到"])
         } catch {
-            err("无法检测 java 版本: \(error)")
+            err("无法检测 java 版本: \(error.localizedDescription)")
         }
         return (0, "未知")
     }

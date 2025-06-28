@@ -4,9 +4,11 @@
 //
 //  Created by YiZhiMCQiu on 2025/5/18.
 //
-
 // 不改了，能跑就不要动
 //          by YiZhiMCQiu at 2025/6/6 in fix & optimizations (1)
+// 还是改改罢，JRE 搜索炸了
+//          by YiZhiMCQiu at 2025/6/28 in main
+
 import Foundation
 
 public class JavaSearch {
@@ -25,25 +27,31 @@ public class JavaSearch {
     }
     
     public static func search() throws -> [JavaVirtualMachine] {
-        var dirs: [String] = []
-        dirs.append("/usr/bin")
-        let jvmDirsRanges = [
+        var executableUrls: [URL] = [
+            URL(fileURLWithPath: "/usr/bin/java")
+        ]
+        
+        let javaDirectoryParents = [
             "/Library/Java/JavaVirtualMachines",
             "~/Library/Java/JavaVirtualMachines",
             "/opt/homebrew/opt/java/libexec"
         ]
-        jvmDirsRanges.forEach { jvmDirsPath in
-            do {
-                let jvmFolders = try FileManager.default.contentsOfDirectory(at: URL(fileURLWithPath: jvmDirsPath), includingPropertiesForKeys: [.isDirectoryKey])
-                    .filter { path in
-                        var isDirectory: ObjCBool = false
-                        return FileManager.default.fileExists(atPath: path.path(), isDirectory: &isDirectory) && isDirectory.boolValue && isValidJvmDirectory(path)
-                    }
-                    .map{ toJvmDirectory($0).path() }
-                dirs.append(contentsOf: jvmFolders)
-            } catch { }
+            .map { URL(fileURLWithUserPath: $0).path }
+            .filter { FileManager.default.fileExists(atPath: $0) }
+        
+        for javaDirectoryParent in javaDirectoryParents {
+            let parentUrl = URL(fileURLWithPath: javaDirectoryParent)
+            for javaDirectory in try FileManager.default.contentsOfDirectory(atPath: javaDirectoryParent) {
+                let javaHomeUrl = parentUrl.appending(path: javaDirectory).appending(path: "Contents").appending(path: "Home")
+                executableUrls.append(javaHomeUrl.appending(path: "bin").appending(path: "java"))
+                executableUrls.append(javaHomeUrl.appending(path: "jre").appending(path: "bin").appending(path: "java"))
+            }
         }
-        return dirs.map { JavaVirtualMachine.of(URL(fileURLWithPath: $0.replacingOccurrences(of: "~", with: FileManager.default.homeDirectoryForCurrentUser.path)).appending(path: "java")) }
+        
+        return executableUrls
+            .filter { FileManager.default.fileExists(atPath: $0.path)}
+            .map { JavaVirtualMachine.of($0) }
+            .filter { !$0.isError }
     }
     
     private static func isValidJvmDirectory(_ path: URL) -> Bool {
