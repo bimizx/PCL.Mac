@@ -60,7 +60,7 @@ public class MinecraftLauncher {
         }
     }
     
-    private static func buildJvmArguments(_ instance: MinecraftInstance) -> [String] {
+    public static func buildJvmArguments(_ instance: MinecraftInstance) -> [String] {
         let values: [String: String] = [
             "natives_directory": instance.runningDirectory.appending(path: "natives").path,
             "launcher_name": "PCL Mac",
@@ -118,10 +118,10 @@ public class MinecraftLauncher {
         return urls.joined(separator: ":")
     }
     
-    private static func buildGameArguments(_ instance: MinecraftInstance) -> [String] {
+    public static func buildGameArguments(_ instance: MinecraftInstance) -> [String] {
         let values: [String: String] = [
             "auth_player_name": "PCL_Mac",
-            "version_name": instance.version.displayName,
+            "version_name": instance.version!.displayName,
             "game_directory": instance.runningDirectory.path,
             "assets_root": instance.minecraftDirectory.assetsUrl.path,
             "assets_index_name": instance.manifest.assetIndex.id,

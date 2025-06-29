@@ -28,7 +28,6 @@
 */
 
 import Foundation
-import Zip
 
 public class MinecraftInstaller {
     private init() {}
@@ -184,14 +183,13 @@ public class MinecraftInstaller {
             let jarUrl: URL = task.minecraftDirectory.librariesUrl.appending(path: native.path)
             
             do {
-                try Zip.unzipFile(jarUrl, destination: nativesUrl, overwrite: true, password: nil)
+                try FileManager.default.unzipItem(at: jarUrl, to: nativesUrl)
+                processLibs(nativesUrl)
                 debug("解压 \(native.path) 成功")
             } catch {
                 err("无法解压本地库: \(error.localizedDescription)")
             }
         }
-        processLibs(nativesUrl)
-        
     }
     
     // MARK: 处理解压结果
@@ -247,7 +245,7 @@ public class MinecraftInstaller {
         }
         
         // 初始化实例
-        let _ = MinecraftInstance.create(runningDirectory: task.versionUrl, config: MinecraftConfig(name: task.name))
+        let _ = MinecraftInstance.create(runningDirectory: task.versionUrl, config: MinecraftConfig(name: task.name, mainClass: task.manifest!.mainClass))
         
         // 修改 GLFW
         if let glfw = task.manifest!.getNeededLibraries().find({ $0.name.contains("lwjgl-glfw") }) {
@@ -296,7 +294,7 @@ public class MinecraftInstaller {
     
     // MARK: 创建补全资源任务
     public static func createCompleteTask(_ instance: MinecraftInstance, _ callback: (() -> Void)? = nil) -> InstallTask {
-        let task = InstallTask(minecraftVersion: instance.version, minecraftDirectory: instance.minecraftDirectory, name: instance.config.name) { task in
+        let task = InstallTask(minecraftVersion: instance.version!, minecraftDirectory: instance.minecraftDirectory, name: instance.config.name) { task in
             Task {
                 task.manifest = instance.manifest
                 await downloadAssetIndex(task)

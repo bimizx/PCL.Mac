@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftyJSON
+import ZIPFoundation
 
 public class MinecraftInstance: Identifiable {
     private static var cache: [URL : MinecraftInstance] = [:]
@@ -18,7 +19,7 @@ public class MinecraftInstance: Identifiable {
     public let runningDirectory: URL
     public let minecraftDirectory: MinecraftDirectory
     public let configPath: URL
-    public let version: MinecraftVersion
+    public private(set) var version: MinecraftVersion? = nil
     public var process: Process?
     public let manifest: ClientManifest!
     public var config: MinecraftConfig
@@ -27,7 +28,6 @@ public class MinecraftInstance: Identifiable {
     
     public static func create(runningDirectory: URL, config: MinecraftConfig? = nil, _ caller: String = #file, _ line: Int = #line) -> MinecraftInstance? {
         if let cached = cache[runningDirectory] {
-            warn("正在创建被缓存的实例", file: caller, line: line)
             return cached
         }
         
@@ -47,7 +47,6 @@ public class MinecraftInstance: Identifiable {
         do {
             let handle = try FileHandle(forReadingFrom: runningDirectory.appending(path: runningDirectory.lastPathComponent + ".json"))
             manifest = try ClientManifest.parse(try handle.readToEnd()!)
-            version = MinecraftVersion(displayName: manifest.id)
         } catch {
             err("无法加载客户端 JSON: \(error)")
             return nil
@@ -63,15 +62,16 @@ public class MinecraftInstance: Identifiable {
                 return nil
             }
         } else {
-            self.config = config ?? MinecraftConfig(name: runningDirectory.lastPathComponent)
+            self.config = config ?? MinecraftConfig(name: runningDirectory.lastPathComponent, mainClass: manifest.mainClass)
         }
         
-        // 检查 Java 路径是否存在
+        detectVersion()
+        
+        self.version = MinecraftVersion(displayName: self.config.version!)
         if self.config.javaPath == nil {
-            self.config.javaPath = MinecraftInstance.findSuitableJava(version)?.executableUrl.path
+            self.config.javaPath = MinecraftInstance.findSuitableJava(self.version!)?.executableUrl.path
         }
-        
-        saveConfig()
+        self.saveConfig()
     }
     
     public func saveConfig() {
@@ -121,24 +121,52 @@ public class MinecraftInstance: Identifiable {
     }
     
     public func launch() async {
-        // 资源补全
-        await withCheckedContinuation { continuation in
-            let task = MinecraftInstaller.createCompleteTask(self, continuation.resume)
-            task.start()
+        if !config.skipResourcesCheck {
+            log("正在进行资源完整性检查")
+            await withCheckedContinuation { continuation in
+                let task = MinecraftInstaller.createCompleteTask(self, continuation.resume)
+                task.start()
+            }
         }
         MinecraftLauncher.launch(self)
+    }
+    
+    public func detectVersion() {
+        guard config.version == nil else {
+            return
+        }
+        
+        do {
+            let archive = try Archive(url: runningDirectory.appending(path: "\(config.name).jar"), accessMode: .read)
+            guard let entry = archive["version.json"] else {
+                throw NSError(domain: "MinecraftInstance", code: 2, userInfo: [NSLocalizedDescriptionKey: "version.json 不存在"])
+            }
+            
+            var data = Data()
+            _ = try archive.extract(entry, consumer: { (chunk) in
+                data.append(chunk)
+            })
+            
+            self.config.version = try JSON(data: data)["id"].stringValue
+        } catch {
+            err("无法检测版本: \(error.localizedDescription)，正在使用清单版本")
+            self.config.version = self.manifest!.id
+        }
     }
 }
 
 public struct MinecraftConfig: Codable {
     public let name: String
+    public var version: String?
     public var mainClass: String
     public var additionalLibraries: Set<String> = []
     public var javaPath: String!
     public var clientBrand: ClientBrand
+    public var skipResourcesCheck: Bool = false
     
     public init(_ json: JSON) {
         self.name = json["name"].stringValue
+        self.version = json["version"].string
         self.mainClass = json["mainClass"].string ?? "net.minecraft.client.main.Main"
         self.additionalLibraries = .init(json["additionalLibraries"].array?.map { $0.stringValue } ?? [])
         self.javaPath = json["javaPath"].string
@@ -147,9 +175,10 @@ public struct MinecraftConfig: Codable {
         } else {
             self.clientBrand = .vanilla
         }
+        self.skipResourcesCheck = json["skipResourcesCheck"].boolValue
     }
     
-    public init(name: String, mainClass: String = "net.minecraft.client.main.Main", javaPath: String? = nil) {
+    public init(name: String, mainClass: String, javaPath: String? = nil) {
         self.name = name
         self.mainClass = mainClass
         self.javaPath = javaPath
