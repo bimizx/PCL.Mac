@@ -143,6 +143,7 @@ struct LaunchView: View {
                     }
                 }
                 .padding()
+                .padding(.bottom, 20)
             }
             Spacer()
         }

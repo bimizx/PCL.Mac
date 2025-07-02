@@ -62,6 +62,7 @@ struct JavaSettingsView: View {
                 .padding()
             }
             .padding()
+            .padding(.bottom, 30)
             .foregroundStyle(Color("TextColor"))
         }
         .scrollIndicators(.never)

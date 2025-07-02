@@ -91,6 +91,7 @@ struct MinecraftDownloadView: View {
                         }
                         Spacer()
                     }
+                    .padding(.bottom, 20)
                 }
                 .zIndex(0)
                 .transition(.move(edge: .leading).combined(with: .opacity))

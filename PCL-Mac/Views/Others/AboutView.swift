@@ -98,7 +98,7 @@ struct AboutView: View {
             .padding()
             
             StaticMyCardComponent(title: "许可与版权声明") {
-                VStack {
+                VStack(spacing: 0) {
                     ForEach(
                         [
                             (name: "Alamofire", license: "MIT", repo: "Alamofire/Alamofire"),
