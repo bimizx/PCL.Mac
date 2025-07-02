@@ -8,22 +8,33 @@
 import Foundation
 import SwiftUI
 import Alamofire
+import UserNotifications
+import SwiftyJSON
 
-public struct DeviceAuthResponse: Codable {
+public class AuthToken: ObservableObject {
+    @Published fileprivate(set) var minecraftAccessToken: String?
+    @Published private(set) var accessToken: String
+    @Published private(set) var refreshToken: String
+    
+    init(accessToken: String, refreshToken: String) {
+        self.accessToken = accessToken
+        self.refreshToken = refreshToken
+    }
+}
+
+public struct DeviceAuthResponse {
     let deviceCode: String
     let expiresIn: Int
     let interval: Int
-    let message: String
     let userCode: String
     let verificationUri: String
-
-    enum CodingKeys: String, CodingKey {
-        case deviceCode = "device_code"
-        case expiresIn = "expires_in"
-        case interval
-        case message
-        case userCode = "user_code"
-        case verificationUri = "verification_uri"
+    
+    init(_ json: JSON) {
+        self.deviceCode = json["device_code"].stringValue
+        self.expiresIn = json["expires_in"].intValue
+        self.interval = json["interval"].intValue
+        self.userCode = json["user_code"].stringValue
+        self.verificationUri = json["verification_uri"].stringValue
     }
 }
 
@@ -39,17 +50,37 @@ public class MsLogin {
             ],
             encoder: URLEncodedFormParameterEncoder.default
         ).serializingResponse(using: .data).value,
-           let authResponse = try? JSONDecoder().decode(DeviceAuthResponse.self, from: data) {
+           let json = try? JSON(data: data) {
+            let authResponse = DeviceAuthResponse(json)
             NSPasteboard.general.clearContents()
             NSPasteboard.general.setString(authResponse.userCode, forType: .string)
             NSWorkspace.shared.open(URL(string: authResponse.verificationUri)!)
+            UNUserNotificationCenter.current().setNotificationCategories([])
+            
+            let content = UNMutableNotificationContent()
+            content.title = "登录"
+            content.body = "请将剪切板中的内容粘贴到输入框中"
+            
+            let request = UNNotificationRequest(
+                identifier: UUID().uuidString,
+                content: content,
+                trigger: nil // 立即触发
+            )
+            try? await UNUserNotificationCenter.current().add(request)
+            await ContentView.setPopup(.init("登录 Minecraft", """
+登录网页将自动开启，请在网页中输入 \(authResponse.userCode)（已自动复制）。
+
+如果网络环境不佳，网页可能一直加载不出来，届时请使用使用加速器或 VPN 以改善网络环境。
+你也可以用其他设备打开 \(authResponse.verificationUri) 并输入上述代码。
+""", [.Ok]))
+            
             return authResponse
         }
         return nil
     }
     
     // MARK: 轮询获取 Access Token
-    public static func getAccessToken(_ deviceAuthResponse: DeviceAuthResponse) async -> String? {
+    public static func getAccessToken(_ deviceAuthResponse: DeviceAuthResponse) async -> AuthToken? {
         return await withCheckedContinuation { continuation in
             let queue = DispatchQueue(label: "io.pcl-community.timer")
             let timer = DispatchSource.makeTimerSource(queue: queue)
@@ -58,11 +89,11 @@ public class MsLogin {
             let totalRequests = Int(Double(deviceAuthResponse.expiresIn) / interval)
             var isFinished = false
 
-            func finish(_ token: String?) {
+            func finish(_ authToken: AuthToken?) {
                 if !isFinished {
                     isFinished = true
                     timer.cancel()
-                    continuation.resume(returning: token)
+                    continuation.resume(returning: authToken)
                 }
             }
 
@@ -80,18 +111,17 @@ public class MsLogin {
                             "device_code": deviceAuthResponse.deviceCode
                         ]
                     ).serializingResponse(using: .data).value,
-                       let dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                       let accessToken = dict["access_token"] as? String,
-                       let refreshToken = dict["refresh_token"] as? String {
-                        AppSettings.shared.refreshToken = refreshToken
-                        finish(accessToken)
+                       let json = try? JSON(data: data),
+                       let accessToken = json["access_token"].string,
+                       let refreshToken = json["refresh_token"].string {
+                        finish(.init(accessToken: accessToken, refreshToken: refreshToken))
                         return
                     }
                 }
                 
                 debug("轮询第 \(requestCount) / \(totalRequests) 次")
                 if requestCount >= totalRequests {
-                    debug("无结果")
+                    err("轮询已结束，但没有获取到 Access Token")
                     finish(nil)
                 }
             }
@@ -101,7 +131,7 @@ public class MsLogin {
     }
     
     // MARK: 刷新 Access Token
-    public static func refreshAccessToken(_ refreshToken: String) async -> String? {
+    public static func refreshAccessToken(_ refreshToken: String) async -> AuthToken? {
         if let data = try? await AF.request(
             "https://login.microsoftonline.com/consumers/oauth2/v2.0/token",
             method: .post,
@@ -112,19 +142,22 @@ public class MsLogin {
                 "scope": "XboxLive.signin offline_access"
             ]
         ).serializingResponse(using: .data).value,
-           let dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-           let accessToken = dict["access_token"] as? String,
-           let refreshToken = dict["refresh_token"] as? String {
-            AppSettings.shared.refreshToken = refreshToken
-            AppSettings.shared.lastRefreshToken = Date()
-            return accessToken
+           let json = try? JSON(data: data),
+           let accessToken = json["access_token"].string,
+           let refreshToken = json["refresh_token"].string {
+            return .init(accessToken: accessToken, refreshToken: refreshToken)
         }
         
         return nil
     }
     
     // MARK: 获取 Minecraft Access Token
-    public static func getMinecraftAccessToken(_ accessToken: String) async -> String? {
+    public static func getMinecraftAccessToken(id: UUID? = nil, _ accessToken: String) async -> String? {
+        if let id = id,
+           let accessToken = AccessTokenStorage.shared.getTokenInfo(for: id)?.accessToken {
+            return accessToken
+        }
+        
         if let data = try? await AF.request(
             "https://user.auth.xboxlive.com/user/authenticate",
             method: .post,
@@ -136,11 +169,12 @@ public class MsLogin {
                 ],
                 "RelyingParty": "http://auth.xboxlive.com",
                 "TokenType": "JWT"
-            ]
+            ],
+            encoding: JSONEncoding.default
         ).serializingResponse(using: .data).value,
-           let dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-           let token = dict["Token"] as? String,
-           let uhs = (dict["DisplayClaims"] as? [String : [[String : String]]])?["xui"]?.first?["uhs"] {
+           let json = try? JSON(data: data),
+           let token = json["Token"].string,
+           let uhs = json["DisplayClaims"]["xui"].array?.first?["uhs"].string {
             if let data = try? await AF.request(
                 "https://xsts.auth.xboxlive.com/xsts/authorize",
                 method: .post,
@@ -153,45 +187,66 @@ public class MsLogin {
                     ],
                     "RelyingParty": "rp://api.minecraftservices.com/",
                     "TokenType": "JWT"
-                ]
+                ],
+                encoding: JSONEncoding.default
             ).serializingResponse(using: .data).value,
-               let dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-               let token = dict["Token"] as? String {
+               let json = try? JSON(data: data),
+               let token = json["Token"].string {
                 if let data = try? await AF.request(
                     "https://api.minecraftservices.com/authentication/login_with_xbox",
                     method: .post,
                     parameters: [
                         "identityToken": "XBL3.0 x=\(uhs);\(token)"
-                    ]
+                    ],
+                    encoding: JSONEncoding.default
                 ).serializingResponse(using: .data).value,
-                   let dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                   let accessToken = dict["access_token"] as? String {
+                   let json = try? JSON(data: data),
+                   let accessToken = json["access_token"].string {
+                    if let id = id {
+                        AccessTokenStorage.shared.add(id: id, accessToken: accessToken, expiriesIn: json["expires_in"].intValue)
+                    }
                     return accessToken
+                } else {
+                    err("无法获取 Minecraft 访问令牌")
                 }
+            } else {
+                err("XSTS 身份验证失败")
             }
+        } else {
+            err("Xbox Live 身份验证失败")
         }
         return nil
     }
     
-    /// 数据直接存到 LocalStorage 里，不返回
-    public static func login() async {
-        var accessToken: String!
+    // MARK: 检测是否拥有 Minecraft
+    public static func hasMinecraftGame(_ authToken: AuthToken) async -> Bool {
+        guard let accessToken = authToken.minecraftAccessToken else { return false }
         
-        if let refreshToken = AppSettings.shared.refreshToken {
-            if abs(Date().timeIntervalSince(AppSettings.shared.lastRefreshToken)) < 86400 {
-                log("无需刷新 Access Token")
-                return
-            }
-            accessToken = await refreshAccessToken(refreshToken)
-        } else {
-            if let deviceCode = await getDeviceCode() {
-                accessToken = await getAccessToken(deviceCode)
-            } else {
-                err("无法获取设备码")
-            }
+        if let data = try? await AF.request(
+            "https://api.minecraftservices.com/entitlements/mcstore",
+            method: .get,
+            encoding: JSONEncoding.default,
+            headers: .init(
+                [.authorization("Bearer \(accessToken)")]
+            )
+        ).serializingResponse(using: .data).value,
+           let json = try? JSON(data: data) {
+            return json["items"].arrayValue.contains(where: { $0["name"].stringValue == "product_minecraft" })
         }
         
-        AppSettings.shared.accessToken = await getMinecraftAccessToken(accessToken)
-        log("已刷新 Access Token")
+        return false
+    }
+    
+    /// 登录并获取 Access Token
+    public static func signIn() async -> AuthToken? {
+        log("正在获取设备码")
+        guard let deviceCode = await getDeviceCode() else {
+            err("无法获取设备码")
+            return nil
+        }
+        
+        guard let authToken = await getAccessToken(deviceCode) else { return nil }
+        authToken.minecraftAccessToken = await getMinecraftAccessToken(authToken.accessToken)
+        return authToken
     }
 }

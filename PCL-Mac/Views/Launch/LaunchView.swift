@@ -8,16 +8,44 @@
 import SwiftUI
 
 fileprivate struct LeftTab: View {
-    @ObservedObject private var dataManager: DataManager = DataManager.shared
+    @ObservedObject private var dataManager: DataManager = .shared
+    @ObservedObject private var accountManager: AccountManager = .shared
     
     @State private var instance: MinecraftInstance?
     
     var body: some View {
         VStack {
             Spacer()
-            Text("PCL_Mac")
-                .font(.custom("PCL English", size: 16))
-                .foregroundStyle(Color("TextColor"))
+            
+            MyListItemComponent {
+                VStack {
+                    if let account = accountManager.getAccount() {
+                        MinecraftAvatarComponent(type: .username, src: account.name)
+                        Text(account.name)
+                            .font(.custom("PCL English", size: 16))
+                            .foregroundStyle(Color("TextColor"))
+                    } else {
+                        Image("Missingno")
+                            .interpolation(.none)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 58)
+                            .padding(6)
+                        Text("无账号")
+                            .font(.custom("PCL English", size: 16))
+                            .foregroundStyle(Color("TextColor"))
+                    }
+                    Text("点击头像进入账号管理")
+                        .font(.custom("PCL English", size: 10))
+                        .foregroundStyle(Color(hex: 0x8C8C8C))
+                        .padding(.top, 2)
+                }
+                .padding(4)
+            }
+            .onTapGesture {
+                dataManager.router.append(.accountManagement)
+            }
+            
             Spacer()
             if let instance = self.instance {
                 MyButtonComponent(text: "启动游戏", descriptionText: instance.config.name, foregroundStyle: AppSettings.shared.theme.getTextStyle()) {

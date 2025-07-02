@@ -51,8 +51,8 @@ struct PCL_MacTests {
     }
     
     @Test func testMsLogin() async throws {
-        await MsLogin.login()
-        print(AppSettings.shared.accessToken!)
+        try await Task.sleep(nanoseconds: 5_000_000_000)
+        print(AccountManager.shared.getAccount()!.getAccessToken())
     }
     
     @Test func testNotifaction() async throws {
@@ -122,5 +122,10 @@ struct PCL_MacTests {
         for summary in summaries {
             print("\(await summary.title) \(await summary.infoUrl)")
         }
+    }
+    
+    @Test func testOfflineAccount() {
+        let account = OfflineAccount("PCL_Mac")
+        print(account.uuid.uuidString.replacingOccurrences(of: "-", with: "").lowercased())
     }
 }
