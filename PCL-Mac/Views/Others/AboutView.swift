@@ -96,8 +96,46 @@ struct AboutView: View {
                 .padding(.trailing)
             }
             .padding()
+            
+            StaticMyCardComponent(title: "许可与版权声明") {
+                VStack {
+                    ForEach(
+                        [
+                            (name: "Alamofire", license: "MIT", repo: "Alamofire/Alamofire"),
+                            (name: "SwiftyJSON", license: "MIT", repo: "SwiftyJSON/SwiftyJSON"),
+                            (name: "ZIPFoundation", license: "MIT", repo: "weichsel/ZIPFoundation")
+                        ]
+                        , id: \.name) { dependency in
+                            DependencyView(name: dependency.name, license: dependency.license, repo: dependency.repo)
+                        }
+                }
+            }
+            .padding()
+            .padding(.bottom, 25)
         }
-        .scrollIndicators(.visible)
+        .scrollIndicators(.never)
+    }
+    
+    struct DependencyView: View {
+        let name: String
+        let license: String
+        let repo: String
+        
+        var body: some View {
+            MyListItemComponent {
+                HStack {
+                    VStack(alignment: .leading) {
+                        Text(name)
+                        Text("\(license) | https://github.com/\(repo)")
+                            .foregroundStyle(Color(hex: 0x8C8C8C))
+                    }
+                    Spacer()
+                }
+                .font(.custom("PCL English", size: 14))
+                .foregroundStyle(Color("TextColor"))
+                .padding()
+            }
+        }
     }
 }
 
