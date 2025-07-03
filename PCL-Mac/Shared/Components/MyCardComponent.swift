@@ -95,6 +95,7 @@ struct MyCardComponent<Content: View>: View {
 
                 ZStack(alignment: .top) {
                     content
+                        .foregroundStyle(Color("TextColor"))
                         .background(
                             GeometryReader { proxy in
                                 Color.clear
@@ -156,6 +157,7 @@ struct StaticMyCardComponent<Content: View>: View {
             VStack {
                 MaskedTextRectangle(text: title)
                 content()
+                    .foregroundStyle(Color("TextColor"))
             }
         }
     }
@@ -174,6 +176,7 @@ struct TitlelessMyCardComponent<Content: View>: View {
         BaseCardContainer(index: index) { _ in
             VStack {
                 content()
+                    .foregroundStyle(Color("TextColor"))
             }
         }
     }
