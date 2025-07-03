@@ -21,6 +21,20 @@ struct PCL_MacApp: App {
                 .background(WindowAccessor())
         }
         .commands {
+            CommandGroup(replacing: .appInfo) {
+                Button("关于 PCL-Mac") {
+                    DataManager.shared.router.setRoot(.others)
+                    DataManager.shared.router.append(.about)
+                }
+            }
+            
+            CommandGroup(replacing: .appSettings) {
+                Button("设置") {
+                    DataManager.shared.router.setRoot(.settings)
+                    DataManager.shared.router.append(.personalization)
+                }
+            }
+            
             CommandGroup(replacing: .newItem) { } // 修复 #21
         }
         .windowStyle(.hiddenTitleBar) // 避免刚启动时闪一下标题栏
@@ -35,7 +49,7 @@ struct WindowAccessor: NSViewRepresentable {
                 window.setContentSize(NSSize(width: 815, height: 465))
                 window.isOpaque = false
                 window.backgroundColor = NSColor.clear
-                window.styleMask = [.borderless, .miniaturizable]
+                window.styleMask = [.borderless, .miniaturizable, .resizable]
                 
                 if let contentView = window.contentView {
                     contentView.wantsLayer = true
