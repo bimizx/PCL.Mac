@@ -17,10 +17,13 @@ struct AnnouncementHistoryView: View {
                 .font(.custom("PCL English", size: 14))
                 .foregroundStyle(Color("TextColor"))
                 .padding()
-            ForEach(announcementManager.history) { announcement in
-                announcement.createView()
-                    .padding()
+            VStack {
+                ForEach(announcementManager.history) { announcement in
+                    announcement.createView()
+                        .padding()
+                }
             }
+            .padding(.bottom, 25)
         }
         .scrollIndicators(.never)
         .onAppear {
