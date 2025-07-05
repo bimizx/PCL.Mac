@@ -30,6 +30,8 @@ class Announcement {
                     switch body {
                     case .text(let text):
                         Text(text)
+                            .lineLimit(nil)
+                            .fixedSize(horizontal: false, vertical: true)
                     case .image(let base64):
                         Image(nsImage: NSImage(data: Data(base64Encoded: base64, options:.ignoreUnknownCharacters)!)!)
                             .resizable()
