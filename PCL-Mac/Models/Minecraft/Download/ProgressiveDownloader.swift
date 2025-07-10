@@ -40,6 +40,10 @@ public final class ProgressiveDownloader: NSObject, URLSessionDownloadDelegate {
     }
 
     public func start() {
+        if urls.isEmpty {
+            completion?()
+            return
+        }
         startTime = Date()
         lock.lock()
         nextIndex = 0
