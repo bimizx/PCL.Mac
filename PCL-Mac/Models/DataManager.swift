@@ -23,8 +23,7 @@ class DataManager: ObservableObject {
     @Published var leftTabContent: AnyView = AnyView(EmptyView())
     @Published var leftTabId: UUID = .init()
     @Published var downloadSpeed: Double = 0
-    @Published var currentStagePercentage: Double = 0
-    @Published var inprogressInstallTask: InstallTask?
+    @Published var inprogressInstallTasks: InstallTasks?
     
     private var routerCancellable: AnyCancellable?
     

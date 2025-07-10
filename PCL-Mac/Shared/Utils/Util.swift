@@ -7,6 +7,7 @@
 
 import Foundation
 import ZIPFoundation
+import CryptoKit
 
 public class Util {
     public static func getMainClass(_ jarUrl: URL) -> String? {
@@ -99,6 +100,46 @@ public class Util {
         } catch {
             err("在清理时发生错误: \(error.localizedDescription)")
         }
+    }
+    
+    public static func unzip(archiveUrl: URL, destination: URL, replace: Bool = true) {
+        let archive: Archive
+        do {
+            archive = try Archive(url: archiveUrl, accessMode: .read)
+        } catch {
+            err("无法读取文件: \(error.localizedDescription)")
+            return
+        }
+        
+        for entry in archive {
+            do {
+                let destinationFileURL = destination.appendingPathComponent(entry.path)
+                if FileManager.default.fileExists(atPath: destinationFileURL.path) && replace {
+                    try FileManager.default.removeItem(at: destinationFileURL)
+                    debug("已删除重复文件 \(destinationFileURL.lastPathComponent)")
+                }
+                _ = try archive.extract(entry, to: destinationFileURL)
+            } catch {
+                err("无法解压文件: \(error.localizedDescription)")
+            }
+        }
+    }
+    
+    public static func sha1OfFile(url: URL) throws -> String {
+        let fileHandle = try FileHandle(forReadingFrom: url)
+        defer { try? fileHandle.close() }
+        
+        var hasher = Insecure.SHA1()
+        while true {
+            let data = try fileHandle.read(upToCount: 1024 * 1024)
+            if let data = data, !data.isEmpty {
+                hasher.update(data: data)
+            } else {
+                break
+            }
+        }
+        let digest = hasher.finalize()
+        return digest.map { String(format: "%02x", $0) }.joined()
     }
 }
 

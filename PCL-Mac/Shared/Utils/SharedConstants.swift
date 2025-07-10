@@ -13,12 +13,13 @@ public struct SharedConstants {
     public let applicationContentsUrl: URL
     public let applicationResourcesUrl: URL
     public let applicationLogUrl: URL
-    public let applicationSupportUrl: URL = URL(fileURLWithUserPath: "~/Library/Application Support/PCL-Mac")
+    public let applicationSupportUrl: URL = .applicationSupportDirectory.appending(path: "PCL-Mac")
     public let applicationTemperatureUrl: URL
     
     public let dateFormatter = DateFormatter()
     
     public let isDevelopment: Bool
+    public let branch: String
     
     private init() {
         self.applicationContentsUrl = Bundle.main.bundleURL.appending(path: "Contents")
@@ -30,5 +31,7 @@ public struct SharedConstants {
         self.dateFormatter.timeZone = TimeZone(identifier: "Asia/Shanghai")
         
         self.isDevelopment = (Bundle.main.object(forInfoDictionaryKey: "IS_DEVELOPMENT") as! String) == "false" ? false : true
+        let branch = Bundle.main.object(forInfoDictionaryKey: "BRANCH") as! String
+        self.branch = branch.isEmpty ? "本地构建" : branch
     }
 }
