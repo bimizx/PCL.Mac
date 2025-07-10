@@ -31,3 +31,7 @@ class HintManager: ObservableObject {
         }
     }
 }
+
+func hint(_ text: String, _ type: HintType = .info) {
+    HintManager.default.add(.init(text: text, type: type))
+}

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct VersionListView: View {
     @ObservedObject private var dataManager: DataManager = DataManager.shared
@@ -66,6 +67,7 @@ struct VersionListView: View {
                     .padding(.top, 12)
                 }
                 .padding()
+                .padding(.bottom, 25)
             }
         }
         .scrollIndicators(.never)
@@ -74,6 +76,50 @@ struct VersionListView: View {
                 EmptyView()
             }
         }
+        .onDrop(of: [.folder], delegate: VersionDropDelegate())
+    }
+}
+
+class VersionDropDelegate: DropDelegate {
+    func validateDrop(info: DropInfo) -> Bool {
+        return info.hasItemsConforming(to: [.folder])
+    }
+    
+    func performDrop(info: DropInfo) -> Bool {
+        let providers = info.itemProviders(for: [.folder])
+        for provider in providers {
+            provider.loadItem(forTypeIdentifier: provider.registeredTypeIdentifiers[0], options: nil) { item, error in
+                if let error = error {
+                    err(error.localizedDescription)
+                }
+                
+                if let url = item as? URL, url.hasDirectoryPath {
+                    guard FileManager.default.fileExists(atPath: url.appending(path: "\(url.lastPathComponent).json").path) else {
+                        hint("请拖入正确的 Minecraft 版本文件夹！", .critical)
+                        return
+                    }
+                    
+                    hint("正在导入实例 \(url.lastPathComponent)……")
+                    Task {
+                        let dest = URL(fileURLWithUserPath: "~/PCL-Mac-minecraft/versions/\(url.lastPathComponent)")
+                        if FileManager.default.fileExists(atPath: dest.path) {
+                            hint("已存在同名实例！", .critical)
+                            return
+                        }
+                        do {
+                            try FileManager.default.copyItem(at: url, to: dest)
+                            AppSettings.shared.defaultInstance = url.lastPathComponent
+                            hint("导入成功！", .finish)
+                        } catch {
+                            err("无法复制实例: \(error.localizedDescription)")
+                            hint("无法复制实例: \(error.localizedDescription)", .critical)
+                        }
+                    }
+                }
+            }
+            return true
+        }
+        return false
     }
 }
 
