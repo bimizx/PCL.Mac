@@ -47,7 +47,7 @@ struct SettingsView: View {
         case .personalization:
             return AnyView(
                 HStack {
-                    Image("PersonalizationItem")
+                    Image("PersonalizationIcon")
                         .resizable()
                         .scaledToFit()
                         .frame(width: 20, height: 20)
@@ -58,7 +58,7 @@ struct SettingsView: View {
         case .javaSettings:
             return AnyView(
                 HStack {
-                    Image("JavaManagerItem")
+                    Image("JavaManagerIcon")
                         .resizable()
                         .scaledToFit()
                         .frame(width: 20, height: 20)

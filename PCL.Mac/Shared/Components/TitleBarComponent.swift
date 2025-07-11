@@ -73,7 +73,7 @@ struct TitleBarComponent: View {
                 Spacer()
                 MenuItemButton(route: .launch, parent: self)
                 MenuItemButton(route: .download, parent: self)
-                MenuItemButton(route: .multiplayer, parent: self)
+//                MenuItemButton(route: .multiplayer, parent: self)
                 MenuItemButton(route: .settings, parent: self)
                 MenuItemButton(route: .others, parent: self)
             }
@@ -153,11 +153,11 @@ struct MenuItemButton: View {
     
     private func getImage() -> Image {
         let key = switch route {
-        case .launch: "LaunchItem"
-        case .download: "DownloadItem"
-        case .multiplayer: "MultiplayerItem"
-        case .settings: "SettingsItem"
-        case .others: "OthersItem"
+        case .launch: "LaunchIcon"
+        case .download: "DownloadIcon"
+        case .multiplayer: "MultiplayerIcon"
+        case .settings: "SettingsIcon"
+        case .others: "OthersIcon"
         default: ""
         }
         return Image(key)

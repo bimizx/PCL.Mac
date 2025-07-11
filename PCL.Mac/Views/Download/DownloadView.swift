@@ -57,7 +57,7 @@ struct DownloadView: View {
         case .minecraftDownload:
             return AnyView(
                 HStack {
-                    Image("GameDownloadItem")
+                    Image("GameDownloadIcon")
                         .resizable()
                         .scaledToFit()
                         .frame(width: 20, height: 20)
@@ -68,7 +68,7 @@ struct DownloadView: View {
         case .modSearch:
             return AnyView(
                 HStack {
-                    Image("ModDownloadItem")
+                    Image("ModDownloadIcon")
                         .resizable()
                         .scaledToFit()
                         .frame(width: 20, height: 20)

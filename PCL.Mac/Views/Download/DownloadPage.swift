@@ -59,7 +59,7 @@ struct DownloadPage: View {
                     Spacer()
                     RoundedButton {
                         HStack {
-                            Image("DownloadItem")
+                            Image("DownloadIcon")
                                 .resizable()
                                 .scaledToFit()
                                 .frame(width: 20)

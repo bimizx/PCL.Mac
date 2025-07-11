@@ -24,7 +24,7 @@ struct ContentView: View {
                         VStack() {
                             Spacer()
                             RoundedButton {
-                                Image("DownloadItem")
+                                Image("DownloadIcon")
                                     .resizable()
                                     .scaledToFit()
                                     .frame(width: 20)

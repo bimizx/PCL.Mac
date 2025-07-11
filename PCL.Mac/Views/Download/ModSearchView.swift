@@ -54,11 +54,11 @@ struct ModListItem: View {
                     
                     ZStack(alignment: .leading) {
                         if !summary.supportDescription.isEmpty {
-                            ImageAndTextComponent(imageName: "SettingsItem", text: summary.supportDescription)
+                            ImageAndTextComponent(imageName: "SettingsIcon", text: summary.supportDescription)
                         }
-                        ImageAndTextComponent(imageName: "DownloadItem", text: summary.downloads)
+                        ImageAndTextComponent(imageName: "DownloadIcon", text: summary.downloads)
                             .offset(x: summary.supportDescription.isEmpty ? 0 : 200)
-                        ImageAndTextComponent(imageName: "UploadItem", text: summary.lastUpdate)
+                        ImageAndTextComponent(imageName: "UploadIcon", text: summary.lastUpdate)
                             .offset(x: 300)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)

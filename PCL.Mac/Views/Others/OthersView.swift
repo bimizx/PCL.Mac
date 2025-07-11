@@ -41,7 +41,7 @@ struct OthersView: View {
         case .about:
             return AnyView(
                 HStack {
-                    Image("AboutItem")
+                    Image("AboutIcon")
                         .resizable()
                         .scaledToFit()
                         .frame(width: 20, height: 20)
