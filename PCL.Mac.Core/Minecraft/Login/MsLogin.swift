@@ -136,7 +136,7 @@ public class MsLogin {
                 "grant_type": "refresh_token",
                 "scope": "XboxLive.signin offline_access"
             ],
-            encodeMethod: .json
+            encodeMethod: .urlEncoded
         ).json,
            let accessToken = json["access_token"].string,
            let refreshToken = json["refresh_token"].string {
