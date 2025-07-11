@@ -7,7 +7,6 @@
 
 import Foundation
 import SwiftyJSON
-import Alamofire
 
 public class VersionManifest: Codable {
     public static var aprilFoolVersions: [String] = []
@@ -62,23 +61,17 @@ public class VersionManifest: Codable {
     public static func fetchLatestData() async -> VersionManifest? {
         debug("正在获取最新版本数据")
         Task {
-            if let data = try? await AF.request(
+            if let json = await Requests.get(
                 "https://gitee.com/yizhimcqiu/pcl-mac-announcements/raw/main/april_fool_versions.json"
-            )
-                .serializingResponse(using: .data).value {
-                if let json = try? JSON(data: data) {
-                    aprilFoolVersions = json.arrayValue.map { $0.stringValue }
-                }
+            ).json {
+                aprilFoolVersions = json.arrayValue.map { $0.stringValue }
             }
         }
         
-        if let data = try? await AF.request(
+        if let json = await Requests.get(
             "https://launchermeta.mojang.com/mc/game/version_manifest.json"
-        )
-            .serializingResponse(using: .data).value {
-            if let json = try? JSON(data: data) {
-                return .init(json)
-            }
+        ).json {
+            return .init(json)
         }
         
         return nil

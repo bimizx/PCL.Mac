@@ -7,7 +7,6 @@
 
 import SwiftUI
 import CoreGraphics
-import Alamofire
 
 enum AvatarInputType {
     case username, uuid, url
@@ -40,10 +39,13 @@ struct MinecraftAvatarComponent: View {
             }
         }
         .onAppear {
-            AF.request(skinUrl)
-                .response { response in
-                    self.imageData = response.data
+            Task {
+                if let data = await Requests.get(skinUrl).data {
+                    DispatchQueue.main.async {
+                        self.imageData = data
+                    }
                 }
+            }
         }
         .frame(width: size, height: size)
         .clipped()

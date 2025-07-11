@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import Alamofire
 import SwiftyJSON
 import SwiftUI
 
@@ -94,10 +93,10 @@ public class ModSummary: ObservableObject, Identifiable, Hashable, Equatable {
     }
     
     static func getFrom(_ slug: String) async -> ModSummary? {
-        if let data = try? await AF.request(
+        if let json = await Requests.get(
             "https://api.modrinth.com/v2/project/\(slug)"
-        ).serializingResponse(using: .data).value {
-            return ModrinthModSearcher.default.getFromJson(JSON(data))
+        ).json {
+            return ModrinthModSearcher.default.getFromJson(json)
         }
         return nil
     }
@@ -287,10 +286,9 @@ public class ModSummary: ObservableObject, Identifiable, Hashable, Equatable {
             Task {
                 self.versions = await self.loadVersions()
                 debug("正在获取 \(slug) 的依赖项")
-                if let data = try? await AF.request(
+                if let json = await Requests.get(
                     "https://api.modrinth.com/v2/project/\(self.slug)/dependencies"
-                ).serializingResponse(using: .data).value,
-                   let json = try? JSON(data: data) {
+                ).json {
                     let formatter = ISO8601DateFormatter()
                     formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
                     self.dependencies.removeAll()
@@ -358,17 +356,14 @@ public class ModrinthModSearcher: ModSearching {
         let facetsData = try! JSONSerialization.data(withJSONObject: facets)
         let facetsString = String(data: facetsData, encoding: .utf8)!
         
-        if let data = try? await AF.request(
+        if let json = await Requests.get(
             "https://api.modrinth.com/v2/search",
-            method: .get,
-            parameters: [
+            body: [
                 "query": query ?? "",
                 "facets": facetsString,
                 "limit": 40
-            ],
-            encoding: URLEncoding.default
-        ).serializingResponse(using: .data).value,
-           let json = try? JSON(data: data) {
+            ]
+        ).json {
             let mods = json["hits"].arrayValue
             var result: [ModSummary] = []
             for mod in mods {
@@ -382,10 +377,9 @@ public class ModrinthModSearcher: ModSearching {
     }
     
     public func getVersions(_ slug: String) async -> ModVersionMap {
-        if let data = try? await AF.request(
+        if let json = await Requests.get(
             "https://api.modrinth.com/v2/project/\(slug)/version"
-        ).serializingResponse(using: .data).value,
-           let json = try? JSON(data: data) {
+        ).json {
             var versions: ModVersionMap = [:]
             
             for version in json.arrayValue {

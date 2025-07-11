@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import Alamofire
 
 struct DownloadPage: View {
     let version: MinecraftVersion
@@ -184,9 +183,9 @@ fileprivate struct FabricLoaderCard: View {
     
     private func loadVersions() {
         Task {
-            if let data = try? await AF.request(
+            if let data = await Requests.get(
                 "https://meta.fabricmc.net/v2/versions/loader/\(version.displayName)"
-            ).serializingResponse(using: .data).value,
+            ).data,
                let manifests = try? FabricManifest.parse(data) {
                 DispatchQueue.main.async {
                     versions = manifests

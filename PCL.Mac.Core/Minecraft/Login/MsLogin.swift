@@ -7,7 +7,6 @@
 
 import Foundation
 import SwiftUI
-import Alamofire
 import UserNotifications
 import SwiftyJSON
 
@@ -41,16 +40,14 @@ public struct DeviceAuthResponse {
 public class MsLogin {
     // MARK: 获取代码对
     public static func getDeviceCode() async -> DeviceAuthResponse? {
-        if let data = try? await AF.request(
+        if let json = await Requests.post(
             "https://login.microsoftonline.com/consumers/oauth2/v2.0/devicecode",
-            method: .post,
-            parameters: [
+            body: [
                 "client_id": Bundle.main.object(forInfoDictionaryKey: "CLIENT_ID") as! String,
                 "scope": "XboxLive.signin offline_access"
             ],
-            encoder: URLEncodedFormParameterEncoder.default
-        ).serializingResponse(using: .data).value,
-           let json = try? JSON(data: data) {
+            encodeMethod: .urlEncoded
+        ).json {
             let authResponse = DeviceAuthResponse(json)
             NSPasteboard.general.clearContents()
             NSPasteboard.general.setString(authResponse.userCode, forType: .string)
@@ -102,16 +99,15 @@ public class MsLogin {
                 requestCount += 1
                 
                 Task {
-                    if let data = try? await AF.request(
+                    if let json = await Requests.post(
                         "https://login.microsoftonline.com/consumers/oauth2/v2.0/token",
-                        method: .post,
-                        parameters: [
+                        body: [
                             "grant_type": "urn:ietf:params:oauth:grant-type:device_code",
                             "client_id": Bundle.main.object(forInfoDictionaryKey: "CLIENT_ID") as! String,
                             "device_code": deviceAuthResponse.deviceCode
-                        ]
-                    ).serializingResponse(using: .data).value,
-                       let json = try? JSON(data: data),
+                        ],
+                        encodeMethod: .urlEncoded
+                    ).json,
                        let accessToken = json["access_token"].string,
                        let refreshToken = json["refresh_token"].string {
                         finish(.init(accessToken: accessToken, refreshToken: refreshToken))
@@ -132,17 +128,16 @@ public class MsLogin {
     
     // MARK: 刷新 Access Token
     public static func refreshAccessToken(_ refreshToken: String) async -> AuthToken? {
-        if let data = try? await AF.request(
+        if let json = await Requests.post(
             "https://login.microsoftonline.com/consumers/oauth2/v2.0/token",
-            method: .post,
-            parameters: [
+            body: [
                 "client_id": Bundle.main.object(forInfoDictionaryKey: "CLIENT_ID") as! String,
                 "refresh_token": refreshToken,
                 "grant_type": "refresh_token",
                 "scope": "XboxLive.signin offline_access"
-            ]
-        ).serializingResponse(using: .data).value,
-           let json = try? JSON(data: data),
+            ],
+            encodeMethod: .json
+        ).json,
            let accessToken = json["access_token"].string,
            let refreshToken = json["refresh_token"].string {
             return .init(accessToken: accessToken, refreshToken: refreshToken)
@@ -158,10 +153,9 @@ public class MsLogin {
             return accessToken
         }
         
-        if let data = try? await AF.request(
+        if let json = await Requests.post(
             "https://user.auth.xboxlive.com/user/authenticate",
-            method: .post,
-            parameters: [
+            body: [
                 "Properties": [
                     "AuthMethod": "RPS",
                     "SiteName": "user.auth.xboxlive.com",
@@ -170,15 +164,13 @@ public class MsLogin {
                 "RelyingParty": "http://auth.xboxlive.com",
                 "TokenType": "JWT"
             ],
-            encoding: JSONEncoding.default
-        ).serializingResponse(using: .data).value,
-           let json = try? JSON(data: data),
+            encodeMethod: .json
+        ).json,
            let token = json["Token"].string,
            let uhs = json["DisplayClaims"]["xui"].array?.first?["uhs"].string {
-            if let data = try? await AF.request(
+            if let json = await Requests.post(
                 "https://xsts.auth.xboxlive.com/xsts/authorize",
-                method: .post,
-                parameters: [
+                body: [
                     "Properties": [
                         "SandboxId": "RETAIL",
                         "UserTokens": [
@@ -188,19 +180,16 @@ public class MsLogin {
                     "RelyingParty": "rp://api.minecraftservices.com/",
                     "TokenType": "JWT"
                 ],
-                encoding: JSONEncoding.default
-            ).serializingResponse(using: .data).value,
-               let json = try? JSON(data: data),
+                encodeMethod: .json
+            ).json,
                let token = json["Token"].string {
-                if let data = try? await AF.request(
+                if let json = await Requests.post(
                     "https://api.minecraftservices.com/authentication/login_with_xbox",
-                    method: .post,
-                    parameters: [
+                    body: [
                         "identityToken": "XBL3.0 x=\(uhs);\(token)"
                     ],
-                    encoding: JSONEncoding.default
-                ).serializingResponse(using: .data).value,
-                   let json = try? JSON(data: data),
+                    encodeMethod: .json
+                ).json,
                    let accessToken = json["access_token"].string {
                     if let id = id {
                         AccessTokenStorage.shared.add(id: id, accessToken: accessToken, expiriesIn: json["expires_in"].intValue)
@@ -222,15 +211,12 @@ public class MsLogin {
     public static func hasMinecraftGame(_ authToken: AuthToken) async -> Bool {
         guard let accessToken = authToken.minecraftAccessToken else { return false }
         
-        if let data = try? await AF.request(
+        if let json = await Requests.get(
             "https://api.minecraftservices.com/entitlements/mcstore",
-            method: .get,
-            encoding: JSONEncoding.default,
-            headers: .init(
-                [.authorization("Bearer \(accessToken)")]
-            )
-        ).serializingResponse(using: .data).value,
-           let json = try? JSON(data: data) {
+            headers: [
+                "Authorization": "Bearer \(accessToken)"
+            ]
+        ).json {
             return json["items"].arrayValue.contains(where: { $0["name"].stringValue == "product_minecraft" })
         }
         

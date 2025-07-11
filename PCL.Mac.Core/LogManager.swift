@@ -90,24 +90,33 @@ final class LogStore {
     }
 }
 
-func log(_ message: Any, file: String = #file, line: Int = #line) {
-    LogStore.shared.append(String(describing: message), "INFO", file.split(separator: "/").last! + ":" + String(line))
+public struct LogManager {
+    public static func log(_ message: Any, file: String = #file, line: Int = #line) {
+        LogStore.shared.append(String(describing: message), "INFO", file.split(separator: "/").last! + ":" + String(line))
+    }
+
+    public static func warn(_ message: Any, file: String = #file, line: Int = #line) {
+        LogStore.shared.append(String(describing: message), "WARN", file.split(separator: "/").last! + ":" + String(line))
+    }
+
+    public static func err(_ message: Any, file: String = #file, line: Int = #line) {
+        LogStore.shared.append(String(describing: message), "ERROR", file.split(separator: "/").last! + ":" + String(line))
+    }
+
+    public static func debug(_ message: Any, file: String = #file, line: Int = #line) {
+    #if DEBUG
+        LogStore.shared.append(String(describing: message), "DEBUG", file.split(separator: "/").last! + ":" + String(line))
+    #endif
+    }
+
+    public static func raw(_ message: Any) {
+        LogStore.shared.appendRaw(String(describing: message))
+    }
 }
 
-func warn(_ message: Any, file: String = #file, line: Int = #line) {
-    LogStore.shared.append(String(describing: message), "WARN", file.split(separator: "/").last! + ":" + String(line))
-}
+public func log(_ message: Any, file: String = #file, line: Int = #line) { LogManager.log(message, file: file, line: line) }
+public func warn(_ message: Any, file: String = #file, line: Int = #line) { LogManager.warn(message, file: file, line: line) }
+public func err(_ message: Any, file: String = #file, line: Int = #line) { LogManager.err(message, file: file, line: line) }
+public func debug(_ message: Any, file: String = #file, line: Int = #line) { LogManager.debug(message, file: file, line: line) }
+public func raw(_ message: Any, file: String = #file, line: Int = #line) { LogManager.raw(message) }
 
-func err(_ message: Any, file: String = #file, line: Int = #line) {
-    LogStore.shared.append(String(describing: message), "ERROR", file.split(separator: "/").last! + ":" + String(line))
-}
-
-func debug(_ message: Any, file: String = #file, line: Int = #line) {
-#if DEBUG
-    LogStore.shared.append(String(describing: message), "DEBUG", file.split(separator: "/").last! + ":" + String(line))
-#endif
-}
-
-func raw(_ message: Any) {
-    LogStore.shared.appendRaw(String(describing: message))
-}

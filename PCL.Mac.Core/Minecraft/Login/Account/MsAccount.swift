@@ -7,7 +7,6 @@
 
 import Foundation
 import SwiftyJSON
-import Alamofire
 
 public class PlayerProfile: Codable {
     public let uuid: UUID
@@ -62,14 +61,12 @@ public class MsAccount: Codable, Identifiable, Account {
             return nil
         }
         
-        if let data = try? await AF.request(
-            "https://api.minecraftservices.com/minecraft/profile",
-            method: .get,
-            encoding: JSONEncoding.default,
-            headers: .init(
-                [.authorization("Bearer \(accessToken)")]
-            )
-        ).serializingResponse(using: .data).value {
+        if let data = await Requests.get(
+            URL(string: "https://api.minecraftservices.com/minecraft/profile")!,
+            headers: [
+                "Authorization": "Bearer \(accessToken)"
+            ]
+        ).data {
             return .init(refreshToken: authToken.refreshToken, profile: .init(fromResponse: data))
         }
         return nil

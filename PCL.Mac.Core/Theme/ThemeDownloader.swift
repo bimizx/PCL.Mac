@@ -6,17 +6,12 @@
 //
 
 import Foundation
-import Alamofire
 import ZIPFoundation
 
 public class ThemeDownloader {
     public static func getThemeList() async -> [Theme] {
-        if let data = try? await AF.request("https://gitee.com/yizhimcqiu/pcl-mac-themes/raw/main/index.json")
-            .serializingResponse(using: .data).value,
-           let index = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-           let themes = index["themes"] as? [String] {
-            return themes
-                .map { Theme(rawValue: $0)! }
+        if let json = await Requests.get("https://gitee.com/yizhimcqiu/pcl-mac-themes/raw/main/index.json").json {
+            return json["themes"].arrayValue.map { .init(rawValue: $0.stringValue)! }
         }
         return []
     }
@@ -24,9 +19,7 @@ public class ThemeDownloader {
     public static func downloadTheme(_ theme: Theme) async {
         let saveUrl = SharedConstants.shared.applicationSupportUrl.appending(path: "Themes").appending(path: theme.rawValue)
         let zipUrl = saveUrl.appending(path: "zipped.zip")
-        guard let data = try? await AF.request("https://gitee.com/yizhimcqiu/pcl-mac-themes/raw/main/\(theme.rawValue).zip")
-            .serializingResponse(using: .data)
-            .value else {
+        guard let data = await Requests.get("https://gitee.com/yizhimcqiu/pcl-mac-themes/raw/main/\(theme.rawValue).zip").data else {
             err("无法下载主题 \(theme.rawValue)")
             return
         }

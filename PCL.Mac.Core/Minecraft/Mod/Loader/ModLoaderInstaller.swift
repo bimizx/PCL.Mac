@@ -29,7 +29,6 @@
 
 import Foundation
 import ZIPFoundation
-import Alamofire
 
 public class ModLoaderInstaller {
     public static func installFabric(_ instance: MinecraftInstance, _ loaderVersion: String) async {
@@ -44,9 +43,9 @@ public class ModLoaderInstaller {
 //            err("无法安装 Fabric: 实例 \(instance.config.name) 已有 Mod 加载器: \(instance.config.clientBrand.rawValue)")
 //        }
         
-        if let data = try? await AF.request(
+        if let data = await Requests.get(
             "https://meta.fabricmc.net/v2/versions/loader/\(version.displayName)"
-        ).serializingResponse(using: .data).value,
+        ).data,
            let manifests = try? FabricManifest.parse(data) {
             guard let manifest = manifests.find({ $0.loaderVersion == loaderVersion }) else {
                 err("找不到对应的 Fabric Loader 版本: \(loaderVersion)")
@@ -83,9 +82,9 @@ public class ModLoaderInstaller {
                 err("无法安装 NeoForge: 实例 \(instance.config.name) 已有 Mod 加载器: \(instance.config.clientBrand.rawValue)")
                 return
             }
-        if let data = try? await AF.request(
+        if let data = await Requests.get(
             "https://bmclapi2.bangbang93.com/neoforge/list/\(instance.version!.displayName)"
-        ).serializingResponse(using: .data).value,
+        ).data,
             let manifests = try? NeoforgeManifest.parse(data) {
             guard let manifest = manifests.find({ $0.version == version }) else {
                 err("找不到对应的 Neoforge 版本: \(version)")
