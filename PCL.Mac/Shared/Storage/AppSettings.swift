@@ -46,7 +46,7 @@ public class AppSettings: ObservableObject {
     @CodableAppStorage("currentMinecraftDirectory") public var currentMinecraftDirectory: MinecraftDirectory? = .default
     
     /// 所有 MinecraftDirectory
-    @CodableAppStorage("minecraftDirectories") public var minecraftDirectories: Set<MinecraftDirectory> = [.default]
+    @CodableAppStorage("minecraftDirectories") public var minecraftDirectories: [MinecraftDirectory] = [.default]
     
     public func updateColorScheme() {
         if colorScheme != .system {
@@ -64,7 +64,7 @@ public class AppSettings: ObservableObject {
         
         if let directory = currentMinecraftDirectory {
             if !minecraftDirectories.contains(where: { $0.rootUrl == directory.rootUrl }) {
-                minecraftDirectories.insert(directory)
+                minecraftDirectories.append(directory)
             }
             
             // 判断 defaultInstance 是否合法
@@ -78,5 +78,22 @@ public class AppSettings: ObservableObject {
                 directory.loadInnerInstances(callback: { self.defaultInstance = $0.first?.config.name })
             }
         }
+    }
+    
+    public func removeDirectory(url: URL) {
+        if currentMinecraftDirectory?.rootUrl == url || currentMinecraftDirectory == nil {
+            currentMinecraftDirectory = .default
+            if case .versionList = DataManager.shared.router.getLast() {
+                DataManager.shared.router.removeLast()
+                DataManager.shared.router.append(.versionList(directory: .default))
+            }
+        }
+        minecraftDirectories.removeAll(where: { $0.rootUrl == url })
+        
+        if minecraftDirectories.isEmpty {
+            minecraftDirectories.append(currentMinecraftDirectory!)
+        }
+        
+        DataManager.shared.objectWillChange.send()
     }
 }

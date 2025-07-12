@@ -11,14 +11,14 @@ struct MyListComponent<Content: View>: View {
     @ObservedObject private var dataManager: DataManager = .shared
     
     let content: (AppRoute, Bool) -> Content
-    let cases: [AppRoute]
+    @Binding var cases: [AppRoute]
     let animationIndex: Int
     let height: CGFloat
     @State private var hovering: AppRoute? = nil
     @State private var appeared: Set<AppRoute> = []
     
-    init(`default`: AppRoute? = nil, cases: [AppRoute], animationIndex: Int = 0, height: CGFloat = 32, @ViewBuilder content: @escaping (AppRoute, Bool) -> Content) {
-        self.cases = cases
+    init(`default`: AppRoute? = nil, cases: Binding<[AppRoute]>, animationIndex: Int = 0, height: CGFloat = 32, @ViewBuilder content: @escaping (AppRoute, Bool) -> Content) {
+        self._cases = cases
         self.content = content
         self.animationIndex = animationIndex
         self.height = height

@@ -30,7 +30,10 @@ struct DownloadView: View {
                         .padding(.leading, 12)
                         .padding(.top, 20)
                         .padding(.bottom, 4)
-                    MyListComponent(default: .minecraftDownload, cases: [.minecraftDownload]) { type, isSelected in
+                    MyListComponent(
+                        default: .minecraftDownload,
+                        cases: .constant([.minecraftDownload])
+                    ) { type, isSelected in
                         createListItemView(type)
                             .foregroundStyle(isSelected ? AnyShapeStyle(AppSettings.shared.theme.getTextStyle()) : AnyShapeStyle(Color("TextColor")))
                     }
@@ -41,7 +44,10 @@ struct DownloadView: View {
                         .padding(.leading, 12)
                         .padding(.top, 32)
                         .padding(.bottom, 4)
-                    MyListComponent(cases: [.modSearch], animationIndex: 2) { type, isSelected in
+                    MyListComponent(
+                        cases: .constant([.modSearch]),
+                        animationIndex: 2
+                    ) { type, isSelected in
                         createListItemView(type)
                             .foregroundStyle(isSelected ? AnyShapeStyle(AppSettings.shared.theme.getTextStyle()) : AnyShapeStyle(Color("TextColor")))
                     }

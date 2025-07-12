@@ -24,7 +24,10 @@ struct AccountManagementView: View, SubRouteContainer {
         .onAppear {
             dataManager.leftTab(130) {
                 VStack(alignment: .leading, spacing: 0) {
-                    MyListComponent(default: .accountList, cases: [.accountList, .newAccount]) { type, isSelected in
+                    MyListComponent(
+                        default: .accountList,
+                        cases: .constant([.accountList, .newAccount])
+                    ) { type, isSelected in
                         createListItemView(type)
                             .foregroundStyle(isSelected ? AnyShapeStyle(AppSettings.shared.theme.getTextStyle()) : AnyShapeStyle(Color("TextColor")))
                     }

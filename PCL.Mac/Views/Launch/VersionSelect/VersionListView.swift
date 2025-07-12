@@ -69,14 +69,18 @@ struct VersionListView: View {
         }
         .scrollIndicators(.never)
         .id(minecraftDirectory)
-        .onChange(of: minecraftDirectory) { directory in
-            AppSettings.shared.currentMinecraftDirectory = directory
-            if directory.instances.isEmpty {
-                directory.loadInnerInstances()
-            }
+        .onChange(of: minecraftDirectory, perform: loadInstances)
+        .onAppear { loadInstances(minecraftDirectory) }
+    }
+    
+    private func loadInstances(_ directory: MinecraftDirectory) {
+        AppSettings.shared.currentMinecraftDirectory = directory
+        if directory.instances.isEmpty {
+            directory.loadInnerInstances()
         }
     }
 }
+
 
 class VersionDropDelegate: DropDelegate {
     func validateDrop(info: DropInfo) -> Bool {

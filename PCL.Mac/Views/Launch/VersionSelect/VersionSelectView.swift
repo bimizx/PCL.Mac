@@ -9,7 +9,10 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct VersionSelectView: View, SubRouteContainer {
-    @ObservedObject private var dataManager: DataManager = DataManager.shared
+    @ObservedObject private var dataManager: DataManager = .shared
+    @ObservedObject private var settings: AppSettings = .shared
+    
+    @State private var directoryRoutes: [AppRoute] = AppSettings.shared.minecraftDirectories.map { .versionList(directory: $0) }
     
     var body: some View {
         Group {
@@ -30,12 +33,12 @@ struct VersionSelectView: View, SubRouteContainer {
                         .padding(.top, 20)
                         .padding(.bottom, 4)
                     MyListComponent(
-                        default: .versionList(directory: AppSettings.shared.currentMinecraftDirectory ?? .default),
-                        cases: AppSettings.shared.minecraftDirectories.map { .versionList(directory: $0) },
+                        default: .versionList(directory: settings.currentMinecraftDirectory ?? .default),
+                        cases: $directoryRoutes,
                         height: 42,
                         content: { type, isSelected in
                             createListItemView(type)
-                                .foregroundStyle(isSelected ? AnyShapeStyle(AppSettings.shared.theme.getTextStyle()) : AnyShapeStyle(Color("TextColor")))
+                                .foregroundStyle(isSelected ? AnyShapeStyle(settings.theme.getTextStyle()) : AnyShapeStyle(Color("TextColor")))
                         }
                     )
                     Text("添加或导入")
@@ -53,8 +56,13 @@ struct VersionSelectView: View, SubRouteContainer {
                             panel.allowedContentTypes = [.folder]
                             
                             if panel.runModal() == .OK {
-                                AppSettings.shared.minecraftDirectories.insert(.init(rootUrl: panel.url!, name: "自定义目录"))
-                                AppSettings.shared.currentMinecraftDirectory = .init(rootUrl: panel.url!, name: "自定义目录")
+                                guard !settings.minecraftDirectories.contains(where: { $0.rootUrl == panel.url! }) else {
+                                    hint("该目录已存在！", .critical)
+                                    return
+                                }
+                                settings.minecraftDirectories.append(.init(rootUrl: panel.url!, name: "自定义目录"))
+                                settings.currentMinecraftDirectory = .init(rootUrl: panel.url!, name: "自定义目录")
+                                hint("添加成功", .finish)
                             }
                         }
                     Spacer()
@@ -62,18 +70,35 @@ struct VersionSelectView: View, SubRouteContainer {
             }
         }
         .onDrop(of: [.folder], delegate: VersionDropDelegate())
+        .onChange(of: settings.minecraftDirectories) { new in
+            directoryRoutes = new.map { .versionList(directory: $0) }
+        }
     }
     
     private func createListItemView(_ type: AppRoute) -> some View {
         if case .versionList(let directory) = type {
             return AnyView(
-                VStack(alignment: .leading) {
-                    Text(directory.name)
-                        .font(.custom("PCL English", size: 14))
-                        .foregroundStyle(.primary)
-                    Text(directory.rootUrl.path)
-                        .font(.custom("PCL English", size: 12))
-                        .foregroundStyle(Color(hex: 0x8C8C8C))
+                HStack {
+                    VStack(alignment: .leading) {
+                        Text(directory.name)
+                            .font(.custom("PCL English", size: 14))
+                            .foregroundStyle(.primary)
+                        Text(directory.rootUrl.path)
+                            .font(.custom("PCL English", size: 12))
+                            .foregroundStyle(Color(hex: 0x8C8C8C))
+                            .lineLimit(1)
+                    }
+                    Spacer()
+                    Image(systemName: "trash")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 16)
+                        .foregroundStyle(Color("TextColor"))
+                        .onTapGesture {
+                            settings.removeDirectory(url: directory.rootUrl)
+                            hint("移除成功", .finish)
+                        }
+                        .padding(4)
                 }
             )
         }
