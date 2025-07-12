@@ -11,7 +11,6 @@ import PCL_Mac
 import SwiftUI
 import Cocoa
 import UserNotifications
-import Alamofire
 import SwiftyJSON
 
 struct PCL_MacTests {

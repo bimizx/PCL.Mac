@@ -41,7 +41,7 @@ public class MinecraftInstance: Identifiable {
     
     private init?(runningDirectory: URL, config: MinecraftConfig? = nil) {
         self.runningDirectory = runningDirectory
-        self.minecraftDirectory = MinecraftDirectory(rootUrl: runningDirectory.parent().parent())
+        self.minecraftDirectory = MinecraftDirectory(rootUrl: runningDirectory.parent().parent(), name: "")
         self.configPath = runningDirectory.appending(path: ".PCL_Mac.json")
         
         if FileManager.default.fileExists(atPath: configPath.path) {

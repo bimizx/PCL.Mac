@@ -18,7 +18,7 @@ struct DownloadPage: View {
         self.version = version
         self.name = version.displayName
         self.back = back
-        self.tasks.addTask(key: "minecraft", task: MinecraftInstaller.createTask(version, version.displayName, MinecraftDirectory(rootUrl: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft"))))
+        self.tasks.addTask(key: "minecraft", task: MinecraftInstaller.createTask(version, version.displayName, AppSettings.shared.currentMinecraftDirectory!))
     }
     
     var body: some View {

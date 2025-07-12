@@ -20,13 +20,14 @@ public enum AppRoute: Hashable {
     case accountList
     case newAccount
     case installing(tasks: InstallTasks)
-    case versionList
+    case versionSelect
     case modDownload(summary: ModSummary)
     case announcementHistory
     
     // MyList 导航
     case minecraftDownload
     case modSearch
+    case versionList(directory: MinecraftDirectory)
     
     case about
     case debug
@@ -51,9 +52,19 @@ public enum AppRoute: Hashable {
         switch self {
         case .installing(let task): "installing?task=\(task.id)"
         case .modDownload(let summary): "modDownload?summary=\(summary.id)"
+        case .versionList(let directory): "versionList?rootUrl=\(directory.rootUrl.path)"
         default:
             String(describing: self)
         }
+    }
+    
+    func isSame(_ another: AppRoute) -> Bool {
+        if case .versionList(let directory1) = self,
+           case .versionList(let directory2) = another {
+            return directory1.rootUrl == directory2.rootUrl
+        }
+        
+        return self == another
     }
 }
 
@@ -80,8 +91,8 @@ public class AppRouter: ObservableObject {
             OthersView()
         case .installing(let tasks):
             InstallingView(tasks: tasks)
-        case .versionList:
-            VersionListView()
+        case .versionSelect, .versionList(_):
+            VersionSelectView()
         case .modDownload(let summary):
             ModDownloadView(summary: summary)
         case .announcementHistory:

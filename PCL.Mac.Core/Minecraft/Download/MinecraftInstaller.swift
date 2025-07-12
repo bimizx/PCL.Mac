@@ -306,7 +306,7 @@ public class MinecraftInstaller {
     
     // MARK: 创建任务
     public static func createTask(_ minecraftVersion: MinecraftVersion, _ name: String, _ minecraftDirectory: MinecraftDirectory, _ callback: (() -> Void)? = nil) -> InstallTask {
-        let task = MinecraftInstallTask(minecraftVersion: minecraftVersion, minecraftDirectory: MinecraftDirectory(rootUrl: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft")), name: name) { task in
+        let task = MinecraftInstallTask(minecraftVersion: minecraftVersion, minecraftDirectory: minecraftDirectory, name: name) { task in
             await downloadClientManifest(task)
             await downloadAssetIndex(task)
             updateProgress(task)

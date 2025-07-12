@@ -41,7 +41,7 @@ struct DownloadView: View {
                         .padding(.leading, 12)
                         .padding(.top, 32)
                         .padding(.bottom, 4)
-                    MyListComponent(cases: [.modSearch]) { type, isSelected in
+                    MyListComponent(cases: [.modSearch], animationIndex: 2) { type, isSelected in
                         createListItemView(type)
                             .foregroundStyle(isSelected ? AnyShapeStyle(AppSettings.shared.theme.getTextStyle()) : AnyShapeStyle(Color("TextColor")))
                     }

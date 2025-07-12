@@ -96,7 +96,7 @@ struct SubviewTitleBarComponent: View {
     private func getTitle() -> String {
         switch dataManager.router.getLast() {
         case .installing(_): return "下载管理"
-        case .versionList: return "版本选择"
+        case .versionSelect, .versionList: return "版本选择"
         case .modDownload(let summary): return "资源下载 - \(summary.title)"
         case .accountManagement, .accountList, .newAccount: return "账号管理"
         case .announcementHistory: return "历史公告"

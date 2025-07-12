@@ -28,19 +28,25 @@ public class AppSettings: ObservableObject {
     @AppStorage("showPclMacPopup") public var showPclMacPopup: Bool = true
     
     /// 用户添加的 Java 路径
-    @CodableAppStorage(wrappedValue: [], "userAddedJvmPaths") public var userAddedJvmPaths: [URL]
+    @CodableAppStorage("userAddedJvmPaths") public var userAddedJvmPaths: [URL] = []
     
     /// 主题需要观察 DataManager 才能更新
-    @CodableAppStorage(wrappedValue: .pcl, "theme") public var theme: Theme
+    @CodableAppStorage("theme") public var theme: Theme = .pcl
     
     /// 启动时若为空自动设置为第一个版本
     @AppStorage("defaultInstance") public var defaultInstance: String?
     
     /// 配色方案
-    @CodableAppStorage(wrappedValue: ColorSchemeOption.light, "colorScheme") public var colorScheme: ColorSchemeOption
+    @CodableAppStorage("colorScheme") public var colorScheme: ColorSchemeOption = .light
     
     /// 最后一次获取到的 VersionManifest，断网时使用
-    @CodableAppStorage(wrappedValue: nil, "lastVersionManifest") public var lastVersionManifest: VersionManifest?
+    @CodableAppStorage("lastVersionManifest") public var lastVersionManifest: VersionManifest? = nil
+    
+    /// 当前 MinecraftDirectory
+    @CodableAppStorage("currentMinecraftDirectory") public var currentMinecraftDirectory: MinecraftDirectory? = .default
+    
+    /// 所有 MinecraftDirectory
+    @CodableAppStorage("minecraftDirectories") public var minecraftDirectories: Set<MinecraftDirectory> = [.default]
     
     public func updateColorScheme() {
         if colorScheme != .system {
@@ -50,5 +56,27 @@ public class AppSettings: ObservableObject {
     
     private init() {
         log("已加载持久化储存数据")
+        updateColorScheme()
+        
+        if currentMinecraftDirectory == nil {
+            currentMinecraftDirectory = .default
+        }
+        
+        if let directory = currentMinecraftDirectory {
+            if !minecraftDirectories.contains(where: { $0.rootUrl == directory.rootUrl }) {
+                minecraftDirectories.insert(directory)
+            }
+            
+            // 判断 defaultInstance 是否合法
+            if let defaultInstance = defaultInstance,
+               MinecraftInstance.create(runningDirectory: directory.versionsUrl.appending(path: defaultInstance)) == nil {
+                warn("无效的 defaultInstance 配置")
+                self.defaultInstance = nil
+            }
+            
+            if defaultInstance == nil {
+                defaultInstance = directory.getInnerInstances().first?.config.name
+            }
+        }
     }
 }

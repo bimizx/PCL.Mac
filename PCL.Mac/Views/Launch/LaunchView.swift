@@ -72,7 +72,7 @@ fileprivate struct LeftTab: View {
             }
             HStack {
                 MyButtonComponent(text: "版本选择") {
-                    dataManager.router.append(.versionList)
+                    dataManager.router.append(.versionSelect)
                 }
                 .frame(width: AppSettings.shared.defaultInstance == nil ? 280 : 135, height: 35)
                 .padding(.leading, AppSettings.shared.defaultInstance == nil ? 0 : 10)
@@ -89,8 +89,9 @@ fileprivate struct LeftTab: View {
         }
         .foregroundStyle(Color(hex: 0x343D4A))
         .onAppear {
-            if let defaultInstance = AppSettings.shared.defaultInstance,
-               let instance = MinecraftInstance.create(runningDirectory: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft/versions/\(defaultInstance)")) {
+            if let directory = AppSettings.shared.currentMinecraftDirectory,
+               let defaultInstance = AppSettings.shared.defaultInstance,
+               let instance = MinecraftInstance.create(runningDirectory: directory.versionsUrl.appending(path: defaultInstance)) {
                 self.instance = instance
             }
         }

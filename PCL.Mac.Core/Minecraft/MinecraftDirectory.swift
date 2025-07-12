@@ -7,8 +7,16 @@
 
 import Foundation
 
-public struct MinecraftDirectory {
+public struct MinecraftDirectory: Codable, Identifiable, Hashable {
+    public static let `default`: MinecraftDirectory = .init(rootUrl: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft"), name: "默认文件夹")
+    
+    public var id: UUID
     public let rootUrl: URL
+    public var name: String
+    
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(rootUrl)
+    }
     
     public var versionsUrl: URL {
         rootUrl.appendingPathComponent("versions")
@@ -22,8 +30,10 @@ public struct MinecraftDirectory {
         rootUrl.appendingPathComponent("libraries")
     }
     
-    public init(rootUrl: URL) {
+    public init(rootUrl: URL, name: String) {
+        self.id = .init()
         self.rootUrl = rootUrl
+        self.name = name
     }
     
     public func getInnerInstances() -> [MinecraftInstance] {

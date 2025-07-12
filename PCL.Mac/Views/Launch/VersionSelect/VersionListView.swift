@@ -6,12 +6,9 @@
 //
 
 import SwiftUI
-import UniformTypeIdentifiers
 
 struct VersionListView: View {
-    @ObservedObject private var dataManager: DataManager = DataManager.shared
-    
-    let minecraftDirectory: MinecraftDirectory = MinecraftDirectory(rootUrl: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft"))
+    let minecraftDirectory: MinecraftDirectory
     
     struct VersionView: View, Identifiable {
         let name: String
@@ -49,17 +46,16 @@ struct VersionListView: View {
             }
             .onTapGesture {
                 AppSettings.shared.defaultInstance = instance.config.name
-                DataManager.shared.router.removeLast()
+                DataManager.shared.router.setRoot(.launch)
             }
             .padding(.top, -8)
         }
     }
-    
     var body: some View {
         ScrollView(.vertical) {
             VStack {
                 MyCardComponent(title: "常规版本") {
-                    VStack {
+                    LazyVStack {
                         ForEach(minecraftDirectory.getInnerInstances().sorted(by: { $0.version! > $1.version! })) { instance in
                             VersionView(instance: instance)
                         }
@@ -68,15 +64,13 @@ struct VersionListView: View {
                 }
                 .padding()
                 .padding(.bottom, 25)
+                .id(minecraftDirectory)
             }
         }
         .scrollIndicators(.never)
         .onAppear {
-            dataManager.leftTab(350) {
-                EmptyView()
-            }
+            AppSettings.shared.currentMinecraftDirectory = minecraftDirectory
         }
-        .onDrop(of: [.folder], delegate: VersionDropDelegate())
     }
 }
 
@@ -121,8 +115,4 @@ class VersionDropDelegate: DropDelegate {
         }
         return false
     }
-}
-
-#Preview {
-    VersionListView()
 }

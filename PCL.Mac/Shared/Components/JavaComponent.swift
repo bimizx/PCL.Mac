@@ -13,8 +13,9 @@ struct JavaComponent: View {
     let jvm: JavaVirtualMachine
     private var instance: MinecraftInstance? = nil
     private var javaPath: URL? {
-        guard let defaultInstance = AppSettings.shared.defaultInstance,
-              let instance = MinecraftInstance.create(runningDirectory: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft/versions").appending(path: defaultInstance)) else {
+        guard let directory = AppSettings.shared.currentMinecraftDirectory,
+              let defaultInstance = AppSettings.shared.defaultInstance,
+              let instance = MinecraftInstance.create(runningDirectory: directory.versionsUrl.appending(path: defaultInstance)) else {
             return nil
         }
         
@@ -23,8 +24,9 @@ struct JavaComponent: View {
     
     init(jvm: JavaVirtualMachine) {
         self.jvm = jvm
-        guard let defaultInstance = AppSettings.shared.defaultInstance,
-              let instance = MinecraftInstance.create(runningDirectory: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft/versions").appending(path: defaultInstance)) else {
+        guard let directory = AppSettings.shared.currentMinecraftDirectory,
+              let defaultInstance = AppSettings.shared.defaultInstance,
+              let instance = MinecraftInstance.create(runningDirectory: directory.versionsUrl.appending(path: defaultInstance)) else {
             return
         }
         self.instance = instance
