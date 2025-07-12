@@ -7,12 +7,13 @@
 
 import Foundation
 
-public struct MinecraftDirectory: Codable, Identifiable, Hashable {
+public class MinecraftDirectory: Codable, Identifiable, Hashable {
     public static let `default`: MinecraftDirectory = .init(rootUrl: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft"), name: "默认文件夹")
     
     public var id: UUID
     public let rootUrl: URL
     public var name: String
+    public var instances: [MinecraftInstance] = []
     
     public func hash(into hasher: inout Hasher) {
         hasher.combine(rootUrl)
@@ -36,21 +37,38 @@ public struct MinecraftDirectory: Codable, Identifiable, Hashable {
         self.name = name
     }
     
-    public func getInnerInstances() -> [MinecraftInstance] {
-        var instances: [MinecraftInstance] = []
-        do {
-            let contents = try FileManager.default.contentsOfDirectory(at: versionsUrl, includingPropertiesForKeys: [.isDirectoryKey], options: [.skipsHiddenFiles])
-            let folderUrls = contents.filter { url in
-                (try? url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true
-            }
-            for folderUrl in folderUrls {
-                if let version = MinecraftInstance.create(runningDirectory: folderUrl) {
-                    instances.append(version)
+    enum CodingKeys: CodingKey {
+        case id
+        case rootUrl
+        case name
+    }
+    
+    public static func == (lhs: MinecraftDirectory, rhs: MinecraftDirectory) -> Bool {
+        lhs.rootUrl == rhs.rootUrl
+    }
+    
+    public func loadInnerInstances(callback: (([MinecraftInstance]) -> Void)? = nil) {
+        instances.removeAll()
+        Task {
+            do {
+                let contents = try FileManager.default.contentsOfDirectory(at: versionsUrl, includingPropertiesForKeys: [.isDirectoryKey], options: [.skipsHiddenFiles])
+                let folderUrls = contents.filter { url in
+                    (try? url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true
                 }
+                for folderUrl in folderUrls {
+                    if let version = MinecraftInstance.create(runningDirectory: folderUrl) {
+                        DispatchQueue.main.async {
+                            self.instances.append(version)
+                        }
+                    }
+                }
+                DispatchQueue.main.async {
+                    callback?(self.instances)
+                    DataManager.shared.objectWillChange.send()
+                }
+            } catch {
+                err("读取版本目录失败: \(error)")
             }
-        } catch {
-            err("读取版本目录失败: \(error)")
         }
-        return instances
     }
 }

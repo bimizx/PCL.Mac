@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct VersionListView: View {
+    @ObservedObject private var dataManager: DataManager = .shared
     let minecraftDirectory: MinecraftDirectory
     
     struct VersionView: View, Identifiable {
@@ -56,7 +57,7 @@ struct VersionListView: View {
             VStack {
                 MyCardComponent(title: "常规版本") {
                     LazyVStack {
-                        ForEach(minecraftDirectory.getInnerInstances().sorted(by: { $0.version! > $1.version! })) { instance in
+                        ForEach(minecraftDirectory.instances.sorted(by: { $0.version! > $1.version! })) { instance in
                             VersionView(instance: instance)
                         }
                     }
@@ -64,12 +65,15 @@ struct VersionListView: View {
                 }
                 .padding()
                 .padding(.bottom, 25)
-                .id(minecraftDirectory)
             }
         }
         .scrollIndicators(.never)
-        .onAppear {
-            AppSettings.shared.currentMinecraftDirectory = minecraftDirectory
+        .id(minecraftDirectory)
+        .onChange(of: minecraftDirectory) { directory in
+            AppSettings.shared.currentMinecraftDirectory = directory
+            if directory.instances.isEmpty {
+                directory.loadInnerInstances()
+            }
         }
     }
 }
