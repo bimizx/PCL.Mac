@@ -104,9 +104,7 @@ public struct LogManager {
     }
 
     public static func debug(_ message: Any, file: String = #file, line: Int = #line) {
-    #if DEBUG
         LogStore.shared.append(String(describing: message), "DEBUG", file.split(separator: "/").last! + ":" + String(line))
-    #endif
     }
 
     public static func raw(_ message: Any) {

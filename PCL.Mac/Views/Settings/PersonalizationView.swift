@@ -31,7 +31,7 @@ struct PersonalizationView: View {
             }
             .padding()
             
-            StaticMyCardComponent(title: "窗口按钮样式") {
+            StaticMyCardComponent(index: 1, title: "窗口按钮样式") {
                 HStack {
                     MyComboBoxComponent(
                         options: [WindowControlButtonStyle.pcl, WindowControlButtonStyle.macOS],
