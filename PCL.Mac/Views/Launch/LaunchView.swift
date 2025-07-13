@@ -78,9 +78,7 @@ fileprivate struct LeftTab: View {
                         dataManager.router.append(.versionSelect)
                     }
                     if AppSettings.shared.defaultInstance != nil {
-                        MyButtonComponent(text: "版本设置") {
-                            
-                        }
+                        MyButtonComponent(text: "版本设置") { }
                     }
                 }
                 .frame(height: 32)

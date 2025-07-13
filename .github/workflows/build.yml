@@ -32,6 +32,12 @@ jobs:
         env:
           CLIENT_ID: ${{ secrets.CLIENT_ID }}
           BRANCH: ${{ github.ref_name }}
+    
+      - name: Replace secrets
+        run: |
+            sed -i '' "s/{{ARTIFACT_PAT}}/$ARTIFACT_PAT/g" PCL.Mac/Secrets.swift
+        env:
+          ARTIFACT_PAT: ${{ secrets.ARTIFACT_PAT }}
 
       - name: Build Universal Binary (xcodebuild)
         run: |

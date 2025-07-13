@@ -18,7 +18,7 @@ struct PCL_MacTests {
         try await Task.sleep(nanoseconds: 1_000_000_000)
         let versionUrl = URL(fileURLWithUserPath: "~/PCL-Mac-minecraft/versions/1.21 Test")
         let instance = MinecraftInstance.create(runningDirectory: versionUrl)
-        await instance!.launch()
+        await instance!.launch(.init())
     }
     
     @Test func testLoadClientManifest() async throws {
@@ -30,7 +30,7 @@ struct PCL_MacTests {
     
     @Test func testDownload() async throws {
         await withCheckedContinuation { continuation in
-            MinecraftInstaller.createTask(MinecraftVersion(displayName: "1.14"), "1.14", MinecraftDirectory(rootUrl: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft"))) {
+            MinecraftInstaller.createTask(MinecraftVersion(displayName: "1.14"), "1.14", MinecraftDirectory(rootUrl: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft"), name: "")) {
                 continuation.resume()
             }.start()
         }
@@ -127,5 +127,13 @@ struct PCL_MacTests {
     @Test func testOfflineAccount() {
         let account = OfflineAccount("PCL_Mac")
         print(account.uuid.uuidString.replacingOccurrences(of: "-", with: "").lowercased())
+    }
+    
+    @Test func testUpdateCheck() async {
+        if let update = await UpdateCheck.getLastUpdate() {
+            print("获取更新成功")
+            await UpdateCheck.downloadUpdate(update)
+        }
+//        UpdateCheck.applyUpdate()
     }
 }
