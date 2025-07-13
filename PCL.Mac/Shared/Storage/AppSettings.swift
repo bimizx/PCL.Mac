@@ -21,6 +21,18 @@ public enum ColorSchemeOption: Codable {
     }
 }
 
+public enum WindowControlButtonStyle: Codable {
+    case pcl, macOS
+    func getLabel() -> String {
+        switch self {
+        case .pcl:
+            "PCL"
+        case .macOS:
+            "macOS"
+        }
+    }
+}
+
 public class AppSettings: ObservableObject {
     public static let shared = AppSettings()
     
@@ -48,9 +60,20 @@ public class AppSettings: ObservableObject {
     /// 所有 MinecraftDirectory
     @CodableAppStorage("minecraftDirectories") public var minecraftDirectories: [MinecraftDirectory] = [.default]
     
+    /// 窗口按钮样式
+    @CodableAppStorage("windowControlButtonStyle") public var windowControlButtonStyle: WindowControlButtonStyle = .pcl
+    
+    /// 是否登录过一次微软账号
+    @AppStorage("hasMicrosoftAccount") public var hasMicrosoftAccount: Bool = false
+    
+    /// 累计启动次数
+    @AppStorage("launchCount") public var launchCount: Int = 0
+    
     public func updateColorScheme() {
         if colorScheme != .system {
             NSApp.appearance = colorScheme == .light ? NSAppearance(named: .aqua) : NSAppearance(named: .darkAqua)
+        } else {
+            NSApp.appearance = .currentDrawing()
         }
     }
     
