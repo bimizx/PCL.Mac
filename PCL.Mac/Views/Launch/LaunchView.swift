@@ -98,34 +98,66 @@ fileprivate struct LeftTab: View {
     }
     
     private func launchPrecheck(_ launchOptions: LaunchOptions) -> Bool {
-        if AppSettings.shared.hasMicrosoftAccount { return true }
-        
-        var returnValue: Bool = false
-        if Locale.current.identifier.starts(with: "zh") {
-            switch AppSettings.shared.launchCount {
-            case 3, 8, 15, 30, 50, 70, 90, 110, 130, 180, 220, 280, 330, 380, 450, 550, 660, 750, 880, 950, 1100, 1300, 1500, 1700, 1900:
-                ContentView.setPopup(.init(
-                    "考虑一下正版？",
-                    "你已经启动了 \(AppSettings.shared.launchCount) 次 Minecraft 啦！\n如果觉得 Minecraft 还不错，可以购买正版支持一下，毕竟开发游戏也真的很不容易……不要一直白嫖啦。\n在登录一次正版账号后，就不会再出现这个提示了！",
-                [
-                    .init(text: "支持正版游戏！", onClick: { NSWorkspace.shared.open(URL(string: "https://www.xbox.com/zh-cn/games/store/minecraft-java-bedrock-edition-for-pc/9nxp44l49shj")!) ; PopupButton.Close.onClick() }),
-                    .init(text: "下次一定", onClick: { PopupButton.Close.onClick() ; returnValue = true })
-                ]))
-            default:
-                let _: Any? = nil
-            }
-        } else {
+        log("[launchPrecheck] 正在进行 Java 检查")
+        if DataManager.shared.javaVirtualMachines
+            .filter({ $0.executableUrl.path != "/usr/bin/java" })
+            .count == 0 {
+            err("[launchPrecheck] 用户未安装 Java")
             ContentView.setPopup(.init(
-                "正版验证",
-                "你必须先登录正版账号才能启动游戏！",
+                "错误",
+                "你还没有安装 Java\n如果你安装过 Java 并且没有在 Java 管理中看到，请点击“手动添加 Java”",
                 [
-                    .init(text: "购买正版", onClick: { NSWorkspace.shared.open(URL(string: "https://www.xbox.com/zh-cn/games/store/minecraft-java-bedrock-edition-for-pc/9nxp44l49shj")!) ; PopupButton.Close.onClick() }),
-                    .init(text: "试玩", onClick: { launchOptions.isDemo = true ; returnValue = true ; PopupButton.Close.onClick() }),
-                    .init(text: "返回", onClick: PopupButton.Close.onClick)
+                    .init(text: "安装 Java", onClick: { NSWorkspace.shared.open(URL(string: "https://www.azul.com/downloads/?package=jdk#zulu")!) ; PopupButton.Close.onClick() }),
+                    .Close
                 ]))
+            return false
+        } else if MinecraftInstance.findSuitableJava(instance!.version) == nil {
+            
+            let minVersion = MinecraftInstance.getMinJavaVersion(instance!.version)
+            err("[launchPrecheck] 无可用 Java。最低版本: \(minVersion)")
+            ContentView.setPopup(.init(
+                "错误",
+                "当前没有满足条件的 Java 版本\n你需要安装 \(minVersion) 及以上版本的 Java！",
+                [
+                    .init(text: "安装 Java", onClick: { NSWorkspace.shared.open(URL(string: "https://www.azul.com/downloads/?package=jdk#zulu")!) ; PopupButton.Close.onClick() }),
+                    .Close
+                ]))
+            return false
         }
         
-        return returnValue
+        if !AppSettings.shared.hasMicrosoftAccount {
+            debug("[launchPrecheck] 未登录过正版账号")
+            var returnValue: Bool = false
+            if Locale.current.identifier.starts(with: "zh") {
+                switch AppSettings.shared.launchCount {
+                case 3, 8, 15, 30, 50, 70, 90, 110, 130, 180, 220, 280, 330, 380, 450, 550, 660, 750, 880, 950, 1100, 1300, 1500, 1700, 1900:
+                    ContentView.setPopup(.init(
+                        "考虑一下正版？",
+                        "你已经启动了 \(AppSettings.shared.launchCount) 次 Minecraft 啦！\n如果觉得 Minecraft 还不错，可以购买正版支持一下，毕竟开发游戏也真的很不容易……不要一直白嫖啦。\n在登录一次正版账号后，就不会再出现这个提示了！",
+                        [
+                            .init(text: "支持正版游戏！", onClick: { NSWorkspace.shared.open(URL(string: "https://www.xbox.com/zh-cn/games/store/minecraft-java-bedrock-edition-for-pc/9nxp44l49shj")!) ; PopupButton.Close.onClick() }),
+                            .init(text: "下次一定", onClick: { PopupButton.Close.onClick() ; returnValue = true })
+                        ]))
+                default:
+                    let _: Any? = nil
+                }
+            } else {
+                ContentView.setPopup(.init(
+                    "正版验证",
+                    "你必须先登录正版账号才能启动游戏！",
+                    [
+                        .init(text: "购买正版", onClick: { NSWorkspace.shared.open(URL(string: "https://www.xbox.com/zh-cn/games/store/minecraft-java-bedrock-edition-for-pc/9nxp44l49shj")!) ; PopupButton.Close.onClick() }),
+                        .init(text: "试玩", onClick: { launchOptions.isDemo = true ; returnValue = true ; PopupButton.Close.onClick() }),
+                        .init(text: "返回", onClick: PopupButton.Close.onClick)
+                    ]))
+            }
+            
+            if !returnValue {
+                return false
+            }
+        }
+        
+        return true
     }
 }
 

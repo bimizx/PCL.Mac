@@ -19,7 +19,7 @@ public class MinecraftInstance: Identifiable {
     public let runningDirectory: URL
     public let minecraftDirectory: MinecraftDirectory
     public let configPath: URL
-    public private(set) var version: MinecraftVersion? = nil
+    public private(set) var version: MinecraftVersion! = nil
     public var process: Process?
     public let manifest: ClientManifest
     public var config: MinecraftConfig
@@ -101,18 +101,23 @@ public class MinecraftInstance: Identifiable {
         }
     }
     
+    public static func getMinJavaVersion(_ version: MinecraftVersion) -> Int {
+        if version >= RequiredJava21 {
+            return 21
+        } else if version >= RequiredJava17 {
+            return 17
+        } else if version >= RequiredJava16 {
+            return 16
+        } else {
+            return 8
+        }
+    }
+    
     public static func findSuitableJava(_ version: MinecraftVersion) -> JavaVirtualMachine? {
-        let needsJava16: Bool = version >= RequiredJava16
-        let needsJava17: Bool = version >= RequiredJava17
-        let needsJava21: Bool = version >= RequiredJava21
-        
+        let minJavaVersion = getMinJavaVersion(version)
         var suitableJava: JavaVirtualMachine?
         for jvm in DataManager.shared.javaVirtualMachines.sorted(by: { $0.version < $1.version }) {
-            if (jvm.version < 16 && needsJava16)
-            || (jvm.version < 17 && needsJava17)
-            || (jvm.version < 21 && needsJava21) {
-                continue
-            }
+            if jvm.version < minJavaVersion { continue }
             
             suitableJava = jvm
             
@@ -124,9 +129,7 @@ public class MinecraftInstance: Identifiable {
         if suitableJava == nil {
             warn("未找到可用 Java")
             debug("版本: \(version.displayName)")
-            debug("需要 Java 16: \(needsJava16)")
-            debug("需要 Java 17: \(needsJava21)")
-            debug("需要 Java 21: \(needsJava21)")
+            debug("最低 Java 版本: \(minJavaVersion)")
         }
         
         return suitableJava
