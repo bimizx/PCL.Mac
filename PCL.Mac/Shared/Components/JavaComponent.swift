@@ -19,7 +19,7 @@ struct JavaComponent: View {
             return nil
         }
         
-        return URL(fileURLWithPath: instance.config.javaPath!)
+        return URL(fileURLWithPath: instance.config.javaPath ?? "")
     }
     
     init(jvm: JavaVirtualMachine) {

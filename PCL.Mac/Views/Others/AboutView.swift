@@ -101,7 +101,6 @@ struct AboutView: View {
                 VStack(spacing: 0) {
                     ForEach(
                         [
-                            (name: "Alamofire", license: "MIT", repo: "Alamofire/Alamofire"),
                             (name: "SwiftyJSON", license: "MIT", repo: "SwiftyJSON/SwiftyJSON"),
                             (name: "ZIPFoundation", license: "MIT", repo: "weichsel/ZIPFoundation")
                         ]

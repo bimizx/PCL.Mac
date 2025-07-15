@@ -676,6 +676,7 @@
 				INFOPLIST_FILE = PCL.Mac/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = PCL.Mac;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "部分语音 Mod 需要开启麦克风权限（如 SimpleVoice）";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -710,6 +711,7 @@
 				INFOPLIST_FILE = PCL.Mac/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = PCL.Mac;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "部分语音 Mod 需要开启麦克风权限（如 SimpleVoice）";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
