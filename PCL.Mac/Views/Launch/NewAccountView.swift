@@ -61,28 +61,22 @@ struct NewAccountView: View {
                 NewMicrosoftAccountView()
                     .transition(.move(edge: .trailing).combined(with: .opacity))
             default:
-                LazyVStack {
+                Group {
                     let card = StaticMyCardComponent(title: "登录方式") {
                         VStack {
                             AuthMethodComponent(type: .microsoft)
                             AuthMethodComponent(type: .offline)
                         }
                     }
-                    if isAppeared {
-                        card.noAnimation()
-                    } else {
-                        card
-                            .onChange(of: state.type) { new in
-                                if new != nil {
-                                    isAppeared = true
-                                }
-                            }
-                    }
+                    if isAppeared { card.noAnimation() } else { card }
                 }
                 .padding()
                 .transition(.move(edge: .leading).combined(with: .opacity))
             }
             Spacer()
+        }
+        .onChange(of: state.type) { new in
+            isAppeared = true
         }
         .animation(.spring(response: 0.3, dampingFraction: 0.85), value: state.type)
     }
