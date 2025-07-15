@@ -133,6 +133,7 @@ fileprivate struct CategoryCard: View {
             }
             .padding(.top, 12)
         }
+        .cardId(label)
         .padding()
     }
 }

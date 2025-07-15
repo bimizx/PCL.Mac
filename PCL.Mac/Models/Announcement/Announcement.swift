@@ -62,7 +62,7 @@ struct Announcement: Identifiable {
                 }
             }
         }
-        .id("announcement")
+        .cardId("announcement")
     }
 }
 

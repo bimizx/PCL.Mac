@@ -13,4 +13,5 @@ class StateManager: ObservableObject {
     
     @Published var modSearch: ModSearchViewState = .init()
     @Published var newAccount: NewAccountViewState = .init()
+    @Published var cardStates: [String : Bool] = [:]
 }

@@ -69,6 +69,7 @@ struct MyCardComponent<Content: View>: View {
     private let content: Content
     private let hasAnimation: Bool
     private var onToggle: ((Bool) -> Void)? = nil
+    private var id: String? = nil
     
     @State private var isUnfolded: Bool = false // 带动画
     @State private var showContent: Bool = false // 无动画
@@ -114,6 +115,7 @@ struct MyCardComponent<Content: View>: View {
                             onToggle?(true)
                             contentHeight = internalContentHeight
                         }
+                        updateState(true)
                     } else {
                         contentHeight = min(2000, contentHeight)
                         withAnimation(.spring(response: 0.4, dampingFraction: 0.85, blendDuration: 0)) {
@@ -124,6 +126,7 @@ struct MyCardComponent<Content: View>: View {
                             showContent = false
                             onToggle?(false)
                         }
+                        updateState(false)
                     }
                 }
 
@@ -148,12 +151,39 @@ struct MyCardComponent<Content: View>: View {
                 if h > 0 { internalContentHeight = h }
             }
         }
+        .onAppear {
+            loadState()
+        }
     }
     
     func onToggle(_ callback: @escaping (Bool) -> Void) -> MyCardComponent {
         var copy = self
         copy.onToggle = callback
         return copy
+    }
+    
+    func cardId(_ id: String) -> MyCardComponent {
+        var copy = self
+        copy.id = id
+        copy.loadState()
+        return copy
+    }
+    
+    private func loadState() {
+        if let id = id, let state = StateManager.shared.cardStates[id] {
+            self.isUnfolded = state
+            self.showContent = state
+            if state {
+                onToggle?(true)
+                contentHeight = internalContentHeight
+            }
+        }
+    }
+    
+    private func updateState(_ state: Bool) {
+        if let id = id {
+            StateManager.shared.cardStates[id] = state
+        }
     }
 }
 
