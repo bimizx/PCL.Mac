@@ -62,7 +62,7 @@ struct Announcement: Identifiable {
                 }
             }
         }
-        .cardId("announcement")
+        .cardId("announcement-\(title)-\(showHistoryButton)")
     }
 }
 
