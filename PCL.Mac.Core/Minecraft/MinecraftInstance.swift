@@ -8,6 +8,7 @@
 import Foundation
 import SwiftyJSON
 import ZIPFoundation
+import Cocoa
 
 public class MinecraftInstance: Identifiable {
     private static var cache: [URL : MinecraftInstance] = [:]
@@ -159,7 +160,33 @@ public class MinecraftInstance: Identifiable {
         launchOptions.account = account
         launchOptions.javaPath = javaUrl
         
-        MinecraftLauncher(self)?.launch(launchOptions)
+        let launcher = MinecraftLauncher(self)!
+        launcher.launch(launchOptions) { exitCode in
+            if exitCode != 0 {
+                log("检测到非 0 退出代码")
+                hint("检测到 Minecraft 出现错误，错误分析已开始……")
+                ContentView.setPopup(.init("Minecraft 出现错误", "很抱歉，PCL.Mac 暂时没有分析功能。\n如果要寻求帮助，请把错误报告文件发给对方，而不是发送这个窗口的照片或者截图。\n不要截图！不要截图！！不要截图！！！", [
+                    .Ok,
+                    .init(text: "导出错误报告", onClick: {
+                        let savePanel = NSSavePanel()
+                        savePanel.title = "选择导出位置"
+                        savePanel.prompt = "导出"
+                        savePanel.allowedContentTypes = [.zip]
+                        let formatter = DateFormatter()
+                        formatter.dateFormat = "yyyy-M-d_HH.mm.ss"
+                        savePanel.nameFieldStringValue = "错误报告-\(formatter.string(from: .init()))"
+                        savePanel.beginSheetModal(for: NSApplication.shared.windows.first!) { [unowned self] result in
+                            if result == .OK {
+                                if let url = savePanel.url {
+                                    MinecraftCrashHandler.exportErrorReport(self, launcher, to: url)
+                                }
+                            }
+                        }
+                        PopupButton.Close.onClick()
+                    })
+                ]))
+            }
+        }
     }
     
     public func detectVersion() {

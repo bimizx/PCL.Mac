@@ -62,7 +62,6 @@ public final class ProgressiveDownloader: NSObject, URLSessionDownloadDelegate {
             guard index < urls.count else { return }
             let dest = destinations[index]
             if skipIfExists && FileManager.default.fileExists(atPath: dest.path) {
-                debug("\(dest.path) 已存在，跳过")
                 lock.lock()
                 finishedCount += 1
                 task?.completeOneFile()

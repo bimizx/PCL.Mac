@@ -39,7 +39,7 @@ final class LogStore {
         )
     }
     
-    func appendRaw(_ message: String, _ line: LogLine? = nil) {
+    func appendRaw(_ message: String, _ line: LogLine? = nil, write: Bool = true) {
         queue.async {
             if self.logs.count >= self.maxCapacity {
                 self.logs.removeFirst(1000)
@@ -51,7 +51,7 @@ final class LogStore {
             if SharedConstants.shared.isDevelopment {
                 self.logLines.append(line ?? LogLine(message))
             }
-            if self.writeImmediately {
+            if self.writeImmediately && write {
                 self.appendToDisk(message + "\n")
             }
             print(message)
@@ -108,7 +108,7 @@ public struct LogManager {
     }
 
     public static func raw(_ message: Any) {
-        LogStore.shared.appendRaw(String(describing: message))
+        LogStore.shared.appendRaw(String(describing: message), write: false)
     }
 }
 

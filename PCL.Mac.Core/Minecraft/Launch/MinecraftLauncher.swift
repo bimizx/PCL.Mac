@@ -10,12 +10,17 @@ import Cocoa
 
 public class MinecraftLauncher {
     private let instance: MinecraftInstance
+    private let id = UUID()
+    public let logUrl: URL
     
     public init?(_ instance: MinecraftInstance) {
         self.instance = instance
+        self.logUrl = SharedConstants.shared.applicationSupportUrl.appending(path: "GameLogs").appending(path: id.uuidString + ".log")
+        try? FileManager.default.createDirectory(at: logUrl.parent(), withIntermediateDirectories: true)
+        FileManager.default.createFile(atPath: logUrl.path, contents: Data())
     }
     
-    public func launch(_ options: LaunchOptions) {
+    public func launch(_ options: LaunchOptions, _ callback: @MainActor @escaping (Int32) -> Void = { _ in }) {
         let process = Process()
         process.executableURL = options.javaPath
         process.environment = ProcessInfo.processInfo.environment
@@ -23,9 +28,12 @@ public class MinecraftLauncher {
         process.arguments!.append(contentsOf: buildJvmArguments(options))
         process.arguments!.append(instance.manifest.mainClass)
         process.arguments!.append(contentsOf: buildGameArguments(options))
-        debug(process.executableURL!.path + " " + process.arguments!.joined(separator: " ")
-            .replacingOccurrences(of: #"--accessToken\s+\S+"#, with: "--accessToken 🎉", options: .regularExpression))
+        let command = process.executableURL!.path + " " + process.arguments!.joined(separator: " ")
+            .replacingOccurrences(of: #"--accessToken\s+\S+"#, with: "--accessToken 🎉", options: .regularExpression)
+        debug(command)
+        MinecraftCrashHandler.lastLaunchCommand = command
         process.currentDirectoryURL = instance.runningDirectory
+        process.qualityOfService = .userInteractive
         
         instance.process = process
         do {
@@ -33,9 +41,12 @@ public class MinecraftLauncher {
             process.standardOutput = pipe
             process.standardError = pipe
             
+            let logHandle = try FileHandle(forWritingTo: logUrl)
             pipe.fileHandleForReading.readabilityHandler = { handle in
                 for line in String(data: handle.availableData, encoding: .utf8)!.split(separator: "\n") {
                     raw(line.replacing("\t", with: "    "))
+                    try? logHandle.write(contentsOf: (line + "\n").data(using: .utf8)!)
+                    logHandle.seekToEndOfFile()
                 }
             }
             
@@ -61,6 +72,9 @@ public class MinecraftLauncher {
             
             process.waitUntilExit()
             log("\(instance.config.name) 进程已退出, 退出代码 \(process.terminationStatus)")
+            DispatchQueue.main.async {
+                callback(process.terminationStatus)
+            }
             instance.process = nil
         } catch {
             err(error.localizedDescription)
@@ -81,9 +95,7 @@ public class MinecraftLauncher {
         var args: [String] = [
             "-Djna.tmpdir=${natives_directory}"
         ]
-#if DEBUG
-        args.append("-Dorg.lwjgl.util.Debug=true")
-#endif
+        
         args.append(contentsOf: instance.manifest.getArguments().getAllowedJVMArguments())
         return Util.replaceTemplateStrings(args, with: values)
     }
