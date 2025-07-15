@@ -67,7 +67,7 @@ struct MyCardComponent<Content: View>: View {
     let title: String
     let index: Int
     private let content: Content
-    private let hasAnimation: Bool
+    private var hasAnimation: Bool = true
     private var onToggle: ((Bool) -> Void)? = nil
     private var id: String? = nil
     
@@ -77,9 +77,8 @@ struct MyCardComponent<Content: View>: View {
     @State private var contentHeight: CGFloat = .zero
     @State private var lastClick: Date = Date()
 
-    init(index: Int = 0, hasAnimation: Bool = true, title: String, @ViewBuilder content: @escaping () -> Content) {
+    init(index: Int = 0, title: String, @ViewBuilder content: @escaping () -> Content) {
         self.index = index
-        self.hasAnimation = hasAnimation
         self.title = title
         self.content = content()
     }
@@ -185,6 +184,12 @@ struct MyCardComponent<Content: View>: View {
             StateManager.shared.cardStates[id] = state
         }
     }
+    
+    func noAnimation() -> MyCardComponent {
+        var copy = self
+        copy.hasAnimation = false
+        return copy
+    }
 }
 
 struct StaticMyCardComponent<Content: View>: View {
@@ -194,11 +199,10 @@ struct StaticMyCardComponent<Content: View>: View {
     let title: String
     let content: () -> Content
     
-    private var hasAnimation: Bool
+    private var hasAnimation: Bool = true
     
-    init(index: Int = 0, hasAnimation: Bool = true, title: String, content: @escaping () -> Content) {
+    init(index: Int = 0, title: String, content: @escaping () -> Content) {
         self.index = index
-        self.hasAnimation = hasAnimation
         self.title = title
         self.content = content
     }
@@ -212,18 +216,23 @@ struct StaticMyCardComponent<Content: View>: View {
             }
         }
     }
+    
+    func noAnimation() -> StaticMyCardComponent {
+        var copy = self
+        copy.hasAnimation = false
+        return copy
+    }
 }
 
 struct TitlelessMyCardComponent<Content: View>: View {
     let content: () -> Content
     let index: Int
     
-    @State private var hasAnimation: Bool
+    private var hasAnimation: Bool = true
     
-    init(index: Int = 0, hasAnimation: Bool = true, @ViewBuilder content: @escaping () -> Content) {
+    init(index: Int = 0, @ViewBuilder content: @escaping () -> Content) {
         self.content = content
         self.index = index
-        self.hasAnimation = hasAnimation
     }
 
     var body: some View {
@@ -233,6 +242,12 @@ struct TitlelessMyCardComponent<Content: View>: View {
                     .foregroundStyle(Color("TextColor"))
             }
         }
+    }
+    
+    func noAnimation() -> TitlelessMyCardComponent {
+        var copy = self
+        copy.hasAnimation = false
+        return copy
     }
 }
 

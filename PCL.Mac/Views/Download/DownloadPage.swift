@@ -24,7 +24,7 @@ struct DownloadPage: View {
     var body: some View {
         ZStack {
             ScrollView {
-                TitlelessMyCardComponent(hasAnimation: false) {
+                TitlelessMyCardComponent {
                     HStack(alignment: .center) {
                         Image("Back")
                             .resizable()
@@ -43,6 +43,7 @@ struct DownloadPage: View {
                             .foregroundStyle(Color("TextColor"))
                     }
                 }
+                .noAnimation()
                 .padding()
                 FabricLoaderCard(tasks: $tasks, version: version)
                     .padding()
@@ -115,7 +116,7 @@ fileprivate struct FabricLoaderCard: View {
         ZStack {
             Group {
                 if let versions = versions, !versions.isEmpty {
-                    MyCardComponent(index: 1, hasAnimation: false, title: "Fabric") {
+                    MyCardComponent(index: 1, title: "Fabric") {
                         LazyVStack(spacing: 0) {
                             ForEach(versions) { version in
                                 ListItem(iconName: "Fabric", title: version.loaderVersion, description: version.stable ? "稳定版" : "测试版", isSelected: selected?.loaderVersion == version.loaderVersion)
@@ -127,17 +128,19 @@ fileprivate struct FabricLoaderCard: View {
                             }
                         }
                     }
+                    .noAnimation()
                     .onToggle { isUnfolded in
                         showText = !isUnfolded
                     }
                 } else {
-                    TitlelessMyCardComponent(index: 1, hasAnimation: false) {
+                    TitlelessMyCardComponent(index: 1) {
                         HStack {
                             MaskedTextRectangle(text: "Fabric")
                             Spacer()
                         }
                         .frame(height: 9)
                     }
+                    .noAnimation()
                 }
             }
             

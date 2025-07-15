@@ -130,12 +130,10 @@ struct PCL_MacTests {
     }
     
     @Test func testUpdateCheck() async {
-//        if let update = await UpdateCheck.getLastUpdate() {
-//            print("获取更新成功")
-//            await UpdateCheck.downloadUpdate(update)
-//        }
-//        UpdateCheck.applyUpdate()
-        let awa: URL?
-        
+        if let update = await UpdateCheck.getLastUpdate() {
+            print("获取更新成功")
+            await UpdateCheck.downloadUpdate(update)
+        }
+        UpdateCheck.applyUpdate()
     }
 }

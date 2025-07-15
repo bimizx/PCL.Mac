@@ -49,30 +49,42 @@ class NewAccountViewState: ObservableObject {
 struct NewAccountView: View {
     @ObservedObject private var state: NewAccountViewState = StateManager.shared.newAccount
     
+    @State private var isAppeared: Bool = false
+    
     var body: some View {
-        Group {
+        VStack {
             switch state.type {
             case .offline:
                 NewOfflineAccountView()
-                    .transition(.move(edge: .trailing))
+                    .transition(.move(edge: .trailing).combined(with: .opacity))
             case .microsoft:
                 NewMicrosoftAccountView()
-                    .transition(.move(edge: .trailing))
+                    .transition(.move(edge: .trailing).combined(with: .opacity))
             default:
-                VStack {
-                    StaticMyCardComponent(title: "登录方式") {
+                LazyVStack {
+                    let card = StaticMyCardComponent(title: "登录方式") {
                         VStack {
                             AuthMethodComponent(type: .microsoft)
                             AuthMethodComponent(type: .offline)
                         }
                     }
-                    .padding()
-                    Spacer()
+                    if isAppeared {
+                        card.noAnimation()
+                    } else {
+                        card
+                            .onChange(of: state.type) { new in
+                                if new != nil {
+                                    isAppeared = true
+                                }
+                            }
+                    }
                 }
-                .transition(.move(edge: .leading))
+                .padding()
+                .transition(.move(edge: .leading).combined(with: .opacity))
             }
+            Spacer()
         }
-        .animation(.spring(response: 0.4, dampingFraction: 0.85), value: state.type)
+        .animation(.spring(response: 0.3, dampingFraction: 0.85), value: state.type)
     }
 }
 
@@ -126,38 +138,36 @@ fileprivate struct NewOfflineAccountView: View {
     @State private var warningText: String = ""
     
     var body: some View {
-        VStack {
-            StaticMyCardComponent(title: "离线账号") {
-                VStack(alignment: .leading, spacing: 10) {
-                    Text(warningText)
-                        .foregroundStyle(Color(hex: 0xFF2B00))
-                    MyTextFieldComponent(text: $state.playerName, placeholder: "玩家名")
-                        .onChange(of: state.playerName) { name in
-                            warningText = checkPlayerName(name)
-                        }
-                        .onSubmit(addAccount)
-                    HStack {
-                        Spacer()
-                        MyButtonComponent(text: "购买 Minecraft") {
-                            NSWorkspace.shared.open(URL(string: "https://www.xbox.com/zh-cn/games/store/minecraft-java-bedrock-edition-for-pc/9nxp44l49shj")!)
-                        }
-                        .fixedSize()
-                        
-                        MyButtonComponent(text: "取消") {
-                            state.type = nil
-                        }
-                        .fixedSize()
-                        
-                        MyButtonComponent(text: "添加", action: addAccount)
-                        .fixedSize()
+        StaticMyCardComponent(title: "离线账号") {
+            VStack(alignment: .leading, spacing: 10) {
+                Text(warningText)
+                    .foregroundStyle(Color(hex: 0xFF2B00))
+                MyTextFieldComponent(text: $state.playerName, placeholder: "玩家名")
+                    .onChange(of: state.playerName) { name in
+                        warningText = checkPlayerName(name)
                     }
+                    .onSubmit(addAccount)
+                HStack {
+                    Spacer()
+                    MyButtonComponent(text: "购买 Minecraft") {
+                        NSWorkspace.shared.open(URL(string: "https://www.xbox.com/zh-cn/games/store/minecraft-java-bedrock-edition-for-pc/9nxp44l49shj")!)
+                    }
+                    .fixedSize()
+                    
+                    MyButtonComponent(text: "取消") {
+                        state.type = nil
+                    }
+                    .fixedSize()
+                    
+                    MyButtonComponent(text: "添加", action: addAccount)
+                        .fixedSize()
                 }
-                .font(.custom("PCL English", size: 14))
-                .foregroundStyle(Color("TextColor"))
             }
-            .padding()
-            Spacer()
+            .font(.custom("PCL English", size: 14))
+            .foregroundStyle(Color("TextColor"))
         }
+        .noAnimation()
+        .padding()
     }
     
     private func addAccount() {
@@ -201,65 +211,62 @@ fileprivate struct NewMicrosoftAccountView: View {
     @ObservedObject private var state: NewAccountViewState = StateManager.shared.newAccount
     
     var body: some View {
-        VStack {
-            StaticMyCardComponent(title: "正版账号") {
-                VStack(alignment: .leading) {
-                    VStack(alignment: .leading, spacing: 0) {
-                        Text("点击登录后会自动跳转到微软登录页面")
-                        Text("请将剪切板中的内容粘贴至页面的输入框内，并登录您购买 Minecraft 时的微软账号")
-                        Text("登录后出现“PCL-CE”而非“PCL.Mac”是正常的，因为 PCL.Mac 还没有自己的 Client ID qwq")
+        StaticMyCardComponent(title: "正版账号") {
+            VStack(alignment: .leading) {
+                VStack(alignment: .leading, spacing: 0) {
+                    Text("点击登录后会自动跳转到微软登录页面")
+                    Text("请将剪切板中的内容粘贴至页面的输入框内，并登录您购买 Minecraft 时的微软账号")
+                    Text("登录后出现“PCL-CE”而非“PCL.Mac”是正常的，因为 PCL.Mac 还没有自己的 Client ID qwq")
+                }
+                .font(.custom("PCL English", size: 14))
+                .foregroundStyle(Color("TextColor"))
+                .padding()
+                
+                HStack {
+                    MyButtonComponent(text: "取消") {
+                        state.type = nil
                     }
-                    .font(.custom("PCL English", size: 14))
-                    .foregroundStyle(Color("TextColor"))
-                    .padding()
-                    
-                    HStack {
-                        MyButtonComponent(text: "取消") {
-                            state.type = nil
+                    MyButtonComponent(text: "购买 Minecraft") {
+                        NSWorkspace.shared.open(URL(string: "https://www.xbox.com/zh-cn/games/store/minecraft-java-bedrock-edition-for-pc/9nxp44l49shj")!)
+                    }
+                    MyButtonComponent(text: "登录") {
+                        if !NetworkTest.shared.hasNetworkConnection() {
+                            HintManager.default.add(.init(text: "请先联网！", type: .critical))
+                            return
                         }
-                        MyButtonComponent(text: "购买 Minecraft") {
-                            NSWorkspace.shared.open(URL(string: "https://www.xbox.com/zh-cn/games/store/minecraft-java-bedrock-edition-for-pc/9nxp44l49shj")!)
-                        }
-                        MyButtonComponent(text: "登录") {
-                            if !NetworkTest.shared.hasNetworkConnection() {
-                                HintManager.default.add(.init(text: "请先联网！", type: .critical))
+                        
+                        if state.isSigningIn { return }
+                        state.isSigningIn = true
+                        Task {
+                            guard let authToken = await MsLogin.signIn() else {
+                                HintManager.default.add(.init(text: "登录失败！", type: .critical))
                                 return
                             }
                             
-                            if state.isSigningIn { return }
-                            state.isSigningIn = true
-                            Task {
-                                guard let authToken = await MsLogin.signIn() else {
-                                    HintManager.default.add(.init(text: "登录失败！", type: .critical))
-                                    return
-                                }
-                                
-                                DispatchQueue.main.async {
-                                    state.authToken.setObject(authToken)
-                                }
-                                
-                                HintManager.default.add(.init(text: "登录成功！正在检测你是否拥有 Minecraft……", type: .finish))
-                                if await MsLogin.hasMinecraftGame(authToken) {
-                                    HintManager.default.add(.init(text: "你购买了 Minecraft！正在保存账号数据……", type: .finish))
-                                    if let msAccount = await MsAccount.create(authToken) {
-                                        DispatchQueue.main.async { AccountManager.shared.accounts.append(.microsoft(msAccount)) }
-                                        HintManager.default.add(.init(text: "登录成功！", type: .finish))
-                                    } else {
-                                        HintManager.default.add(.init(text: "在创建账号实例时发生错误", type: .critical))
-                                    }
-                                    DispatchQueue.main.async { StateManager.shared.newAccount = .init() }
+                            DispatchQueue.main.async {
+                                state.authToken.setObject(authToken)
+                            }
+                            
+                            HintManager.default.add(.init(text: "登录成功！正在检测你是否拥有 Minecraft……", type: .finish))
+                            if await MsLogin.hasMinecraftGame(authToken) {
+                                HintManager.default.add(.init(text: "你购买了 Minecraft！正在保存账号数据……", type: .finish))
+                                if let msAccount = await MsAccount.create(authToken) {
+                                    DispatchQueue.main.async { AccountManager.shared.accounts.append(.microsoft(msAccount)) }
+                                    HintManager.default.add(.init(text: "登录成功！", type: .finish))
                                 } else {
-                                    HintManager.default.add(.init(text: "你还没有购买 Minecraft！", type: .critical))
+                                    HintManager.default.add(.init(text: "在创建账号实例时发生错误", type: .critical))
                                 }
+                                DispatchQueue.main.async { StateManager.shared.newAccount = .init() }
+                            } else {
+                                HintManager.default.add(.init(text: "你还没有购买 Minecraft！", type: .critical))
                             }
                         }
                     }
-                    .frame(height: 40)
                 }
+                .frame(height: 40)
             }
-            .padding()
-            
-            Spacer()
         }
+        .noAnimation()
+        .padding()
     }
 }

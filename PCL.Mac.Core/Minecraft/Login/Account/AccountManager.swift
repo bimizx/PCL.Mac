@@ -90,9 +90,7 @@ public enum AnyAccount: Account, Identifiable, Equatable {
 public class AccountManager: ObservableObject {
     public static let shared: AccountManager = .init()
     
-    @CodableAppStorage("accounts") public var accounts: [AnyAccount] = [
-        .offline(.init("PCL_Mac"))
-    ]
+    @CodableAppStorage("accounts") public var accounts: [AnyAccount] = []
     
     @CodableAppStorage("accountId") public var accountId: UUID? = nil
     
