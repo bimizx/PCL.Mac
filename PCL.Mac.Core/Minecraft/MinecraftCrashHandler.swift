@@ -14,7 +14,6 @@ public class MinecraftCrashHandler {
     
     public static func exportErrorReport(_ instance: MinecraftInstance, _ launcher: MinecraftLauncher, to destination: URL) {
         debug("正在导出错误报告")
-        Util.clearTemp()
         let tmp = SharedConstants.shared.applicationTemperatureUrl.appending(path: "ErrorReport")
         try? FileManager.default.createDirectory(at: tmp, withIntermediateDirectories: true)
         
@@ -25,5 +24,6 @@ public class MinecraftCrashHandler {
         try? FileManager.default.zipItem(at: tmp, to: destination, shouldKeepParent: false)
         debug("错误报告导出完成")
         try? FileManager.default.removeItem(at: launcher.logUrl)
+        Util.clearTemp()
     }
 }

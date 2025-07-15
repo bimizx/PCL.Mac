@@ -203,7 +203,6 @@ public class MinecraftInstaller {
             let jarUrl: URL = task.minecraftDirectory.librariesUrl.appending(path: native.path)
             Util.unzip(archiveUrl: jarUrl, destination: nativesUrl, replace: true)
             processLibs(nativesUrl)
-            debug("解压 \(native.path) 成功")
         }
     }
     
@@ -247,7 +246,6 @@ public class MinecraftInstaller {
             let contents = try fileManager.contentsOfDirectory(at: nativesUrl, includingPropertiesForKeys: nil)
             for fileURL in contents {
                 if !fileURL.pathExtension.lowercased().hasSuffix("dylib") && !fileURL.pathExtension.lowercased().hasSuffix("jnilib") {
-                    debug("已清除 \(fileURL.path())")
                     try fileManager.removeItem(at: fileURL)
                 }
             }

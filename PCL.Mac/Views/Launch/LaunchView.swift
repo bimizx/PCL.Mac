@@ -58,6 +58,7 @@ fileprivate struct LeftTab: View {
                         guard launchPrecheck(launchOptions) else { return }
                         if self.instance!.process == nil {
                             Task {
+                                debug("正在启动游戏")
                                 await instance.launch(launchOptions)
                             }
                         }

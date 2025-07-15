@@ -143,6 +143,7 @@ public class MinecraftInstance: Identifiable {
                 let task = MinecraftInstaller.createCompleteTask(self, continuation.resume)
                 task.start()
             }
+            log("资源完整性检查完成")
         }
         
         guard let account = AccountManager.shared.getAccount() else {

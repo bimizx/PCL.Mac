@@ -72,6 +72,10 @@ public class MinecraftLauncher {
             
             process.waitUntilExit()
             log("\(instance.config.name) 进程已退出, 退出代码 \(process.terminationStatus)")
+            if process.terminationStatus == 0 {
+                debug("检测到退出代码为 0，已删除日志")
+                try? FileManager.default.removeItem(at: self.logUrl)
+            }
             DispatchQueue.main.async {
                 callback(process.terminationStatus)
             }
