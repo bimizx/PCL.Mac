@@ -1,0 +1,148 @@
+//
+//  VersionSettingsView.swift
+//  PCL.Mac
+//
+//  Created by YiZhiMCQiu on 2025/7/16.
+//
+
+import SwiftUI
+
+struct VersionSettingsView: View, SubRouteContainer {
+    @ObservedObject private var dataManager: DataManager = .shared
+    
+    private let instance: MinecraftInstance!
+    
+    init() {
+        if let directory = AppSettings.shared.currentMinecraftDirectory,
+           let defaultInstance = AppSettings.shared.defaultInstance,
+           let instance = MinecraftInstance.create(runningDirectory: directory.versionsUrl.appending(path: defaultInstance)) {
+            self.instance = instance
+        } else {
+            self.instance = nil
+        }
+    }
+    
+    var body: some View {
+        Group {
+            switch dataManager.router.getLast() {
+            case .instanceOverview:
+                InstanceOverviewView(instance: instance)
+            case .instanceSettings:
+                InstanceSettingsView(instance: instance)
+            default:
+                Spacer()
+            }
+        }
+        .onAppear {
+            dataManager.leftTab(200) {
+                VStack(alignment: .leading, spacing: 0) {
+                    MyListComponent(
+                        default: .instanceOverview,
+                        cases: .constant(
+                            [
+                                .instanceOverview,
+                                .instanceSettings,
+                                .instanceMods
+                            ]
+                        )) { route, isSelected in
+                            createListItemView(route)
+                                .foregroundStyle(isSelected ? AnyShapeStyle(AppSettings.shared.theme.getTextStyle()) : AnyShapeStyle(Color("TextColor")))
+                        }
+                        .padding(.top, 10)
+                    Spacer()
+                }
+            }
+        }
+    }
+    
+    private func createListItemView(_ route: AppRoute) -> some View {
+        let imageName: String
+        let text: String
+        
+        switch route {
+        case .instanceOverview:
+            imageName = "GameDownloadIcon"
+            text = "概览"
+        case .instanceSettings:
+            imageName = "SettingsIcon"
+            text = "设置"
+        case .instanceMods:
+            imageName = "ModDownloadIcon"
+            text = "Mod 管理"
+        default:
+            return AnyView(EmptyView())
+        }
+        
+        return AnyView(
+            HStack {
+                Image(imageName)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 20, height: 20)
+                Text(text)
+                    .font(.custom("PCL English", size: 14))
+            }
+        )
+    }
+}
+
+struct InstanceOverviewView: View {
+    let instance: MinecraftInstance
+    
+    var body: some View {
+        ScrollView {
+            TitlelessMyCardComponent {
+                HStack {
+                    Image(instance.version.getIconName())
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 32)
+                    VStack(alignment: .leading) {
+                        Text(instance.config.name)
+                        Text(instance.version.displayName)
+                            .foregroundStyle(Color(hex: 0x8C8C8C))
+                    }
+                    .font(.custom("PCL English", size: 14))
+                    .foregroundStyle(Color("TextColor"))
+                    Spacer()
+                }
+            }
+            .padding()
+        }
+        .scrollIndicators(.never)
+    }
+}
+
+struct InstanceSettingsView: View {
+    let instance: MinecraftInstance
+    
+    @State private var memoryText: String
+    
+    init(instance: MinecraftInstance) {
+        self.instance = instance
+        self.memoryText = String(instance.config.maxMemory)
+        
+    }
+    
+    var body: some View {
+        ScrollView {
+            StaticMyCardComponent(title: "进程管理") {
+                VStack(alignment: .leading) {
+                    HStack {
+                        Text("游戏内存")
+                        MyTextFieldComponent(text: $memoryText, numberOnly: true)
+                            .onChange(of: memoryText) { new in
+                                if let intValue = Int(new) {
+                                    self.instance.config.maxMemory = Int32(intValue)
+                                }
+                            }
+                        Text("MB")
+                    }
+                }
+                .padding()
+            }
+            .padding()
+        }
+        .scrollIndicators(.never)
+    }
+}

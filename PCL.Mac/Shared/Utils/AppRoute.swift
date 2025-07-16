@@ -23,11 +23,15 @@ public enum AppRoute: Hashable {
     case versionSelect
     case modDownload(summary: ModSummary)
     case announcementHistory
+    case versionSettings(instance: MinecraftInstance)
     
     // MyList 导航
     case minecraftDownload
     case modSearch
     case versionList(directory: MinecraftDirectory)
+    case instanceOverview
+    case instanceSettings
+    case instanceMods
     
     case about
     case debug
@@ -53,6 +57,7 @@ public enum AppRoute: Hashable {
         case .installing(let task): "installing?task=\(task.id)"
         case .modDownload(let summary): "modDownload?summary=\(summary.id)"
         case .versionList(let directory): "versionList?rootUrl=\(directory.rootUrl.path)"
+        case .versionSettings(let instance): "versionSettings?instance=\(instance.config.name)"
         default:
             String(describing: self)
         }
@@ -97,6 +102,8 @@ public class AppRouter: ObservableObject {
             ModDownloadView(summary: summary)
         case .announcementHistory:
             AnnouncementHistoryView()
+        case .versionSettings, .instanceOverview, .instanceSettings, .instanceMods:
+            VersionSettingsView()
         }
     }
     

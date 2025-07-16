@@ -16,7 +16,6 @@ fileprivate struct LeftTab: View {
     var body: some View {
         VStack {
             Spacer()
-            
             MyListItemComponent {
                 VStack {
                     if let account = accountManager.getAccount() {
@@ -79,7 +78,11 @@ fileprivate struct LeftTab: View {
                         dataManager.router.append(.versionSelect)
                     }
                     if AppSettings.shared.defaultInstance != nil {
-                        MyButtonComponent(text: "版本设置") { }
+                        MyButtonComponent(text: "版本设置") {
+                            if let instance = self.instance {
+                                dataManager.router.append(.versionSettings(instance: instance))
+                            }
+                        }
                     }
                 }
                 .frame(height: 32)

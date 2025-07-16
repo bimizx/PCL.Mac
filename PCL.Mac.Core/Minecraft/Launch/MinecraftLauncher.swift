@@ -97,6 +97,7 @@ public class MinecraftLauncher {
         ]
         
         var args: [String] = [
+            "-Xmx\(instance.config.maxMemory)m",
             "-Djna.tmpdir=${natives_directory}"
         ]
         

@@ -10,7 +10,7 @@ import SwiftyJSON
 import ZIPFoundation
 import Cocoa
 
-public class MinecraftInstance: Identifiable {
+public class MinecraftInstance: Identifiable, Equatable, Hashable {
     private static var cache: [URL : MinecraftInstance] = [:]
     
     private static let RequiredJava16: MinecraftVersion = MinecraftVersion(displayName: "21w19a", type: .snapshot)
@@ -26,6 +26,14 @@ public class MinecraftInstance: Identifiable {
     public var config: MinecraftConfig
     
     public let id: UUID = UUID()
+    
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
+    
+    public static func == (lhs: MinecraftInstance, rhs: MinecraftInstance) -> Bool {
+        lhs.id == rhs.id
+    }
     
     public static func create(runningDirectory: URL, config: MinecraftConfig? = nil, _ caller: String = #file, _ line: Int = #line) -> MinecraftInstance? {
         if let cached = cache[runningDirectory] {
@@ -222,6 +230,7 @@ public struct MinecraftConfig: Codable {
     public var javaPath: String!
     public var clientBrand: ClientBrand
     public var skipResourcesCheck: Bool = false
+    public var maxMemory: Int32 = 4096
     
     public init(_ json: JSON) {
         self.name = json["name"].stringValue
@@ -235,6 +244,7 @@ public struct MinecraftConfig: Codable {
             self.clientBrand = .vanilla
         }
         self.skipResourcesCheck = json["skipResourcesCheck"].boolValue
+        self.maxMemory = json["maxMemory"].int32Value
     }
     
     public init(name: String, mainClass: String, javaPath: String? = nil) {
