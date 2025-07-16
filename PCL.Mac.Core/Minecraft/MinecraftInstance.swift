@@ -145,13 +145,9 @@ public class MinecraftInstance: Identifiable, Equatable, Hashable {
     }
     
     public func launch(_ launchOptions: LaunchOptions) async {
-        if !config.skipResourcesCheck && !launchOptions.skipResourceCheck {
-            log("正在进行资源完整性检查")
-            await withCheckedContinuation { continuation in
-                let task = MinecraftInstaller.createCompleteTask(self, continuation.resume)
-                task.start()
-            }
-            log("资源完整性检查完成")
+        if config.maxMemory == 0 {
+            await ContentView.setPopup(.init("错误", "就给 0MB 内存你打算咋跑啊！\n请在 版本设置 > 设置 中调整游戏内存配置", [.Ok]))
+            return
         }
         
         guard let account = AccountManager.shared.getAccount() else {
@@ -168,6 +164,15 @@ public class MinecraftInstance: Identifiable, Equatable, Hashable {
         
         launchOptions.account = account
         launchOptions.javaPath = javaUrl
+        
+        if !config.skipResourcesCheck && !launchOptions.skipResourceCheck {
+            log("正在进行资源完整性检查")
+            await withCheckedContinuation { continuation in
+                let task = MinecraftInstaller.createCompleteTask(self, continuation.resume)
+                task.start()
+            }
+            log("资源完整性检查完成")
+        }
         
         let launcher = MinecraftLauncher(self)!
         launcher.launch(launchOptions) { exitCode in
@@ -231,6 +236,7 @@ public struct MinecraftConfig: Codable {
     public var clientBrand: ClientBrand
     public var skipResourcesCheck: Bool = false
     public var maxMemory: Int32 = 4096
+    public var qualityOfService: QualityOfService = .default
     
     public init(_ json: JSON) {
         self.name = json["name"].stringValue
@@ -244,7 +250,11 @@ public struct MinecraftConfig: Codable {
             self.clientBrand = .vanilla
         }
         self.skipResourcesCheck = json["skipResourcesCheck"].boolValue
-        self.maxMemory = json["maxMemory"].int32Value
+        self.maxMemory = json["maxMemory"].int32 ?? 4096
+        self.qualityOfService = .init(rawValue: json["qualityOfService"].intValue) ?? .default
+        if qualityOfService.rawValue == 0 {
+            qualityOfService = .default
+        }
     }
     
     public init(name: String, mainClass: String, javaPath: String? = nil) {
@@ -261,3 +271,5 @@ public enum ClientBrand: String, Codable {
     case forge = "forge"
     case neoforge = "neoforge"
 }
+
+extension QualityOfService: Codable { }

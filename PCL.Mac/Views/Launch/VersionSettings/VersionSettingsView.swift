@@ -114,14 +114,20 @@ struct InstanceOverviewView: View {
 }
 
 struct InstanceSettingsView: View {
-    let instance: MinecraftInstance
-    
+    @State var instance: MinecraftInstance
     @State private var memoryText: String
+    
+    let qosOptions: [QualityOfService] = [
+        .userInteractive,
+        .userInitiated,
+        .default,
+        .utility,
+        .background
+    ]
     
     init(instance: MinecraftInstance) {
         self.instance = instance
         self.memoryText = String(instance.config.maxMemory)
-        
     }
     
     var body: some View {
@@ -133,16 +139,52 @@ struct InstanceSettingsView: View {
                         MyTextFieldComponent(text: $memoryText, numberOnly: true)
                             .onChange(of: memoryText) { new in
                                 if let intValue = Int(new) {
-                                    self.instance.config.maxMemory = Int32(intValue)
+                                    instance.config.maxMemory = Int32(intValue)
+                                    instance.saveConfig()
                                 }
                             }
                         Text("MB")
+                    }
+                    VStack(spacing: 2) {
+                        HStack {
+                            Picker("进程 QoS", selection: $instance.config.qualityOfService) {
+                                ForEach(qosOptions, id: \.self) { option in
+                                    Text(getQualityOfServiceName(option))
+                                }
+                            }
+                            .onChange(of: instance.config.qualityOfService) { _ in
+                                instance.saveConfig()
+                            }
+                            Spacer()
+                        }
+                        
+                        Text("​QoS 是控制进程 CPU 优先级的属性，可调整多任务下的资源分配，保障游戏进程优先运行，推荐默认。")
+                            .font(.custom("PCL English", size: 12))
+                            .foregroundStyle(Color(hex: 0x8C8C8C))
                     }
                 }
                 .padding()
             }
             .padding()
         }
+        .font(.custom("PCL English", size: 14))
         .scrollIndicators(.never)
+    }
+    
+    private func getQualityOfServiceName(_ qos: QualityOfService) -> String {
+        switch qos {
+        case .userInteractive:
+            "用户交互 (最高优先级)"
+        case .userInitiated:
+            "用户启动 (高优先级)"
+        case .utility:
+            "实用工具 (低优先级)"
+        case .background:
+            "后台 (最低优先级)"
+        case .default:
+            "默认"
+        @unknown default:
+            "未知"
+        }
     }
 }

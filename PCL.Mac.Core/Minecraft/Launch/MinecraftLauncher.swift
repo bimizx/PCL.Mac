@@ -33,7 +33,11 @@ public class MinecraftLauncher {
         debug(command)
         MinecraftCrashHandler.lastLaunchCommand = command
         process.currentDirectoryURL = instance.runningDirectory
-        process.qualityOfService = .userInteractive
+        
+        if instance.config.qualityOfService.rawValue == 0 {
+            instance.config.qualityOfService = .default
+        }
+        process.qualityOfService = instance.config.qualityOfService
         
         instance.process = process
         do {
