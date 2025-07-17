@@ -20,14 +20,14 @@ struct VersionListView: View {
         
         init(instance: MinecraftInstance) {
             self.name = instance.config.name
-            self.description = instance.version!.displayName
+            self.description = instance.version.displayName
             self.instance = instance
         }
         
         var body: some View {
             MyListItemComponent {
                 HStack {
-                    Image(self.instance.version!.getIconName())
+                    Image(self.instance.getIconName())
                         .resizable()
                         .scaledToFit()
                         .frame(width: 35)
@@ -55,9 +55,29 @@ struct VersionListView: View {
     var body: some View {
         ScrollView(.vertical) {
             VStack {
+                let notVanillaVersions = minecraftDirectory.instances.filter { $0.config.clientBrand != .vanilla }
+                if !notVanillaVersions.isEmpty {
+                    MyCardComponent(title: "可安装 Mod") {
+                        LazyVStack {
+                            ForEach(
+                                notVanillaVersions
+                                    .sorted(by: { $0.version! > $1.version! })
+                                    .sorted(by: { getClientBrandIndex($0.config.clientBrand) < getClientBrandIndex($1.config.clientBrand) })
+                            ) { instance in
+                                VersionView(instance: instance)
+                            }
+                        }
+                        .padding(.top, 12)
+                    }
+                    .padding()
+                }
                 MyCardComponent(title: "常规版本") {
                     LazyVStack {
-                        ForEach(minecraftDirectory.instances.sorted(by: { $0.version! > $1.version! })) { instance in
+                        ForEach(
+                            minecraftDirectory.instances
+                                .filter { $0.config.clientBrand == .vanilla }
+                                .sorted(by: { $0.version! > $1.version! })
+                        ) { instance in
                             VersionView(instance: instance)
                         }
                     }
@@ -77,6 +97,19 @@ struct VersionListView: View {
         AppSettings.shared.currentMinecraftDirectory = directory
         if directory.instances.isEmpty {
             directory.loadInnerInstances()
+        }
+    }
+    
+    private func getClientBrandIndex(_ brand: ClientBrand) -> Int {
+        switch brand {
+        case .vanilla:
+            0
+        case .fabric:
+            1
+        case .forge:
+            2
+        case .neoforge:
+            3
         }
     }
 }

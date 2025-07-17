@@ -68,10 +68,10 @@ public class MinecraftInstance: Identifiable, Equatable, Hashable {
         
         do {
             let data = try FileHandle(forReadingFrom: runningDirectory.appending(path: runningDirectory.lastPathComponent + ".json")).readToEnd()!
+            self.config.clientBrand = MinecraftInstance.getClientBrand(String(data: data, encoding: .utf8) ?? "")
             let json = try JSON(data: data)
-            if !json["inheritsFrom"].exists() && !json["launcherMeta"].exists() {
-                manifest = try ClientManifest.parse(data, instanceUrl: runningDirectory)
-            } else {
+            
+            if json["inheritsFrom"].exists() {
                 switch self.config.clientBrand {
                 case .fabric:
                     manifest = ClientManifest.createFromFabricManifest(.init(json), runningDirectory)
@@ -79,6 +79,8 @@ public class MinecraftInstance: Identifiable, Equatable, Hashable {
                     warn("发现不受支持的加载器: \(self.config.name) \(self.config.clientBrand.rawValue)")
                     manifest = try ClientManifest.parse(data, instanceUrl: runningDirectory)
                 }
+            } else {
+                manifest = try ClientManifest.parse(data, instanceUrl: runningDirectory)
             }
             ArtifactVersionMapper.map(manifest)
         } catch {
@@ -107,6 +109,18 @@ public class MinecraftInstance: Identifiable, Equatable, Hashable {
             try encoder.encode(config).write(to: configPath, options: .atomic)
         } catch {
             err("无法保存配置: \(error.localizedDescription)")
+        }
+    }
+    
+    private static func getClientBrand(_ manifestString: String) -> ClientBrand {
+        if manifestString.contains("neoforged") {
+            return .neoforge
+        } else if manifestString.contains("fabric") {
+            return .fabric
+        } else if manifestString.contains("forge") {
+            return .forge
+        } else {
+            return .vanilla
         }
     }
     
@@ -225,6 +239,13 @@ public class MinecraftInstance: Identifiable, Equatable, Hashable {
             self.config.version = self.manifest.id
         }
     }
+    
+    public func getIconName() -> String {
+        if self.config.clientBrand == .vanilla {
+            return self.version.getIconName()
+        }
+        return "\(self.config.clientBrand.rawValue.capitalized)Icon"
+    }
 }
 
 public struct MinecraftConfig: Codable {
@@ -270,6 +291,14 @@ public enum ClientBrand: String, Codable {
     case fabric = "fabric"
     case forge = "forge"
     case neoforge = "neoforge"
+    
+    public func getName() -> String {
+        if self == .neoforge {
+            return "NeoForge"
+        } else {
+            return self.rawValue.capitalized
+        }
+    }
 }
 
 extension QualityOfService: Codable { }

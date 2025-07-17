@@ -93,13 +93,13 @@ struct InstanceOverviewView: View {
         ScrollView {
             TitlelessMyCardComponent {
                 HStack {
-                    Image(instance.version.getIconName())
+                    Image(instance.getIconName())
                         .resizable()
                         .scaledToFit()
                         .frame(width: 32)
                     VStack(alignment: .leading) {
                         Text(instance.config.name)
-                        Text(instance.version.displayName)
+                        Text(getVersionString())
                             .foregroundStyle(Color(hex: 0x8C8C8C))
                     }
                     .font(.custom("PCL English", size: 14))
@@ -110,6 +110,15 @@ struct InstanceOverviewView: View {
             .padding()
         }
         .scrollIndicators(.never)
+    }
+    
+    private func getVersionString() -> String {
+        var str = instance.version.displayName
+        if instance.config.clientBrand != .vanilla {
+            str += ", \(instance.config.clientBrand.getName())"
+        }
+        
+        return str
     }
 }
 
