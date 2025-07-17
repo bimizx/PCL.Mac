@@ -299,6 +299,15 @@ public enum ClientBrand: String, Codable {
             return self.rawValue.capitalized
         }
     }
+    
+    public var index: Int {
+        switch self {
+        case .vanilla: 0
+        case .fabric: 1
+        case .forge: 2
+        case .neoforge: 3
+        }
+    }
 }
 
 extension QualityOfService: Codable { }

@@ -62,7 +62,7 @@ struct VersionListView: View {
                             ForEach(
                                 notVanillaVersions
                                     .sorted(by: { $0.version! > $1.version! })
-                                    .sorted(by: { getClientBrandIndex($0.config.clientBrand) < getClientBrandIndex($1.config.clientBrand) })
+                                    .sorted(by: { $0.config.clientBrand.index < $1.config.clientBrand.index })
                             ) { instance in
                                 VersionView(instance: instance)
                             }
@@ -97,19 +97,6 @@ struct VersionListView: View {
         AppSettings.shared.currentMinecraftDirectory = directory
         if directory.instances.isEmpty {
             directory.loadInnerInstances()
-        }
-    }
-    
-    private func getClientBrandIndex(_ brand: ClientBrand) -> Int {
-        switch brand {
-        case .vanilla:
-            0
-        case .fabric:
-            1
-        case .forge:
-            2
-        case .neoforge:
-            3
         }
     }
 }

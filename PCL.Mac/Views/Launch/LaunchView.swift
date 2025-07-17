@@ -143,7 +143,7 @@ fileprivate struct LeftTab: View {
                             .init(text: "下次一定", onClick: { PopupButton.Close.onClick() ; returnValue = true })
                         ]))
                 default:
-                    let _: Any? = nil
+                    returnValue = true
                 }
             } else {
                 ContentView.setPopup(.init(
