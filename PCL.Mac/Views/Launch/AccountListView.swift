@@ -84,15 +84,17 @@ fileprivate struct AccountView: View {
                     }
                 }
                 Spacer()
-                MyListItemComponent {
-                    Image(systemName: "xmark")
-                        .bold()
-                        .foregroundStyle(Color("TextColor"))
-                        .padding(2)
-                }
-                .padding()
-                .onTapGesture {
-                    accountManager.accounts.removeAll(where: { $0.id == account.id })
+                if isHovered {
+                    MyListItemComponent {
+                        Image(systemName: "xmark")
+                            .bold()
+                            .foregroundStyle(Color("TextColor"))
+                            .padding(2)
+                    }
+                    .padding()
+                    .onTapGesture {
+                        accountManager.accounts.removeAll(where: { $0.id == account.id })
+                    }
                 }
             }
         }

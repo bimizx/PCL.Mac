@@ -116,7 +116,6 @@ fileprivate struct LeftTab: View {
                 ]))
             return false
         } else if MinecraftInstance.findSuitableJava(instance!.version) == nil {
-            
             let minVersion = MinecraftInstance.getMinJavaVersion(instance!.version)
             err("[launchPrecheck] 无可用 Java。最低版本: \(minVersion)")
             ContentView.setPopup(.init(

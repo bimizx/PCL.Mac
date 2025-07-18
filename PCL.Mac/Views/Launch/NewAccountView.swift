@@ -63,7 +63,7 @@ struct NewAccountView: View {
             default:
                 Group {
                     let card = StaticMyCardComponent(title: "登录方式") {
-                        VStack {
+                        VStack(spacing: 0) {
                             AuthMethodComponent(type: .microsoft)
                             AuthMethodComponent(type: .offline)
                         }

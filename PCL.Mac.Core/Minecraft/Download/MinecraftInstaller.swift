@@ -76,9 +76,15 @@ public class MinecraftInstaller {
     
     // MARK: 下载资源索引
     private static func downloadAssetIndex(_ task: MinecraftInstallTask) async {
+        guard let manifest = task.manifest else {
+            err("任务客户端清单为空值，停止下载资源索引")
+            task.assetIndex = .init(objects: [])
+            return
+        }
+        
         task.updateStage(.clientIndex)
-        let assetIndexUrl: URL = URL(string: task.manifest!.assetIndex.url)!
-        let destUrl: URL = task.minecraftDirectory.assetsUrl.appending(component: "indexes").appending(component: "\(task.manifest!.assetIndex.id).json")
+        let assetIndexUrl: URL = URL(string: manifest.assetIndex.url)!
+        let destUrl: URL = task.minecraftDirectory.assetsUrl.appending(component: "indexes").appending(component: "\(manifest.assetIndex.id).json")
         await withCheckedContinuation { continuation in
             let downloader = ProgressiveDownloader(
                 task: task,
