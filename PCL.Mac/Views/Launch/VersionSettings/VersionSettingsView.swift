@@ -15,7 +15,7 @@ struct VersionSettingsView: View, SubRouteContainer {
     init() {
         if let directory = AppSettings.shared.currentMinecraftDirectory,
            let defaultInstance = AppSettings.shared.defaultInstance,
-           let instance = MinecraftInstance.create(runningDirectory: directory.versionsUrl.appending(path: defaultInstance)) {
+           let instance = MinecraftInstance.create(directory, directory.versionsUrl.appending(path: defaultInstance)) {
             self.instance = instance
         } else {
             self.instance = nil
@@ -114,8 +114,8 @@ struct InstanceOverviewView: View {
     
     private func getVersionString() -> String {
         var str = instance.version.displayName
-        if instance.config.clientBrand != .vanilla {
-            str += ", \(instance.config.clientBrand.getName())"
+        if instance.clientBrand != .vanilla {
+            str += ", \(instance.clientBrand.getName())"
         }
         
         return str
@@ -141,7 +141,7 @@ struct InstanceSettingsView: View {
     
     var body: some View {
         ScrollView {
-            StaticMyCardComponent(title: "进程管理") {
+            StaticMyCardComponent(title: "进程设置") {
                 VStack(alignment: .leading) {
                     HStack {
                         Text("游戏内存")

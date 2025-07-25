@@ -69,16 +69,21 @@ public class AppSettings: ObservableObject {
     /// 累计启动次数
     @AppStorage("launchCount") public var launchCount: Int = 0
     
+    /// 启动器是否全屏
+    @AppStorage("fullScreen") public var fullScreen: Bool = false
+    
+    /// 下载自定义文件时的保存 URL
+    @AppStorage("customFilesSaveUrl") public var customFilesSaveUrl: URL = URL(fileURLWithUserPath: "~/Downloads")
+    
     public func updateColorScheme() {
         if colorScheme != .system {
             NSApp.appearance = colorScheme == .light ? NSAppearance(named: .aqua) : NSAppearance(named: .darkAqua)
         } else {
-            NSApp.appearance = .currentDrawing()
+            NSApp.appearance = nil
         }
     }
     
     private init() {
-        log("已加载持久化储存数据")
         updateColorScheme()
         
         if currentMinecraftDirectory == nil {
@@ -90,17 +95,13 @@ public class AppSettings: ObservableObject {
                 minecraftDirectories.append(directory)
             }
             
-            // 判断 defaultInstance 是否合法
-            if let defaultInstance = defaultInstance,
-               MinecraftInstance.create(runningDirectory: directory.versionsUrl.appending(path: defaultInstance)) == nil {
-                warn("无效的 defaultInstance 配置")
-                self.defaultInstance = nil
-            }
-            
             if defaultInstance == nil {
-                directory.loadInnerInstances(callback: { self.defaultInstance = $0.first?.config.name })
+                directory.loadInnerInstances { instances in
+                    self.defaultInstance = instances.first?.config.name
+                }
             }
         }
+        log("已加载启动器设置")
     }
     
     public func removeDirectory(url: URL) {

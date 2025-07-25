@@ -48,6 +48,9 @@ public class InstallTask: ObservableObject, Identifiable, Hashable, Equatable {
         self.updateStage(.end)
         DispatchQueue.main.async {
             DataManager.shared.inprogressInstallTasks = nil
+            if case .installing(_) = DataManager.shared.router.getLast() {
+                DataManager.shared.router.removeLast()
+            }
             self.callback?()
         }
     }
@@ -88,7 +91,7 @@ public class InstallTasks: ObservableObject, Identifiable, Hashable, Equatable {
     }
     
     public func getTasks() -> [InstallTask] {
-        let order = ["minecraft", "fabric"]
+        let order = ["minecraft", "fabric", "customFile"]
         return order.compactMap { tasks[$0] }
     }
     
@@ -188,6 +191,42 @@ public class FabricInstallTask: InstallTask {
     }
 }
 
+public class CustomFileInstallTask: InstallTask {
+    private let url: URL
+    private let destination: URL
+    private var progress: Double = 0
+    
+    init(url: URL, destination: URL) {
+        self.url = url
+        self.destination = destination
+        super.init()
+        self.totalFiles = 1
+        self.remainingFiles = 1
+    }
+    
+    public override func getTitle() -> String {
+        "自定义下载：\(destination.lastPathComponent)"
+    }
+    
+    public override func getProgress() -> Double {
+        progress
+    }
+    
+    public override func start() {
+        Task {
+            let downloader = ChunkedDownloader(url: url, destination: destination, chunkCount: 64) { finished, total in
+                self.progress = Double(finished) / Double(total)
+            }
+            await downloader.start()
+            complete()
+        }
+    }
+    
+    public override func getInstallStates() -> [InstallStage : InstallState] {
+        [.customFile: .inprogress]
+    }
+}
+
 // MARK: - 安装进度定义
 public enum InstallStage: Int {
     case before = 0
@@ -199,6 +238,8 @@ public enum InstallStage: Int {
     case clientLibraries = 6
     case natives = 7
     case end = 8
+    case customFile = 1_1_4_5_1_4
+    
     public func getDisplayName() -> String {
         switch self {
         case .before: "未启动"
@@ -209,6 +250,7 @@ public enum InstallStage: Int {
         case .clientResources: "下载散列资源文件"
         case .clientLibraries: "下载依赖项文件"
         case .natives: "下载本地库文件"
+        case .customFile: "下载自定义文件"
         case .end: "结束"
         }
     }
