@@ -22,8 +22,9 @@ public class MinecraftInstance: Identifiable, Equatable, Hashable {
     public let configPath: URL
     public private(set) var version: MinecraftVersion! = nil
     public var process: Process?
-    public let manifest: ClientManifest
-    public var config: MinecraftConfig
+    public private(set) var manifest: ClientManifest!
+    public var config: MinecraftConfig!
+    public var clientBrand: ClientBrand!
     
     public let id: UUID = UUID()
     
@@ -35,66 +36,53 @@ public class MinecraftInstance: Identifiable, Equatable, Hashable {
         lhs.id == rhs.id
     }
     
-    public static func create(runningDirectory: URL, config: MinecraftConfig? = nil, _ caller: String = #file, _ line: Int = #line) -> MinecraftInstance? {
+    public static func create(_ minecraftDirectory: MinecraftDirectory, _ runningDirectory: URL, config: MinecraftConfig? = nil) -> MinecraftInstance? {
         if let cached = cache[runningDirectory] {
             return cached
         }
         
-        if let instance: MinecraftInstance = .init(runningDirectory: runningDirectory, config: config) {
+        let instance: MinecraftInstance = .init(minecraftDirectory: minecraftDirectory, runningDirectory: runningDirectory, config: config)
+        if instance.setup() {
             cache[runningDirectory] = instance
             return instance
+        } else {
+            err("实例初始化失败")
+            return nil
         }
-        
-        return nil
     }
     
-    private init?(runningDirectory: URL, config: MinecraftConfig? = nil) {
+    private init(minecraftDirectory: MinecraftDirectory, runningDirectory: URL, config: MinecraftConfig? = nil) {
         self.runningDirectory = runningDirectory
-        self.minecraftDirectory = MinecraftDirectory(rootUrl: runningDirectory.parent().parent(), name: "")
+        self.minecraftDirectory = minecraftDirectory
         self.configPath = runningDirectory.appending(path: ".PCL_Mac.json")
-        
+        self.config = config
+    }
+    
+    private func setup() -> Bool {
+        // 若配置文件存在，从文件加载配置
         if FileManager.default.fileExists(atPath: configPath.path) {
             do {
-                let handle = try FileHandle(forReadingFrom: configPath)
-                self.config = .init(try .init(data: handle.readToEnd()!))
+                try loadConfig()
             } catch {
                 err("无法加载配置: \(error.localizedDescription)")
                 debug(configPath.path)
-                return nil
             }
-        } else {
-            self.config = config ?? MinecraftConfig(name: runningDirectory.lastPathComponent, mainClass: "")
         }
+        self.config = config ?? MinecraftConfig(name: runningDirectory.lastPathComponent)
         
-        do {
-            let data = try FileHandle(forReadingFrom: runningDirectory.appending(path: runningDirectory.lastPathComponent + ".json")).readToEnd()!
-            self.config.clientBrand = MinecraftInstance.getClientBrand(String(data: data, encoding: .utf8) ?? "")
-            let json = try JSON(data: data)
-            
-            if json["inheritsFrom"].exists() {
-                switch self.config.clientBrand {
-                case .fabric:
-                    manifest = ClientManifest.createFromFabricManifest(.init(json), runningDirectory)
-                default:
-                    warn("发现不受支持的加载器: \(self.config.name) \(self.config.clientBrand.rawValue)")
-                    manifest = try ClientManifest.parse(data, instanceUrl: runningDirectory)
-                }
-            } else {
-                manifest = try ClientManifest.parse(data, instanceUrl: runningDirectory)
-            }
-            ArtifactVersionMapper.map(manifest)
-        } catch {
-            err("无法加载客户端清单: \(error)")
-            return nil
-        }
-        
+        if !loadManifest() { return false }
         detectVersion()
         
-        self.version = MinecraftVersion(displayName: self.config.version!)
+        // 寻找可用 Java
         if self.config.javaPath == nil {
             self.config.javaPath = MinecraftInstance.findSuitableJava(self.version!)?.executableUrl.path
         }
         self.saveConfig()
+        return true
+    }
+    
+    public func loadConfig() throws {
+        self.config = .init(try .init(data: try FileHandle(forReadingFrom: configPath).readToEnd()!))
     }
     
     public func saveConfig() {
@@ -159,25 +147,13 @@ public class MinecraftInstance: Identifiable, Equatable, Hashable {
     }
     
     public func launch(_ launchOptions: LaunchOptions) async {
-        if config.maxMemory == 0 {
-            await ContentView.setPopup(.init("错误", "就给 0MB 内存你打算咋跑啊！\n请在 版本设置 > 设置 中调整游戏内存配置", [.Ok]))
-            return
+        if let account = launchOptions.account {
+            launchOptions.playerName = account.name
+            launchOptions.uuid = account.uuid
+            log("正在登录")
+            launchOptions.accessToken = await account.getAccessToken()
         }
-        
-        guard let account = AccountManager.shared.getAccount() else {
-            err("无法启动 Minecraft: 未设置账号")
-            await ContentView.setPopup(PopupOverlay("错误", "请先创建一个账号并选择再启动游戏！", [.Ok], .error))
-            return
-        }
-        
-        guard let javaPath = config.javaPath, let javaUrl = Optional(URL(fileURLWithPath: javaPath)) else {
-            err("无法启动 Minecraft: 未找到 Java")
-            await ContentView.setPopup(PopupOverlay("错误", "找不到可用的 Java，请确保你已经安装了符合要求的 Java 版本！", [.Ok], .error))
-            return
-        }
-        
-        launchOptions.account = account
-        launchOptions.javaPath = javaUrl
+        launchOptions.javaPath = URL(fileURLWithPath: config.javaPath)
         
         if !config.skipResourcesCheck && !launchOptions.skipResourceCheck {
             log("正在进行资源完整性检查")
@@ -217,59 +193,81 @@ public class MinecraftInstance: Identifiable, Equatable, Hashable {
         }
     }
     
-    public func detectVersion() {
-        guard config.version == nil else {
-            return
+    private func loadManifest() -> Bool {
+        do {
+            let data = try FileHandle(forReadingFrom: runningDirectory.appending(path: runningDirectory.lastPathComponent + ".json")).readToEnd()!
+            self.clientBrand = MinecraftInstance.getClientBrand(String(data: data, encoding: .utf8) ?? "")
+            let json = try JSON(data: data)
+            let manifest: ClientManifest?
+            switch self.clientBrand {
+            case .fabric:
+                if json["loader"].exists() {
+                    manifest = ClientManifest.createFromFabricManifest(.init(json), runningDirectory)
+                } else {
+                    manifest = try ClientManifest.parse(data, instanceUrl: runningDirectory)
+                }
+            default:
+                // warn("发现不受支持的加载器: \(self.config.name) \(self.clientBrand.rawValue)")
+                manifest = try ClientManifest.parse(data, instanceUrl: runningDirectory)
+            }
+            guard let manifest = manifest else { return false }
+            self.manifest = manifest
+            ArtifactVersionMapper.map(self.manifest)
+        } catch {
+            err("无法加载客户端清单: \(error.localizedDescription)")
+            return false
         }
         
-        do {
-            let archive = try Archive(url: runningDirectory.appending(path: "\(config.name).jar"), accessMode: .read)
-            guard let entry = archive["version.json"] else {
-                throw NSError(domain: "MinecraftInstance", code: 2, userInfo: [NSLocalizedDescriptionKey: "version.json 不存在"])
+        return true
+    }
+    
+    private func detectVersion() {
+        guard version == nil else {
+            return
+        }
+        version = MinecraftVersion(displayName: manifest.id)
+        Task {
+            do {
+                let archive = try Archive(url: runningDirectory.appending(path: "\(config.name).jar"), accessMode: .read)
+                guard let entry = archive["version.json"] else {
+                    return
+                }
+                
+                var data = Data()
+                _ = try archive.extract(entry, consumer: { (chunk) in
+                    data.append(chunk)
+                })
+                
+                let version = MinecraftVersion(displayName: try JSON(data: data)["id"].stringValue)
+                DispatchQueue.main.async {
+                    self.version = version
+                }
+            } catch {
+                err("无法检测版本: \(error.localizedDescription)，正在使用清单版本")
             }
-            
-            var data = Data()
-            _ = try archive.extract(entry, consumer: { (chunk) in
-                data.append(chunk)
-            })
-            
-            self.config.version = try JSON(data: data)["id"].stringValue
-        } catch {
-            err("无法检测版本: \(error.localizedDescription)，正在使用清单版本")
-            self.config.version = self.manifest.id
         }
     }
     
     public func getIconName() -> String {
-        if self.config.clientBrand == .vanilla {
+        if self.clientBrand == .vanilla {
             return self.version.getIconName()
         }
-        return "\(self.config.clientBrand.rawValue.capitalized)Icon"
+        return "\(self.clientBrand.rawValue.capitalized)Icon"
     }
 }
 
 public struct MinecraftConfig: Codable {
     public let name: String
-    public var version: String?
-    public var mainClass: String
     public var additionalLibraries: Set<String> = []
     public var javaPath: String!
-    public var clientBrand: ClientBrand
     public var skipResourcesCheck: Bool = false
     public var maxMemory: Int32 = 4096
     public var qualityOfService: QualityOfService = .default
     
     public init(_ json: JSON) {
         self.name = json["name"].stringValue
-        self.version = json["version"].string
-        self.mainClass = json["mainClass"].string ?? "net.minecraft.client.main.Main"
         self.additionalLibraries = .init(json["additionalLibraries"].array?.map { $0.stringValue } ?? [])
         self.javaPath = json["javaPath"].string
-        if let clientBrand = json["clientBrand"].string {
-            self.clientBrand = .init(rawValue: clientBrand)!
-        } else {
-            self.clientBrand = .vanilla
-        }
         self.skipResourcesCheck = json["skipResourcesCheck"].boolValue
         self.maxMemory = json["maxMemory"].int32 ?? 4096
         self.qualityOfService = .init(rawValue: json["qualityOfService"].intValue) ?? .default
@@ -278,11 +276,9 @@ public struct MinecraftConfig: Codable {
         }
     }
     
-    public init(name: String, mainClass: String, javaPath: String? = nil) {
+    public init(name: String, javaPath: String? = nil) {
         self.name = name
-        self.mainClass = mainClass
         self.javaPath = javaPath
-        self.clientBrand = .vanilla
     }
 }
 
