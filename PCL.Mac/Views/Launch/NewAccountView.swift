@@ -261,6 +261,7 @@ fileprivate struct NewMicrosoftAccountView: View {
                 if let msAccount = await MsAccount.create(authToken) {
                     DispatchQueue.main.async { AccountManager.shared.accounts.append(.microsoft(msAccount)) }
                     HintManager.default.add(.init(text: "登录成功！", type: .finish))
+                    AppSettings.shared.hasMicrosoftAccount = true
                 } else {
                     HintManager.default.add(.init(text: "在创建账号实例时发生错误", type: .critical))
                 }

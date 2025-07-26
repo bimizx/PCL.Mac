@@ -61,15 +61,20 @@ public class MinecraftInstaller {
     private static func downloadClientJar(_ task: MinecraftInstallTask, skipIfExists: Bool = false) async {
         task.updateStage(.clientJar)
         let clientJarUrl = task.versionUrl.appending(path: "\(task.name).jar")
-        let downloader = ChunkedDownloader(
-            url: URL(string: task.manifest!.clientDownload!.url)!,
-            destination: clientJarUrl,
-            chunkCount: 32
-        ) { finished, total in
-            task.currentStagePercentage = Double(finished) / Double(total)
+        if skipIfExists && FileManager.default.fileExists(atPath: clientJarUrl.path) {
+            task.completeOneFile()
+            return
+        } else {
+            let downloader = ChunkedDownloader(
+                url: URL(string: task.manifest!.clientDownload!.url)!,
+                destination: clientJarUrl,
+                chunkCount: 32
+            ) { finished, total in
+                task.currentStagePercentage = Double(finished) / Double(total)
+            }
+            await downloader.start()
+            task.completeOneFile()
         }
-        await downloader.start()
-        task.completeOneFile()
     }
     
     // MARK: 下载资源索引

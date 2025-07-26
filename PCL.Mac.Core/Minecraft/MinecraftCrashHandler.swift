@@ -16,6 +16,19 @@ public class MinecraftCrashHandler {
         log("以下是 PCL.Mac 检测到的环境信息:")
         log("架构: \(ExecArchitectury.SystemArch)")
         log("分支: \(SharedConstants.shared.branch)")
+        log("Java 架构: \(ExecArchitectury.getArchOfFile(URL(fileURLWithPath: instance.config.javaPath!)))")
+        do {
+            let contents = try FileManager.default.contentsOfDirectory(
+                at: instance.runningDirectory.appending(path: "natives"),
+                includingPropertiesForKeys: nil
+            )
+            for fileURL in contents {
+                if fileURL.pathExtension != "dylib" { continue }
+                log("\(fileURL.lastPathComponent) 架构: \(ExecArchitectury.getArchOfFile(fileURL))")
+            }
+        } catch {
+            err("无法获取本地库: \(error.localizedDescription)")
+        }
         
         debug("正在导出错误报告")
         let tmp = SharedConstants.shared.applicationTemperatureUrl.appending(path: "ErrorReport")

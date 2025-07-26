@@ -16,13 +16,18 @@ public class CacheStorage {
     
     public init(rootUrl: URL) {
         self.rootUrl = rootUrl
-        try? FileManager.default.createDirectory(at: rootUrl.parent(), withIntermediateDirectories: true)
-        do {
-            let data = try FileHandle(forReadingFrom: rootUrl.appending(path: "index.json")).readToEnd()!
-            let json = try JSON(data: data)
-            self.libraries = json["libraries"].arrayValue.map(Library.init)
-        } catch {
-            err("无法读取 index.json: \(error.localizedDescription)")
+        try? FileManager.default.createDirectory(at: rootUrl, withIntermediateDirectories: true)
+        let indexUrl = rootUrl.appending(path: "index.json")
+        if FileManager.default.fileExists(atPath: indexUrl.path) {
+            do {
+                let data = try FileHandle(forReadingFrom: indexUrl).readToEnd()!
+                let json = try JSON(data: data)
+                self.libraries = json["libraries"].arrayValue.map(Library.init)
+            } catch {
+                err("无法读取 index.json: \(error.localizedDescription)")
+                self.libraries = []
+            }
+        } else {
             self.libraries = []
         }
     }
@@ -88,6 +93,7 @@ public class CacheStorage {
         do {
             try? FileManager.default.createDirectory(at: dest.parent(), withIntermediateDirectories: true)
             try FileManager.default.copyItem(at: path, to: dest)
+            save()
         } catch {
             err("无法复制文件: \(error.localizedDescription)")
             return
