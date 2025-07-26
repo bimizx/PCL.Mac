@@ -38,16 +38,13 @@ public class LaunchPrecheck {
             
             return .failure(.noUsableJava(minVersion: minVersion))
         }
-        if instance.config.javaPath == nil { instance.config.javaPath = suitableJava!.executableUrl.path }
+        if instance.config.javaPath == nil
+        || !FileManager.default.fileExists(atPath: instance.config.javaPath) {
+            instance.config.javaPath = suitableJava!.executableUrl.path
+        }
         
         if instance.config.maxMemory == 0 {
             return .failure(.invalidMemoryConfiguration)
-        }
-        
-        if !AppSettings.shared.hasMicrosoftAccount {
-            debug("[launchPrecheck] 未登录过正版账号")
-            
-            return .failure(.noMicrosoftAccount)
         }
         
         guard let account = AccountManager.shared.getAccount() else {
@@ -56,6 +53,12 @@ public class LaunchPrecheck {
             return .failure(.missingAccount)
         }
         options.account = account
+        
+        if !AppSettings.shared.hasMicrosoftAccount {
+            debug("[launchPrecheck] 未登录过正版账号")
+            
+            return .failure(.noMicrosoftAccount)
+        }
         
         return .success(())
     }

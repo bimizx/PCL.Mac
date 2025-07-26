@@ -35,7 +35,6 @@ public class MsAccount: Codable, Identifiable, Account {
     public func refreshAccessToken() async {
         if isTokenRefreshing { return }
         isTokenRefreshing = true
-        AppSettings.shared.hasMicrosoftAccount = true
         if AccessTokenStorage.shared.getTokenInfo(for: id) != nil {
             debug("无需刷新 Access Token")
             return
