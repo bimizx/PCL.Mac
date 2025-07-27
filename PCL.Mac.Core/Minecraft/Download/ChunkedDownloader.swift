@@ -26,7 +26,7 @@ public class ChunkedDownloader {
         self.destination = destination
         self.chunkCount = chunkCount
         self.onChunkDownloaded = onChunkDownloaded
-        self.tempDir = SharedConstants.shared.applicationTemperatureUrl
+        self.tempDir = SharedConstants.shared.temperatureUrl
             .appending(path: "ChunkedDownload")
             .appending(path: UUID().uuidString)
     }

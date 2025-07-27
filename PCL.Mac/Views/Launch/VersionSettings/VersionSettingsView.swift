@@ -156,20 +156,17 @@ struct InstanceSettingsView: View {
                     }
                     VStack(spacing: 2) {
                         HStack {
-                            Picker("进程 QoS", selection: $instance.config.qualityOfService) {
-                                ForEach(qosOptions, id: \.self) { option in
-                                    Text(getQualityOfServiceName(option))
-                                }
-                            }
+                            Text("进程 QoS")
+                            MyPickerComponent(selected: $instance.config.qualityOfService, entries: qosOptions, textProvider: getQualityOfServiceName(_:))
                             .onChange(of: instance.config.qualityOfService) { _ in
                                 instance.saveConfig()
                             }
-                            Spacer()
                         }
                         
                         Text("​QoS 是控制进程 CPU 优先级的属性，可调整多任务下的资源分配，保障游戏进程优先运行，推荐默认。")
                             .font(.custom("PCL English", size: 12))
                             .foregroundStyle(Color(hex: 0x8C8C8C))
+                            .padding(.top, 2)
                     }
                 }
                 .padding()

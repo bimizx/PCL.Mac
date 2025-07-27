@@ -69,7 +69,7 @@ final class LogStore {
     }
     
     func clear() {
-        try? FileManager.default.removeItem(at: SharedConstants.shared.applicationLogUrl)
+        try? FileManager.default.removeItem(at: SharedConstants.shared.logUrl)
     }
     
     func save() {

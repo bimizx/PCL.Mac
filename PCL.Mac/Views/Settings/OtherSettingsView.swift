@@ -15,7 +15,7 @@ struct OtherSettingsView: View {
             ScrollView(.vertical, showsIndicators: true) {
                 VStack {
                     MyButtonComponent(text: "打开日志") {
-                        NSWorkspace.shared.activateFileViewerSelecting([SharedConstants.shared.applicationLogUrl])
+                        NSWorkspace.shared.activateFileViewerSelecting([SharedConstants.shared.logUrl])
                     }
                     .frame(height: 40)
                     .padding()

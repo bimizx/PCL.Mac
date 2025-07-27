@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ContentView: View {
     @ObservedObject private var dataManager: DataManager = .shared
+    @ObservedObject private var overlayManager: OverlayManager = .shared
     
     @State private var isLeftTabVisible: Bool = true
     
@@ -63,55 +64,63 @@ struct ContentView: View {
     }
     
     private func createViewFromRouter() -> some View {
-        VStack(spacing: 0) {
-            if dataManager.router.getLast().isRoot {
-                TitleBarComponent()
-            } else {
-                SubviewTitleBarComponent()
-            }
-            HStack {
-                ZStack {
-                    Rectangle()
-                        .fill(Color("BackgroundColor"))
-                        .shadow(radius: 2)
-                    dataManager.leftTabContent
-                        .scaleEffect(isLeftTabVisible ? 1 : 0.9 , anchor: .center)
-                        .opacity(isLeftTabVisible ? 1 : 0)
-                        .onChange(of: dataManager.leftTabId) { _ in
-                            isLeftTabVisible = false
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.65)) {
-                                isLeftTabVisible = true
-                            }
-                        }
+        ZStack(alignment: .topLeading) {
+            VStack(spacing: 0) {
+                if dataManager.router.getLast().isRoot {
+                    TitleBarComponent()
+                } else {
+                    SubviewTitleBarComponent()
                 }
-                .frame(width: dataManager.leftTabWidth)
-                .zIndex(1)
-                .animation(.easeInOut(duration: 0.05), value: dataManager.leftTabWidth)
-                
-                AnyView(dataManager.router.getLastView())
-                    .foregroundStyle(Color("TextColor"))
-                    .frame(minWidth: 815 - dataManager.leftTabWidth, minHeight: 418)
-                    .zIndex(0)
-            }
-            .background(
-                AppSettings.shared.theme.getBackgroundView()
-            )
-            .overlay {
-                if SharedConstants.shared.isDevelopment {
-                    VStack {
-                        HStack {
-                            Text(dataManager.router.getDebugText())
-                                .font(.custom("PCL English", size: 14))
-                                .foregroundStyle(Color("TextColor"))
-                                .animation(.easeInOut(duration: 0.2), value: dataManager.router.path)
+                HStack {
+                    ZStack {
+                        Rectangle()
+                            .fill(Color("BackgroundColor"))
+                            .shadow(radius: 2)
+                        dataManager.leftTabContent
+                            .scaleEffect(isLeftTabVisible ? 1 : 0.9 , anchor: .center)
+                            .opacity(isLeftTabVisible ? 1 : 0)
+                            .onChange(of: dataManager.leftTabId) { _ in
+                                isLeftTabVisible = false
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.65)) {
+                                    isLeftTabVisible = true
+                                }
+                            }
+                    }
+                    .frame(width: dataManager.leftTabWidth)
+                    .zIndex(1)
+                    .animation(.easeInOut(duration: 0.05), value: dataManager.leftTabWidth)
+                    
+                    AnyView(dataManager.router.getLastView())
+                        .foregroundStyle(Color("TextColor"))
+                        .frame(minWidth: 815 - dataManager.leftTabWidth, minHeight: 418)
+                        .zIndex(0)
+                }
+                .background(
+                    AppSettings.shared.theme.getBackgroundView()
+                )
+                .overlay {
+                    if SharedConstants.shared.isDevelopment {
+                        VStack {
+                            HStack {
+                                Text(dataManager.router.getDebugText())
+                                    .font(.custom("PCL English", size: 14))
+                                    .foregroundStyle(Color("TextColor"))
+                                    .animation(.easeInOut(duration: 0.2), value: dataManager.router.path)
+                                Spacer()
+                            }
                             Spacer()
                         }
-                        Spacer()
                     }
                 }
             }
+            .ignoresSafeArea(.container, edges: .top)
+            
+            ForEach(overlayManager.overlays) { overlay in
+                overlay.view
+                    .offset(CGSize(width: overlay.position.x, height: overlay.position.y))
+                    .transition(.opacity)
+            }
         }
-        .ignoresSafeArea(.container, edges: .top)
     }
     
     static func setPopup(_ popup: PopupOverlay?) {

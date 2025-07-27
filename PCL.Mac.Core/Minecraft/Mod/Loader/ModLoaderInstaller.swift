@@ -91,7 +91,7 @@ public class ModLoaderInstaller {
                 return
             }
             
-            let temp = SharedConstants.shared.applicationTemperatureUrl.appending(path: "neoforge_install")
+            let temp = SharedConstants.shared.temperatureUrl.appending(path: "neoforge_install")
             let installer = temp.appending(path: "installer.jar")
             
             // 1. 下载安装器

@@ -11,6 +11,8 @@ struct DebugView: View {
     @ObservedObject private var dataManager: DataManager = .shared
     @ObservedObject private var settings: AppSettings = .shared
     @State private var hintClickCount: Int = 0
+    @State private var entries: [String] = ["test1", "test2", "test3"]
+    @State private var selectedEntry: String = "test1"
     
     var body: some View {
         VStack {
@@ -64,6 +66,8 @@ struct DebugView: View {
                 }
             }
             .padding()
+            MyPickerComponent(selected: $selectedEntry, entries: entries, textProvider: { $0 })
+                .padding()
             Spacer()
         }
     }

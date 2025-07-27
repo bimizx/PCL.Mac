@@ -191,7 +191,7 @@ struct LaunchView: View {
                         .padding(.top, 5)
                         
                         MyButtonComponent(text: "打开日志") {
-                            NSWorkspace.shared.activateFileViewerSelecting([SharedConstants.shared.applicationLogUrl])
+                            NSWorkspace.shared.activateFileViewerSelecting([SharedConstants.shared.logUrl])
                         }
                         .frame(height: 40)
                     }

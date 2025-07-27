@@ -93,8 +93,7 @@ struct MyCardComponent<Content: View>: View {
                         Image("FoldController")
                             .resizable()
                             .aspectRatio(contentMode: .fit)
-                            .frame(width: 20, height: 20)
-                            .offset(x: -8, y: 4)
+                            .frame(width: 16, height: 16)
                             .rotationEffect(.degrees(isUnfolded ? 180 : 0), anchor: .center)
                             .foregroundStyle(.primary)
                     }

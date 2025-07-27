@@ -12,20 +12,21 @@ public struct SharedConstants {
     
     public let applicationContentsUrl: URL
     public let applicationResourcesUrl: URL
-    public let applicationLogUrl: URL
+    public let logUrl: URL
     public let applicationSupportUrl: URL = .applicationSupportDirectory.appending(path: "PCL-Mac")
-    public let applicationTemperatureUrl: URL
+    public let temperatureUrl: URL
     
     public let dateFormatter = DateFormatter()
     
     public let isDevelopment: Bool
+    public let version = "Beta 0.1.0"
     public let branch: String
     
     private init() {
         self.applicationContentsUrl = Bundle.main.bundleURL.appending(path: "Contents")
         self.applicationResourcesUrl = self.applicationContentsUrl.appending(path: "Resources")
-        self.applicationLogUrl = applicationSupportUrl.appending(path: "Logs").appending(path: "app.log")
-        self.applicationTemperatureUrl = applicationSupportUrl.appending(path: "Temp")
+        self.logUrl = applicationSupportUrl.appending(path: "Logs").appending(path: "app.log")
+        self.temperatureUrl = applicationSupportUrl.appending(path: "Temp")
         
         self.dateFormatter.dateFormat = "yyyy/MM/dd HH:mm"
         self.dateFormatter.timeZone = TimeZone(identifier: "Asia/Shanghai")

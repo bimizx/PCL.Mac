@@ -58,7 +58,7 @@ public class UpdateCheck {
         return await withCheckedContinuation { continuation in
             let task = session.dataTask(with: request) { data, response, error in
                 do {
-                    try data?.write(to: SharedConstants.shared.applicationTemperatureUrl.appending(path: "LauncherUpdate.zip"))
+                    try data?.write(to: SharedConstants.shared.temperatureUrl.appending(path: "LauncherUpdate.zip"))
                 } catch {
                     err("无法写入文件: \(error.localizedDescription)")
                 }
@@ -69,7 +69,7 @@ public class UpdateCheck {
     }
     
     public static func applyUpdate() {
-        let zipUrl = SharedConstants.shared.applicationTemperatureUrl.appending(path: "LauncherUpdate.zip")
+        let zipUrl = SharedConstants.shared.temperatureUrl.appending(path: "LauncherUpdate.zip")
         let appUrl = Bundle.main.bundleURL
         Util.unzip(archiveUrl: zipUrl, destination: appUrl.parent(), replace: true)
         Util.unzip(archiveUrl: appUrl.parent().appending(path: "PCL.Mac.zip"), destination: appUrl.parent(), replace: true)

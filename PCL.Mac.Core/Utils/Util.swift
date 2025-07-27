@@ -90,7 +90,7 @@ public class Util {
     public static func clearTemp() {
         do {
             let contents = try FileManager.default.contentsOfDirectory(
-                at: SharedConstants.shared.applicationTemperatureUrl,
+                at: SharedConstants.shared.temperatureUrl,
                 includingPropertiesForKeys: nil,
                 options: []
             )
