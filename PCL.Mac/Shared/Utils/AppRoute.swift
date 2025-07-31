@@ -56,7 +56,7 @@ public enum AppRoute: Hashable {
     var name: String {
         switch self {
         case .installing(let task): "installing?task=\(task.id)"
-        case .modDownload(let summary): "modDownload?summary=\(summary.id)"
+        case .modDownload(let summary): "modDownload?summary=\(summary.modId)"
         case .versionList(let directory): "versionList?rootUrl=\(directory.rootUrl.path)"
         case .versionSettings(let instance): "versionSettings?instance=\(instance.config.name)"
         default:
@@ -100,7 +100,7 @@ public class AppRouter: ObservableObject {
         case .versionSelect, .versionList(_):
             VersionSelectView()
         case .modDownload(let summary):
-            ModDownloadView(summary: summary)
+            ModDownloadView(id: summary.modId)
         case .announcementHistory:
             AnnouncementHistoryView()
         case .versionSettings, .instanceOverview, .instanceSettings, .instanceMods:
@@ -134,4 +134,10 @@ public class AppRouter: ObservableObject {
 }
 
 /// 若该视图为子页面，且有子路由，需要实现此协议以便正常返回。
-protocol SubRouteContainer { }
+protocol SubRouteContainer {
+    func shouldPop() -> Bool
+}
+
+extension SubRouteContainer {
+    func shouldPop() -> Bool { true }
+}

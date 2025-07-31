@@ -30,6 +30,14 @@ struct PCL_MacTests {
         print(Date().distance(to: before))
     }
     
+    @Test func testDownload() async {
+        await withCheckedContinuation { continuation in
+            let task = MinecraftInstaller.createTask(.init(displayName: "1.21.8"), "1.21.8", .default, continuation.resume)
+            task.start()
+        }
+    }
+    
+    
     @Test func testLibraries() {
         guard let instance = MinecraftInstance.create(.default, URL(fileURLWithUserPath: "~/PCL-Mac-minecraft/versions/1.16.5")) else {
             fatalError()

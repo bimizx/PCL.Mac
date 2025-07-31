@@ -49,7 +49,8 @@ public class Requests {
         method: String = "GET",
         headers: [String: String]? = nil,
         body: [String: Any]? = nil,
-        encodeMethod: EncodeMethod = .json
+        encodeMethod: EncodeMethod = .json,
+        ignoredFailureStatusCodes: [Int]
     ) async -> Response {
         do {
             var request = URLRequest(url: url)
@@ -66,21 +67,29 @@ public class Requests {
                     request.httpBody = try JSONSerialization.data(withJSONObject: body, options: [])
                 case .urlEncoded:
                     request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
-                    let query = body.map { key, value in
-                        "\(key)=\(String(describing: value))"
-                    }.joined(separator: "&")
-                    request.httpBody = query.data(using: .utf8)
+                    if method == "GET" {
+                        var components = URLComponents(url: url, resolvingAgainstBaseURL: false)!
+                        components.queryItems = body.map { URLQueryItem(name: $0.key, value: String(describing: $0.value)) }
+                        request.url = components.url
+                    } else {
+                        let query = body.map { key, value in
+                            "\(key)=\(String(describing: value))"
+                        }.joined(separator: "&")
+                        request.httpBody = query.data(using: .utf8)
+                    }
                 }
             }
             
             let (data, response) = try await URLSession.shared.data(for: request)
-            if let response = response as? HTTPURLResponse, response.statusCode != 200 {
+            if let response = response as? HTTPURLResponse, response.statusCode != 200 && !ignoredFailureStatusCodes.contains(response.statusCode) {
                 debug("\(url.absoluteString) 返回了 \(response.statusCode): \(String(data: data, encoding: .utf8) ?? "(empty)")")
             }
             let json = try? JSON(data: data)
             return Response(data: data, json: json, error: nil)
+        } catch let error as URLError where error.code == .cancelled {
+            return Response(data: nil, json: nil, error: nil)
         } catch {
-            err("在发送请求时发生错误: \(error.localizedDescription)")
+            err("在发送请求时发生错误: \(error)")
             return Response(data: nil, json: nil, error: error)
         }
     }
@@ -89,17 +98,19 @@ public class Requests {
         _ url: URLConvertible,
         headers: [String: String]? = nil,
         body: [String: Any]? = nil,
-        encodeMethod: EncodeMethod = .urlEncoded
+        encodeMethod: EncodeMethod = .urlEncoded,
+        ignoredFailureStatusCodes: [Int] = []
     ) async -> Response {
-        return await request(url: url.url, method: "GET", headers: headers, body: body, encodeMethod: encodeMethod)
+        return await request(url: url.url, method: "GET", headers: headers, body: body, encodeMethod: encodeMethod, ignoredFailureStatusCodes: ignoredFailureStatusCodes)
     }
 
     public static func post(
         _ url: URLConvertible,
         headers: [String: String]? = nil,
         body: [String: Any]? = nil,
-        encodeMethod: EncodeMethod = .json
+        encodeMethod: EncodeMethod = .json,
+        ignoredFailureStatusCodes: [Int] = []
     ) async -> Response {
-        return await request(url: url.url, method: "POST", headers: headers, body: body, encodeMethod: encodeMethod)
+        return await request(url: url.url, method: "POST", headers: headers, body: body, encodeMethod: encodeMethod, ignoredFailureStatusCodes: ignoredFailureStatusCodes)
     }
 }
