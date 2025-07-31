@@ -29,4 +29,14 @@ struct PCL_MacTests {
         print(response.data!.count)
         print(Date().distance(to: before))
     }
+    
+    @Test func testLibraries() {
+        guard let instance = MinecraftInstance.create(.default, URL(fileURLWithUserPath: "~/PCL-Mac-minecraft/versions/1.16.5")) else {
+            fatalError()
+        }
+        
+        for (_, artifact) in instance.manifest.getNeededNatives() {
+            print(artifact.path)
+        }
+    }
 }
