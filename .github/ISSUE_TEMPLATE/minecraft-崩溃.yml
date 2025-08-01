@@ -1,8 +1,6 @@
 name: "Minecraft 崩溃"
 description: "Minecraft 客户端意外退出"
-title: ''
 labels: "✦ Bug"
-assignees: ''
 
 body:
 - type: checkboxes

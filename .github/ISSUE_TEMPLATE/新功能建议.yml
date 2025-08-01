@@ -1,8 +1,6 @@
 name: "新功能建议"
 description: "为这个项目提出一个主意"
-title: ''
 labels: "✦ 建议"
-assignees: ''
 
 body:
 - type: textarea

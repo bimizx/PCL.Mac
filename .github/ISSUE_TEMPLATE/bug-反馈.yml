@@ -1,8 +1,6 @@
 name: "Bug 反馈"
 description: "报告启动器中的错误，帮助我们改进。"
-title: ''
 labels: "✦ Bug"
-assignees: ''
 
 body:
 - type: checkboxes
