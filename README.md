@@ -17,12 +17,13 @@ SwiftUI 重构的 macOS 版 [PCL2](https://github.com/Hex-Dragon/PCL2)，追求�
 
 本项目尚处早期开发阶段，可从 [Actions](https://github.com/PCL-Community/PCL.Mac/actions) 下载开发版。
 
-> ⚠️ 由于 App 未签名，请在终端运行：
+> [!WARNING]
+> 由于 App 未签名，请在终端运行：
 > ```bash
 > sudo spctl --master-disable
 > ```
 > 之后在「设置 → 隐私与安全性」允许「任何来源」的应用。  
-> 若介意安全风险，请支持我们申请正版签名。
+> ~~若你认为可能降低安全性，请每年 V 我们 700 块钱来签名~~
 
 ## 分片下载加速
 
