@@ -47,6 +47,9 @@ public struct ArtifactVersionMapper {
             case "org.lwjgl":
                 if library.version.starts(with: "3.") && library.version != "3.3.3" {
                     changeVersion(library, "3.3.1")
+                    if !library.name.hasSuffix("arm64") {
+                        library.name.append("-arm64")
+                    }
                 }
                 artifact.url = "https://libraries.minecraft.net/org/lwjgl/\(library.artifactId)/\(library.version)/\(library.artifactId)-\(library.version)-natives-macos-arm64.jar"
             case "org.lwjgl.lwjgl":
