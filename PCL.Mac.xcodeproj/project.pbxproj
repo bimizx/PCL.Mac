@@ -13,6 +13,7 @@
 		EC3C3C4F2E2134A90033107E /* SwiftyJSON in Frameworks */ = {isa = PBXBuildFile; productRef = EC3C3C4E2E2134A90033107E /* SwiftyJSON */; };
 		EC422DAB2E2082D900FE8309 /* PCL_Mac_Core.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EC422DA32E2082D900FE8309 /* PCL_Mac_Core.framework */; };
 		EC422DAD2E2082D900FE8309 /* PCL_Mac_Core.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = EC422DA32E2082D900FE8309 /* PCL_Mac_Core.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		EC4E6C802E438E6600F0871D /* daemon in Resources */ = {isa = PBXBuildFile; fileRef = EC4E6C7F2E438E6600F0871D /* daemon */; };
 		EC9507372DFCF17700018EE0 /* SwiftyJSON in Frameworks */ = {isa = PBXBuildFile; productRef = EC9507362DFCF17700018EE0 /* SwiftyJSON */; };
 		EC98618D2E3E09DC00C0E6F2 /* SwiftyJSON in Frameworks */ = {isa = PBXBuildFile; productRef = EC98618C2E3E09DC00C0E6F2 /* SwiftyJSON */; };
 		EC9A7DCA2DE150170018815F /* glfw-patcher.jar in Resources */ = {isa = PBXBuildFile; fileRef = EC9A7DC82DE1500F0018815F /* glfw-patcher.jar */; };
@@ -55,6 +56,7 @@
 		EC01E7E72DDC3BEA006EF529 /* log4j2-1.12-.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = "log4j2-1.12-.xml"; sourceTree = "<group>"; };
 		EC23B6322DE5DC5B00CBEA9C /* PCL.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = PCL.ttf; sourceTree = "<group>"; };
 		EC422DA32E2082D900FE8309 /* PCL_Mac_Core.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = PCL_Mac_Core.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		EC4E6C7F2E438E6600F0871D /* daemon */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = daemon; sourceTree = "<group>"; };
 		EC9A7DC82DE1500F0018815F /* glfw-patcher.jar */ = {isa = PBXFileReference; lastKnownFileType = archive.jar; path = "glfw-patcher.jar"; sourceTree = "<group>"; };
 		EC9EAEC92DD85E48006CEDCC /* PCL.Mac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PCL.Mac.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EC9EF35A2E1E6CD7002EF8E0 /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
@@ -239,6 +241,7 @@
 				EC9A7DC82DE1500F0018815F /* glfw-patcher.jar */,
 				EC01E7E62DDC3BEA006EF529 /* log4j2.xml */,
 				EC01E7E72DDC3BEA006EF529 /* log4j2-1.12-.xml */,
+				EC4E6C7F2E438E6600F0871D /* daemon */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -425,6 +428,7 @@
 				EC9A7DCA2DE150170018815F /* glfw-patcher.jar in Resources */,
 				EC01E7E82DDC3BEA006EF529 /* log4j2.xml in Resources */,
 				EC23B6332DE5DC5B00CBEA9C /* PCL.ttf in Resources */,
+				EC4E6C802E438E6600F0871D /* daemon in Resources */,
 				EC01E7E92DDC3BEA006EF529 /* log4j2-1.12-.xml in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
