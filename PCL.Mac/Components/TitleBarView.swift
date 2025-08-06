@@ -1,5 +1,5 @@
 //
-//  TitleBar.swift
+//  TitleBarView.swift
 //  PCL.Mac
 //
 //  Created by YiZhiMCQiu on 2025/5/17.
@@ -31,7 +31,7 @@ class DraggableHelperView: NSView {
     }
 }
 
-struct GenericTitleBarComponent<Content: View>: View {
+struct GenericTitleBarView<Content: View>: View {
     @ObservedObject private var dataManager: DataManager = .shared
     @ViewBuilder let content: () -> Content
 
@@ -63,11 +63,11 @@ struct GenericTitleBarComponent<Content: View>: View {
     }
 }
 
-struct TitleBarComponent: View {
+struct TitleBarView: View {
     @ObservedObject private var dataManager: DataManager = DataManager.shared
     
     var body: some View {
-        GenericTitleBarComponent {
+        GenericTitleBarView {
             Group {
                 if AppSettings.shared.windowControlButtonStyle == .pcl {
                     Image("TitleLogo")
@@ -89,35 +89,20 @@ struct TitleBarComponent: View {
     }
 }
 
-struct SubviewTitleBarComponent: View {
+struct SubviewTitleBarView: View {
     @ObservedObject private var dataManager: DataManager = DataManager.shared
 
     var body: some View {
-        GenericTitleBarComponent {
+        GenericTitleBarView {
             switch AppSettings.shared.windowControlButtonStyle {
             case .pcl:
                 WindowControlButton.Back
             case .macOS:
                 WindowControlButton.MacOSBack
             }
-            Text(getTitle())
+            Text(dataManager.router.getLast().title)
                 .font(.custom("PCL English", size: 16))
                 .foregroundStyle(.white)
-        }
-    }
-    
-    private func getTitle() -> String {
-        switch dataManager.router.getLast() {
-        case .installing(_): return "下载管理"
-        case .versionSelect, .versionList: return "版本选择"
-        case .modDownload(let summary): return "资源下载 - \(summary.name)"
-        case .accountManagement, .accountList, .newAccount: return "账号管理"
-        case .announcementHistory: return "历史公告"
-        case .versionSettings, .instanceOverview, .instanceSettings, .instanceMods: return "版本设置 - \(AppSettings.shared.defaultInstance ?? "")"
-        case .javaDownload: return "Java 下载"
-        case .themeUnlock: return "主题解锁"
-        default:
-            return "发现问题请在 https://github.com/PCL-Community/PCL.Mac/issues/new 上反馈！"
         }
     }
 }
@@ -126,7 +111,7 @@ struct MenuItemButton: View {
     @ObservedObject private var dataManager: DataManager = DataManager.shared
     
     let route: AppRoute
-    let parent: TitleBarComponent
+    let parent: TitleBarView
     var icon: Image?
     @State private var isHovered = false
     
@@ -188,5 +173,5 @@ struct MenuItemButton: View {
 }
 
 #Preview {
-    TitleBarComponent()
+    TitleBarView()
 }

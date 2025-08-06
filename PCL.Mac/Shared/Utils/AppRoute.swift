@@ -66,6 +66,20 @@ public enum AppRoute: Hashable {
         }
     }
     
+    var title: String {
+        switch self {
+        case .installing(_): "下载管理"
+        case .versionSelect, .versionList: "版本选择"
+        case .modDownload(let summary): "资源下载 - \(summary.name)"
+        case .accountManagement, .accountList, .newAccount: "账号管理"
+        case .announcementHistory: "历史公告"
+        case .versionSettings, .instanceOverview, .instanceSettings, .instanceMods: "版本设置 - \(AppSettings.shared.defaultInstance ?? "")"
+        case .javaDownload: "Java 下载"
+        case .themeUnlock: "主题解锁"
+        default: "发现问题请在 https://github.com/PCL-Community/PCL.Mac/issues/new 上反馈！"
+        }
+    }
+    
     func isSame(_ another: AppRoute) -> Bool {
         if case .versionList(let directory1) = self,
            case .versionList(let directory2) = another {

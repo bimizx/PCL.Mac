@@ -98,9 +98,9 @@ struct ContentView: View {
         VStack(spacing: 0) {
             Group {
                 if dataManager.router.getLast().isRoot {
-                    TitleBarComponent()
+                    TitleBarView()
                 } else {
-                    SubviewTitleBarComponent()
+                    SubviewTitleBarView()
                 }
             }
             HStack(spacing: 0) {
