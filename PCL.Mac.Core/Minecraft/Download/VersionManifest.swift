@@ -69,7 +69,7 @@ public class VersionManifest: Codable {
         }
         
         if let json = await Requests.get(
-            "https://launchermeta.mojang.com/mc/game/version_manifest.json"
+            "https://bmclapi.bangbang93.com/mc/game/version_manifest.json"
         ).json {
             return .init(json)
         }
