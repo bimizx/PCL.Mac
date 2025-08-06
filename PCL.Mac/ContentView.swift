@@ -13,48 +13,78 @@ struct ContentView: View {
     
     @State private var isLeftTabVisible: Bool = true
     
-    var body: some View {
-        ZStack {
-            createViewFromRouter()
+    var installTaskButtonOverlay: some View {
+        Group {
             if let tasks = dataManager.inprogressInstallTasks {
                 if case .installing = dataManager.router.getLast() {
-                    EmptyView()
+                    
                 } else {
-                    HStack() {
-                        Spacer()
-                        VStack() {
-                            Spacer()
-                            RoundedButton {
-                                Image("DownloadIcon")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 20)
-                            } onClick: {
-                                dataManager.router.append(.installing(tasks: tasks))
-                            }
-                            .padding()
-                        }
+                    RoundedButton {
+                        Image("DownloadIcon")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 20)
+                            .foregroundStyle(.white)
+                    } onClick: {
+                        dataManager.router.append(.installing(tasks: tasks))
                     }
-                }
-            }
-            ModQueueOverlay()
-            VStack {
-                Spacer()
-                HStack(alignment: .bottom) {
-                    HintOverlay()
-                    Spacer()
-                }
-                .padding(.bottom, 50)
-            }
-            if let currentPopup = dataManager.currentPopup {
-                Group {
-                    Rectangle()
-                        .fill(currentPopup.type.getMaskColor())
-                    currentPopup
-                        .padding()
+                    .padding()
                 }
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+    }
+    
+    var hintOverlay: some View {
+        VStack {
+            Spacer()
+            HStack(alignment: .bottom) {
+                HintOverlay()
+                Spacer()
+            }
+            .padding(.bottom, 50)
+        }
+    }
+    
+    var popupOverlay: some View {
+        Group {
+            if let currentPopup = dataManager.currentPopup {
+                Rectangle()
+                    .fill(currentPopup.type.getMaskColor())
+                currentPopup
+                    .padding()
+            }
+        }
+    }
+    
+    var routerOverlay: some View {
+        Text(dataManager.router.getDebugText())
+            .font(.custom("PCL English", size: 14))
+            .foregroundStyle(Color("TextColor"))
+            .animation(.easeInOut(duration: 0.2), value: dataManager.router.path)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .offset(y: 48)
+    }
+    
+    // MARK: - body
+    var body: some View {
+        ZStack {
+            createViewFromRouter()
+            ForEach(overlayManager.overlays) { overlay in
+                overlay.view
+                    .offset(CGSize(width: overlay.position.x, height: overlay.position.y))
+                    .transition(.opacity)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            if SharedConstants.shared.isDevelopment {
+                routerOverlay
+            }
+            installTaskButtonOverlay
+            ModQueueOverlay()
+            hintOverlay
+            popupOverlay
+        }
+        .ignoresSafeArea(.container, edges: .top)
         .onAppear {
             if !AppStartTracker.shared.finished { // 避免多次 onAppear
                 AppStartTracker.shared.finished = true
@@ -65,20 +95,22 @@ struct ContentView: View {
     }
     
     private func createViewFromRouter() -> some View {
-        ZStack(alignment: .topLeading) {
-            VStack(spacing: 0) {
+        VStack(spacing: 0) {
+            Group {
                 if dataManager.router.getLast().isRoot {
                     TitleBarComponent()
                 } else {
                     SubviewTitleBarComponent()
                 }
-                HStack {
-                    ZStack {
-                        Rectangle()
-                            .fill(Color("BackgroundColor"))
-                            .shadow(radius: 2)
+            }
+            HStack(spacing: 0) {
+                Rectangle()
+                    .fill(Color("BackgroundColor"))
+                    .shadow(radius: 2)
+                    .frame(width: dataManager.leftTabWidth)
+                    .overlay(
                         dataManager.leftTabContent
-                            .scaleEffect(isLeftTabVisible ? 1 : 0.9 , anchor: .center)
+                            .scaleEffect(isLeftTabVisible ? 1 : 0.96, anchor: .center)
                             .opacity(isLeftTabVisible ? 1 : 0)
                             .onChange(of: dataManager.leftTabId) {
                                 isLeftTabVisible = false
@@ -86,42 +118,14 @@ struct ContentView: View {
                                     isLeftTabVisible = true
                                 }
                             }
-                    }
-                    .frame(width: dataManager.leftTabWidth)
-                    .zIndex(1)
-                    .animation(.easeInOut(duration: 0.05), value: dataManager.leftTabWidth)
-                    
-                    AnyView(dataManager.router.getLastView())
-                        .foregroundStyle(Color("TextColor"))
-                        .frame(minWidth: 815 - dataManager.leftTabWidth, minHeight: 418)
-                        .zIndex(0)
-                }
-                .background(
-                    AppSettings.shared.theme.getBackgroundStyle()
-                )
-                .overlay {
-                    if SharedConstants.shared.isDevelopment {
-                        VStack {
-                            HStack {
-                                Text(dataManager.router.getDebugText())
-                                    .font(.custom("PCL English", size: 14))
-                                    .foregroundStyle(Color("TextColor"))
-                                    .animation(.easeInOut(duration: 0.2), value: dataManager.router.path)
-                                Spacer()
-                            }
-                            Spacer()
-                        }
-                    }
-                }
+                    )
+                AnyView(dataManager.router.getLastView())
+                    .foregroundStyle(Color("TextColor"))
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-            .ignoresSafeArea(.container, edges: .top)
-            
-            ForEach(overlayManager.overlays) { overlay in
-                overlay.view
-                    .offset(CGSize(width: overlay.position.x, height: overlay.position.y))
-                    .transition(.opacity)
-            }
+            .background(AppSettings.shared.theme.getBackgroundStyle())
         }
+        .frame(minWidth: 700, minHeight: 420)
     }
     
     static func setPopup(_ popup: PopupOverlay?) {
