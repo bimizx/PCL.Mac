@@ -61,7 +61,7 @@ struct MyPicker<Entry: Hashable>: View {
                         view: PickerMenu(entries: entries.filter { $0 != selected }, onSelect: { selected = $0 ; overlayManager.removeOverlay(with: self.overlayId!) }, getText: getText)
                             .frame(width: geo.size.width)
                             .foregroundStyle(AppSettings.shared.theme.getAccentColor()),
-                        at: CGPoint(x: frame.minX, y: frame.maxY)
+                        at: CGPoint(x: frame.minX, y: frame.maxY + 1)
                     )
                 }
             }
@@ -114,7 +114,7 @@ fileprivate struct PickerMenu<Entry: Hashable>: View {
             }
             .background {
                 RoundedRectangle(cornerRadius: 4)
-                    .stroke(.primary)
+                    .stroke(.primary, lineWidth: 1.5)
             }
         }
     }

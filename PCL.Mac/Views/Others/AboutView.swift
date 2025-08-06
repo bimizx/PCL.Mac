@@ -81,7 +81,7 @@ struct AboutView: View {
                         name: "PCL Community",
                         description: "Plain Craft Launcher 非官方社区",
                         buttonName: "进入主页",
-                        buttonURL: "https://pcl-community.github.io"
+                        buttonURL: "https://pclc.cc"
                     )
                     
                     ProfileCard(
