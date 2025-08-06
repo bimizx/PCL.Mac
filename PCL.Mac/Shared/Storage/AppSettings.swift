@@ -42,8 +42,15 @@ public class AppSettings: ObservableObject {
     /// 用户添加的 Java 路径
     @CodableAppStorage("userAddedJvmPaths") public var userAddedJvmPaths: [URL] = []
     
-    /// 主题需要观察 DataManager 才能更新
-    @CodableAppStorage("theme") public var theme: Theme = .pcl
+    @Published public var theme: Theme = .pcl
+    
+    /// 主题 ID (文件名)
+    @CodableAppStorage("themeId") public var themeId: String = "pcl" {
+        didSet {
+            self.theme = .load(id: themeId)
+            DataManager.shared.objectWillChange.send()
+        }
+    }
     
     /// 启动时若为空自动设置为第一个版本
     @AppStorage("defaultInstance") public var defaultInstance: String?
@@ -75,12 +82,18 @@ public class AppSettings: ObservableObject {
     /// 下载自定义文件时的保存 URL
     @AppStorage("customFilesSaveUrl") public var customFilesSaveUrl: URL = URL(fileURLWithUserPath: "~/Downloads")
     
+    /// 使用过的主题解锁码
+    @CodableAppStorage("usedThemeCodes") public var usedThemeCodes: [String] = []
+    
     public func updateColorScheme() {
         if colorScheme != .system {
             NSApp.appearance = colorScheme == .light ? NSAppearance(named: .aqua) : NSAppearance(named: .darkAqua)
         } else {
             NSApp.appearance = nil
         }
+        ColorConstants.colorScheme = colorScheme
+        self.theme = .load(id: themeId)
+        DataManager.shared.objectWillChange.send()
     }
     
     private init() {

@@ -6,11 +6,18 @@
 //
 
 import SwiftUI
+import AppKit
 
 class ColorConstants {
-    private static var isLight: Bool {
-        let appearance = NSApp.appearance ?? NSAppearance(named: .aqua)
-        return appearance?.bestMatch(from: [.aqua, .darkAqua]) == .aqua
+    public static var colorScheme: ColorSchemeOption = .light
+    
+    public static var isLight: Bool {
+        if colorScheme != .system {
+            return colorScheme == .light
+        }
+        let appearance = NSApp.effectiveAppearance
+        let isDark = appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+        return !isDark
     }
     
     public static var L1: Double { isLight ? 25 : 96 }
@@ -33,7 +40,7 @@ class ColorConstants {
     public static var LaN: Double { isLight ? 0.5 : 0.75 }
 }
 
-extension Color {
+public extension Color {
     /// 通过 16 进制整数创建颜色（格式：0xRRGGBB）
     /// - Parameter hex: 16 进制颜色值（如 0xFF5733）
     init(hex: UInt, alpha: Double = 1.0) {
