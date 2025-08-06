@@ -75,7 +75,12 @@ public class MinecraftInstance: Identifiable, Equatable, Hashable {
         self.config = config ?? MinecraftConfig(name: runningDirectory.lastPathComponent)
         
         if !loadManifest() { return false }
-        detectVersion()
+        if let version = config.minecraftVersion {
+            self.version = .init(displayName: version)
+        } else {
+            detectVersion()
+            config.minecraftVersion = version.displayName
+        }
         
         // 寻找可用 Java
         if self.config.javaPath == nil {
@@ -211,7 +216,6 @@ public class MinecraftInstance: Identifiable, Equatable, Hashable {
                     manifest = try ClientManifest.parse(data, instanceUrl: runningDirectory)
                 }
             default:
-                // warn("发现不受支持的加载器: \(self.config.name) \(self.clientBrand.rawValue)")
                 manifest = try ClientManifest.parse(data, instanceUrl: runningDirectory)
             }
             guard let manifest = manifest else { return false }
@@ -229,26 +233,22 @@ public class MinecraftInstance: Identifiable, Equatable, Hashable {
         guard version == nil else {
             return
         }
-        version = MinecraftVersion(displayName: manifest.id)
-        Task {
-            do {
-                let archive = try Archive(url: runningDirectory.appending(path: "\(config.name).jar"), accessMode: .read)
-                guard let entry = archive["version.json"] else {
-                    return
-                }
-                
-                var data = Data()
-                _ = try archive.extract(entry, consumer: { (chunk) in
-                    data.append(chunk)
-                })
-                
-                let version = MinecraftVersion(displayName: try JSON(data: data)["id"].stringValue)
-                DispatchQueue.main.async {
-                    self.version = version
-                }
-            } catch {
-                err("无法检测版本: \(error.localizedDescription)，正在使用清单版本")
+        do {
+            let archive = try Archive(url: runningDirectory.appending(path: "\(config.name).jar"), accessMode: .read)
+            guard let entry = archive["version.json"] else {
+                throw NSError(domain: "MinecraftInstance", code: -1, userInfo: [NSLocalizedDescriptionKey: "version.json 不存在"])
             }
+            
+            var data = Data()
+            _ = try archive.extract(entry, consumer: { (chunk) in
+                data.append(chunk)
+            })
+            
+            let version = MinecraftVersion(displayName: try JSON(data: data)["id"].stringValue)
+            self.version = version
+        } catch {
+            err("无法检测版本: \(error.localizedDescription)，正在使用清单版本")
+            self.version = .init(displayName: manifest.id)
         }
     }
     
@@ -267,6 +267,7 @@ public struct MinecraftConfig: Codable {
     public var skipResourcesCheck: Bool = false
     public var maxMemory: Int32 = 4096
     public var qualityOfService: QualityOfService = .default
+    public var minecraftVersion: String?
     
     public init(_ json: JSON) {
         self.name = json["name"].stringValue
@@ -275,6 +276,7 @@ public struct MinecraftConfig: Codable {
         self.skipResourcesCheck = json["skipResourcesCheck"].boolValue
         self.maxMemory = json["maxMemory"].int32 ?? 4096
         self.qualityOfService = .init(rawValue: json["qualityOfService"].intValue) ?? .default
+        self.minecraftVersion = json["minecraftVersion"].string
         if qualityOfService.rawValue == 0 {
             qualityOfService = .default
         }

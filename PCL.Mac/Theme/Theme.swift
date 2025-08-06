@@ -11,7 +11,7 @@ import SwiftyJSON
 public class Theme: Codable, Hashable, Equatable {
     public static var pcl: Theme = load(id: "pcl")
     
-    private let id: String
+    public let id: String
     private let accentColor: Color
     private let mainStyle: AnyShapeStyle
     private let backgroundStyle: AnyShapeStyle

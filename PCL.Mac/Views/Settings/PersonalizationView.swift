@@ -86,7 +86,7 @@ struct PersonalizationView: View {
         .foregroundStyle(.text)
         .onAppear {
             self.themes = ThemeParser.shared.themes.filter(ThemeOwnershipChecker.shared.isUnlocked(_:))
-            self.selectedTheme = ThemeParser.shared.themes.find { $0.id == settings.themeId } ?? .init(id: "pcl", name: "PCL")
+            self.selectedTheme = ThemeParser.shared.themes.find { $0.id == settings.themeId } ?? selectedTheme
         }
     }
 }

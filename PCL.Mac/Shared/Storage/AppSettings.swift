@@ -42,13 +42,15 @@ public class AppSettings: ObservableObject {
     /// 用户添加的 Java 路径
     @CodableAppStorage("userAddedJvmPaths") public var userAddedJvmPaths: [URL] = []
     
-    @Published public var theme: Theme = .pcl
+    @Published public var theme: Theme!
     
     /// 主题 ID (文件名)
     @CodableAppStorage("themeId") public var themeId: String = "pcl" {
         didSet {
-            self.theme = .load(id: themeId)
-            DataManager.shared.objectWillChange.send()
+            if themeId != self.theme.id {
+                self.theme = .load(id: themeId)
+                DataManager.shared.objectWillChange.send()
+            }
         }
     }
     

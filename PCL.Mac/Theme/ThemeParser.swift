@@ -31,6 +31,7 @@ public class ThemeParser {
     
     public func fromJSON(_ json: JSON) -> Theme {
         let id = json["id"].stringValue
+        log("正在加载主题 \(id)")
         
         let accentColor = parseColor(json["accentColor"])
         let mainStyle = parseStyle(json["mainStyle"])
