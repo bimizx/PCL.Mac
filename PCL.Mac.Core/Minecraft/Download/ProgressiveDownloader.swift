@@ -76,7 +76,8 @@ public final class ProgressiveDownloader: NSObject, URLSessionDownloadDelegate {
                 }
                 continue
             }
-            let request = URLRequest(url: urls[index])
+            var request = URLRequest(url: urls[index])
+            request.setValue("PCLMac/\(SharedConstants.shared.version)", forHTTPHeaderField: "User-Agent")
             let task = session.downloadTask(with: request)
             task.taskDescription = "\(index)"
             task.resume()

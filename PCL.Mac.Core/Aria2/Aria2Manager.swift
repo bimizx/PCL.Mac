@@ -28,6 +28,9 @@ public class Aria2Manager {
                 "max-connection-per-server": "16",
                 "enable-http-pipelining": "true",
                 "check-integrity": "false",
+                "header": [
+                    "User-Agent: PCLMac/\(SharedConstants.shared.version)"
+                ]
             ]
         ]).stringValue
         debug("开始下载 \(url.absoluteString)")
