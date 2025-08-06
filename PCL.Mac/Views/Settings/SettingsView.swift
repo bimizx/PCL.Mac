@@ -26,7 +26,7 @@ struct SettingsView: View {
         .onAppear {
             dataManager.leftTab(120) {
                 VStack(alignment: .leading, spacing: 0) {
-                    MyListComponent(
+                    MyList(
                         root: .settings,
                         cases: .constant([.personalization, .javaSettings, .otherSettings])
                     ) { type, isSelected in

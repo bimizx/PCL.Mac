@@ -58,7 +58,7 @@ public class UpdateCheck {
         return await withCheckedContinuation { continuation in
             let task = session.dataTask(with: request) { data, response, error in
                 do {
-                    try data?.write(to: SharedConstants.shared.temperatureUrl.appending(path: "LauncherUpdate.zip"))
+                    try data?.write(to: SharedConstants.shared.temperatureURL.appending(path: "LauncherUpdate.zip"))
                 } catch {
                     err("无法写入文件: \(error.localizedDescription)")
                 }
@@ -69,14 +69,14 @@ public class UpdateCheck {
     }
     
     public static func applyUpdate() {
-        let zipUrl = SharedConstants.shared.temperatureUrl.appending(path: "LauncherUpdate.zip")
-        let appUrl = Bundle.main.bundleURL
-        Util.unzip(archiveUrl: zipUrl, destination: appUrl.parent(), replace: true)
-        Util.unzip(archiveUrl: appUrl.parent().appending(path: "PCL.Mac.zip"), destination: appUrl.parent(), replace: true)
+        let zipURL = SharedConstants.shared.temperatureURL.appending(path: "LauncherUpdate.zip")
+        let appURL = Bundle.main.bundleURL
+        Util.unzip(archiveURL: zipURL, destination: appURL.parent(), replace: true)
+        Util.unzip(archiveURL: appURL.parent().appending(path: "PCL.Mac.zip"), destination: appURL.parent(), replace: true)
         Util.clearTemp()
-        let executableUrl = appUrl.appending(path: "Contents").appending(path: "MacOS").appending(path: "PCL.Mac")
+        let executableURL = appURL.appending(path: "Contents").appending(path: "MacOS").appending(path: "PCL.Mac")
         let process = Process()
-        process.executableURL = executableUrl
+        process.executableURL = executableURL
         try? process.run()
         DispatchQueue.main.async {
             NSApplication.shared.terminate(nil)

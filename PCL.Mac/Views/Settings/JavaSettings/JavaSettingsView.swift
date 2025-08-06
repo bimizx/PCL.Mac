@@ -12,9 +12,9 @@ struct JavaSettingsView: View {
     
     var body: some View {
         ScrollView {
-            TitlelessMyCardComponent {
+            TitlelessMyCard {
                 HStack {
-                    MyButtonComponent(text: "刷新 Java 列表") {
+                    MyButton(text: "刷新 Java 列表") {
                         do {
                             try JavaSearch.searchAndSet()
                         } catch {
@@ -23,7 +23,7 @@ struct JavaSettingsView: View {
                     }
                     .frame(height: 35)
                     .fixedSize(horizontal: true, vertical: false)
-                    MyButtonComponent(text: "手动添加 Java") {
+                    MyButton(text: "手动添加 Java") {
                         let panel = NSOpenPanel()
                         panel.allowsMultipleSelection = false
                         panel.canChooseFiles = true
@@ -32,7 +32,7 @@ struct JavaSettingsView: View {
                         if panel.runModal() == .OK {
                             let url = panel.url!
                             if url.lastPathComponent == "java" {
-                                if dataManager.javaVirtualMachines.filter({ $0.executableUrl == url }).isEmpty {
+                                if dataManager.javaVirtualMachines.filter({ $0.executableURL == url }).isEmpty {
                                     let jvm = JavaVirtualMachine.of(url, true)
                                     if !jvm.isError {
                                         AppSettings.shared.userAddedJvmPaths.append(url)
@@ -50,7 +50,7 @@ struct JavaSettingsView: View {
                     }
                     .frame(height: 35)
                     .fixedSize(horizontal: true, vertical: false)
-                    MyButtonComponent(text: "安装 Java") {
+                    MyButton(text: "安装 Java") {
                         dataManager.router.append(.javaDownload)
                     }
                     .frame(height: 35)
@@ -60,12 +60,12 @@ struct JavaSettingsView: View {
             }
             .padding()
             
-            TitlelessMyCardComponent(index: 1) {
+            TitlelessMyCard(index: 1) {
                 Text("搜索耗时: \(dataManager.lastTimeUsed)ms")
                     .font(.custom("PCL English", size: 14))
                 VStack(spacing: 0) {
                     ForEach(dataManager.javaVirtualMachines) { javaEntity in
-                        JavaComponent(jvm: javaEntity)
+                        JavaListItemView(jvm: javaEntity)
                     }
                     .animation(.easeInOut(duration: 0.2), value: dataManager.javaVirtualMachines)
                 }

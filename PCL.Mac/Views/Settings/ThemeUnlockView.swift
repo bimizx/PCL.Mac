@@ -16,7 +16,7 @@ struct ThemeUnlockView: View {
     
     var body: some View {
         ScrollView(showsIndicators: false) {
-            TitlelessMyCardComponent {
+            TitlelessMyCard {
                 VStack(spacing: 24) {
                     // 哈希展示区
                     VStack(alignment: .leading, spacing: 10) {
@@ -41,7 +41,7 @@ struct ThemeUnlockView: View {
                             }
                             .animation(.easeInOut(duration: 0.2), value: isHovered)
                     }
-                    MyTextFieldComponent(text: $code, placeholder: "解锁码")
+                    MyTextField(text: $code, placeholder: "解锁码")
                         .onSubmit {
                             if Set(AppSettings.shared.usedThemeCodes).contains(code) {
                                 hint("你已经使用过这个解锁码了！", .critical)

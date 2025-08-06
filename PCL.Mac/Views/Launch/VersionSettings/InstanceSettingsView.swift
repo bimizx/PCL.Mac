@@ -26,11 +26,11 @@ struct InstanceSettingsView: View {
     
     var body: some View {
         ScrollView {
-            StaticMyCardComponent(title: "进程设置") {
+            StaticMyCard(title: "进程设置") {
                 VStack(alignment: .leading) {
                     HStack {
                         Text("游戏内存")
-                        MyTextFieldComponent(text: $memoryText, numberOnly: true)
+                        MyTextField(text: $memoryText, numberOnly: true)
                             .onChange(of: memoryText) {
                                 if let intValue = Int(memoryText) {
                                     instance.config.maxMemory = Int32(intValue)
@@ -42,7 +42,7 @@ struct InstanceSettingsView: View {
                     VStack(spacing: 2) {
                         HStack {
                             Text("进程 QoS")
-                            MyPickerComponent(selected: $instance.config.qualityOfService, entries: qosOptions, textProvider: getQualityOfServiceName(_:))
+                            MyPicker(selected: $instance.config.qualityOfService, entries: qosOptions, textProvider: getQualityOfServiceName(_:))
                             .onChange(of: instance.config.qualityOfService) {
                                 instance.saveConfig()
                             }

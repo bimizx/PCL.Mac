@@ -37,7 +37,7 @@ struct VersionSelectView: View, SubRouteContainer {
                         .padding(.leading, 12)
                         .padding(.top, 20)
                         .padding(.bottom, 4)
-                    MyListComponent(
+                    MyList(
                         cases: $directoryRoutes,
                         height: 42,
                         content: { type, isSelected in
@@ -60,12 +60,12 @@ struct VersionSelectView: View, SubRouteContainer {
                             panel.allowedContentTypes = [.folder]
                             
                             if panel.runModal() == .OK {
-                                guard !settings.minecraftDirectories.contains(where: { $0.rootUrl == panel.url! }) else {
+                                guard !settings.minecraftDirectories.contains(where: { $0.rootURL == panel.url! }) else {
                                     hint("该目录已存在！", .critical)
                                     return
                                 }
-                                settings.minecraftDirectories.append(.init(rootUrl: panel.url!, name: "自定义目录"))
-                                settings.currentMinecraftDirectory = .init(rootUrl: panel.url!, name: "自定义目录")
+                                settings.minecraftDirectories.append(.init(rootURL: panel.url!, name: "自定义目录"))
+                                settings.currentMinecraftDirectory = .init(rootURL: panel.url!, name: "自定义目录")
                                 hint("添加成功", .finish)
                             }
                         }
@@ -87,7 +87,7 @@ struct VersionSelectView: View, SubRouteContainer {
                         Text(directory.name)
                             .font(.custom("PCL English", size: 14))
                             .foregroundStyle(.primary)
-                        Text(directory.rootUrl.path)
+                        Text(directory.rootURL.path)
                             .font(.custom("PCL English", size: 12))
                             .foregroundStyle(Color(hex: 0x8C8C8C))
                             .lineLimit(1)
@@ -99,7 +99,7 @@ struct VersionSelectView: View, SubRouteContainer {
                         .frame(width: 16)
                         .foregroundStyle(Color("TextColor"))
                         .onTapGesture {
-                            settings.removeDirectory(url: directory.rootUrl)
+                            settings.removeDirectory(url: directory.rootURL)
                             hint("移除成功", .finish)
                         }
                         .padding(4)
@@ -115,7 +115,7 @@ fileprivate struct LeftTabItem: View {
     let text: String
     
     var body: some View {
-        MyListItemComponent {
+        MyListItem {
             HStack {
                 Image(imageName)
                     .resizable()

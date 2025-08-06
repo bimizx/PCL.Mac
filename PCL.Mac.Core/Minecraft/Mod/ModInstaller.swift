@@ -79,11 +79,11 @@ public class ModSummary: Hashable, Identifiable, Equatable {
     public let gameVersions: [MinecraftVersion]
     public let loaders: [ClientBrand]
     public let tags: [String]
-    public let iconUrl: URL?
-    public let infoUrl: URL
+    public let iconURL: URL?
+    public let infoURL: URL
     public let versions: [String]? // 只有通过搜索创建时这个变量的值才为 nil
     
-    init(projectId: String, modId: String, name: String, description: String, lastUpdate: Date, downloadCount: Int, gameVersions: [MinecraftVersion], categories: [String], iconUrl: URL?, infoUrl: URL, versions: [String]?) {
+    init(projectId: String, modId: String, name: String, description: String, lastUpdate: Date, downloadCount: Int, gameVersions: [MinecraftVersion], categories: [String], iconURL: URL?, infoURL: URL, versions: [String]?) {
         self.projectId = projectId
         self.modId = modId
         self.name = name
@@ -91,8 +91,8 @@ public class ModSummary: Hashable, Identifiable, Equatable {
         self.lastUpdate = lastUpdate
         self.downloadCount = downloadCount
         self.gameVersions = gameVersions
-        self.iconUrl = iconUrl
-        self.infoUrl = infoUrl
+        self.iconURL = iconURL
+        self.infoURL = infoURL
         self.versions = versions
         
         var loaders: [ClientBrand] = []
@@ -118,8 +118,8 @@ public class ModSummary: Hashable, Identifiable, Equatable {
             downloadCount: json["downloads"].intValue,
             gameVersions: (json["game_versions"].array ?? json["versions"].arrayValue).map { MinecraftVersion(displayName: $0.stringValue) },
             categories: json["categories"].arrayValue.union(json["loaders"].arrayValue).map { $0.stringValue },
-            iconUrl: json["icon_url"].url,
-            infoUrl: URL(string: "https://modrinth.com/mod/\(json["slug"].stringValue)")!,
+            iconURL: json["icon_url"].url,
+            infoURL: URL(string: "https://modrinth.com/mod/\(json["slug"].stringValue)")!,
             versions: json["versions"].array.map { $0.map { $0.stringValue } } // 若 versions 存在，传入 versions 的 [String] 形式，否则传入 nil
         )
     }

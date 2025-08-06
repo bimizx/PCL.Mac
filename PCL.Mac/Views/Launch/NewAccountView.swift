@@ -34,7 +34,7 @@ struct NewAccountView: View {
                     .transition(.move(edge: .trailing).combined(with: .opacity))
             default:
                 Group {
-                    let card = StaticMyCardComponent(title: "登录方式") {
+                    let card = StaticMyCard(title: "登录方式") {
                         VStack(spacing: 0) {
                             AuthMethodComponent(type: .microsoft)
                             AuthMethodComponent(type: .offline)
@@ -58,7 +58,7 @@ fileprivate struct AuthMethodComponent: View {
     let type: NewAccountViewState.PageType
     
     var body: some View {
-        MyListItemComponent {
+        MyListItem {
             HStack {
                 Image("\(String(describing: type).capitalized)LoginIcon")
                     .resizable()
@@ -104,29 +104,29 @@ fileprivate struct NewOfflineAccountView: View {
     @State private var warningText: String = ""
     
     var body: some View {
-        StaticMyCardComponent(title: "离线账号") {
+        StaticMyCard(title: "离线账号") {
             VStack(alignment: .leading, spacing: 10) {
                 if !warningText.isEmpty {
-                    MyTipComponent(text: warningText, color: .red)
+                    MyTip(text: warningText, color: .red)
                 }
-                MyTextFieldComponent(text: $state.playerName, placeholder: "玩家名")
+                MyTextField(text: $state.playerName, placeholder: "玩家名")
                     .onChange(of: state.playerName) {
                         warningText = checkPlayerName(state.playerName)
                     }
                     .onSubmit(addAccount)
                 HStack {
                     Spacer()
-                    MyButtonComponent(text: "购买 Minecraft") {
+                    MyButton(text: "购买 Minecraft") {
                         NSWorkspace.shared.open(URL(string: "https://www.xbox.com/zh-cn/games/store/minecraft-java-bedrock-edition-for-pc/9nxp44l49shj")!)
                     }
                     .fixedSize()
                     
-                    MyButtonComponent(text: "取消") {
+                    MyButton(text: "取消") {
                         state.type = nil
                     }
                     .fixedSize()
                     
-                    MyButtonComponent(text: "添加", action: addAccount)
+                    MyButton(text: "添加", action: addAccount)
                         .fixedSize()
                 }
             }
@@ -178,7 +178,7 @@ fileprivate struct NewMicrosoftAccountView: View {
     @ObservedObject private var state: NewAccountViewState = StateManager.shared.newAccount
     
     var body: some View {
-        StaticMyCardComponent(title: "正版账号") {
+        StaticMyCard(title: "正版账号") {
             VStack(alignment: .leading) {
                 VStack(alignment: .leading, spacing: 0) {
                     Text("点击登录后会自动跳转到微软登录页面")
@@ -190,13 +190,13 @@ fileprivate struct NewMicrosoftAccountView: View {
                 .padding()
                 
                 HStack {
-                    MyButtonComponent(text: "取消") {
+                    MyButton(text: "取消") {
                         state.type = nil
                     }
-                    MyButtonComponent(text: "购买 Minecraft") {
+                    MyButton(text: "购买 Minecraft") {
                         NSWorkspace.shared.open(URL(string: "https://www.xbox.com/zh-cn/games/store/minecraft-java-bedrock-edition-for-pc/9nxp44l49shj")!)
                     }
-                    MyButtonComponent(text: "登录") {
+                    MyButton(text: "登录") {
                         if !NetworkTest.shared.hasNetworkConnection() {
                             HintManager.default.add(.init(text: "请先联网！", type: .critical))
                             return

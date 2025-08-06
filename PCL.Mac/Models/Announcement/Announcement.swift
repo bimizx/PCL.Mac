@@ -26,7 +26,7 @@ struct Announcement: Identifiable {
     }
     
     func createView(showHistoryButton: Bool = false) -> some View {
-        MyCardComponent(title: "公告 | \(title)") {
+        MyCard(title: "公告 | \(title)") {
             VStack {
                 VStack(alignment: .leading, spacing: 10) {
                     ForEach(self.body) { body in
@@ -54,7 +54,7 @@ struct Announcement: Identifiable {
                 }
                 .padding()
                 if showHistoryButton {
-                    MyButtonComponent(text: "历史公告") {
+                    MyButton(text: "历史公告") {
                         self.dataManager.router.append(.announcementHistory)
                     }
                     .frame(height: 40)

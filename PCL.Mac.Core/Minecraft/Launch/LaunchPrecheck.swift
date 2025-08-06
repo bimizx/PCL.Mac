@@ -27,7 +27,7 @@ public class LaunchPrecheck {
         log("[launchPrecheck] 正在进行 Java 检查")
         let suitableJava = MinecraftInstance.findSuitableJava(instance.version)
         if DataManager.shared.javaVirtualMachines
-            .filter({ $0.executableUrl.path != "/usr/bin/java" })
+            .filter({ $0.executableURL.path != "/usr/bin/java" })
             .count == 0 {
             err("[launchPrecheck] 用户未安装 Java")
             
@@ -40,7 +40,7 @@ public class LaunchPrecheck {
         }
         if instance.config.javaPath == nil
         || !FileManager.default.fileExists(atPath: instance.config.javaPath) {
-            instance.config.javaPath = suitableJava!.executableUrl.path
+            instance.config.javaPath = suitableJava!.executableURL.path
         }
         
         if instance.config.maxMemory == 0 {

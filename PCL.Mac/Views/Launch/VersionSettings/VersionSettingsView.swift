@@ -17,7 +17,7 @@ struct VersionSettingsView: View, SubRouteContainer {
     init() {
         if let directory = AppSettings.shared.currentMinecraftDirectory,
            let defaultInstance = AppSettings.shared.defaultInstance,
-           let instance = MinecraftInstance.create(directory, directory.versionsUrl.appending(path: defaultInstance)) {
+           let instance = MinecraftInstance.create(directory, directory.versionsURL.appending(path: defaultInstance)) {
             self.instance = instance
         } else {
             self.instance = nil
@@ -38,7 +38,7 @@ struct VersionSettingsView: View, SubRouteContainer {
         .onAppear {
             dataManager.leftTab(200) {
                 VStack(alignment: .leading, spacing: 0) {
-                    MyListComponent(
+                    MyList(
                         root: .versionSettings(instance: instance),
                         cases: .constant(
                             [
@@ -93,7 +93,7 @@ struct InstanceOverviewView: View {
     
     var body: some View {
         ScrollView {
-            TitlelessMyCardComponent {
+            TitlelessMyCard {
                 HStack {
                     Image(instance.getIconName())
                         .resizable()

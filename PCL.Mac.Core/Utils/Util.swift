@@ -10,9 +10,9 @@ import ZIPFoundation
 import CryptoKit
 
 public class Util {
-    public static func getMainClass(_ jarUrl: URL) -> String? {
+    public static func getMainClass(_ jarURL: URL) -> String? {
         do {
-            let archive = try Archive(url: jarUrl, accessMode: .read)
+            let archive = try Archive(url: jarURL, accessMode: .read)
             let data = try ZipUtil.getEntryOrThrow(archive: archive, name: "META-INF/MANIFEST.MF")
             let manifest = String(data: data, encoding: .utf8)!
 
@@ -84,7 +84,7 @@ public class Util {
     public static func clearTemp() {
         do {
             let contents = try FileManager.default.contentsOfDirectory(
-                at: SharedConstants.shared.temperatureUrl,
+                at: SharedConstants.shared.temperatureURL,
                 includingPropertiesForKeys: nil,
                 options: []
             )
@@ -96,10 +96,10 @@ public class Util {
         }
     }
     
-    public static func unzip(archiveUrl: URL, destination: URL, replace: Bool = true) {
+    public static func unzip(archiveURL: URL, destination: URL, replace: Bool = true) {
         let archive: Archive
         do {
-            archive = try Archive(url: archiveUrl, accessMode: .read)
+            archive = try Archive(url: archiveURL, accessMode: .read)
         } catch {
             err("无法读取文件: \(error.localizedDescription)")
             return

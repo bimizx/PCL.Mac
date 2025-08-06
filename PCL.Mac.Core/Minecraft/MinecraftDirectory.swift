@@ -8,55 +8,55 @@
 import Foundation
 
 public class MinecraftDirectory: Codable, Identifiable, Hashable {
-    public static let `default`: MinecraftDirectory = .init(rootUrl: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft"), name: "默认文件夹")
+    public static let `default`: MinecraftDirectory = .init(rootURL: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft"), name: "默认文件夹")
     
     public var id: UUID
-    public let rootUrl: URL
+    public let rootURL: URL
     public var name: String
     public var instances: [MinecraftInstance] = []
     
     public func hash(into hasher: inout Hasher) {
-        hasher.combine(rootUrl)
+        hasher.combine(rootURL)
     }
     
-    public var versionsUrl: URL {
-        rootUrl.appendingPathComponent("versions")
+    public var versionsURL: URL {
+        rootURL.appendingPathComponent("versions")
     }
     
-    public var assetsUrl: URL {
-        rootUrl.appendingPathComponent("assets")
+    public var assetsURL: URL {
+        rootURL.appendingPathComponent("assets")
     }
     
-    public var librariesUrl: URL {
-        rootUrl.appendingPathComponent("libraries")
+    public var librariesURL: URL {
+        rootURL.appendingPathComponent("libraries")
     }
     
-    public init(rootUrl: URL, name: String) {
+    public init(rootURL: URL, name: String) {
         self.id = .init()
-        self.rootUrl = rootUrl
+        self.rootURL = rootURL
         self.name = name
     }
     
     enum CodingKeys: CodingKey {
         case id
-        case rootUrl
+        case rootURL
         case name
     }
     
     public static func == (lhs: MinecraftDirectory, rhs: MinecraftDirectory) -> Bool {
-        lhs.rootUrl == rhs.rootUrl
+        lhs.rootURL == rhs.rootURL
     }
     
     public func loadInnerInstances(callback: (([MinecraftInstance]) -> Void)? = nil) {
         instances.removeAll()
         Task {
             do {
-                let contents = try FileManager.default.contentsOfDirectory(at: versionsUrl, includingPropertiesForKeys: [.isDirectoryKey], options: [.skipsHiddenFiles])
-                let folderUrls = contents.filter { url in
+                let contents = try FileManager.default.contentsOfDirectory(at: versionsURL, includingPropertiesForKeys: [.isDirectoryKey], options: [.skipsHiddenFiles])
+                let folderURLs = contents.filter { url in
                     (try? url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true
                 }
-                for folderUrl in folderUrls {
-                    if let version = MinecraftInstance.create(self, folderUrl) {
+                for folderURL in folderURLs {
+                    if let version = MinecraftInstance.create(self, folderURL) {
                         DispatchQueue.main.async {
                             self.instances.append(version)
                         }

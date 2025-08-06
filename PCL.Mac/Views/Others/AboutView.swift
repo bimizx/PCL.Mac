@@ -12,7 +12,7 @@ fileprivate struct ProfileCard: View {
     let name: String
     let description: String
     let buttonName: String
-    let buttonUrl: String
+    let buttonURL: String
     
     var body: some View {
         HStack {
@@ -30,8 +30,8 @@ fileprivate struct ProfileCard: View {
                     .foregroundStyle(Color(hex: 0x8C8C8C))
             }
             Spacer()
-            MyButtonComponent(text: buttonName) {
-                NSWorkspace.shared.open(URL(string: buttonUrl)!)
+            MyButton(text: buttonName) {
+                NSWorkspace.shared.open(URL(string: buttonURL)!)
             }
             .frame(width: 160, height: 40)
         }
@@ -43,14 +43,14 @@ struct AboutView: View {
     @ObservedObject private var dataManager: DataManager = .shared
     var body: some View {
         ScrollView {
-            StaticMyCardComponent(index: 0, title: "关于") {
+            StaticMyCard(index: 0, title: "关于") {
                 VStack(spacing: 10) {
                     ProfileCard(
                         imageName: "LtCatt",
                         name: "龙腾猫越",
                         description: "Plain Craft Launcher 的作者！",
                         buttonName: "赞助作者",
-                        buttonUrl: "https://afdian.com/a/LTCat"
+                        buttonURL: "https://afdian.com/a/LTCat"
                     )
                     
                     ProfileCard(
@@ -58,7 +58,7 @@ struct AboutView: View {
                         name: "YiZhiMCQiu | Minecraft-温迪",
                         description: "PCL.Mac 的作者",
                         buttonName: "进入主页",
-                        buttonUrl: "https://github.com/YiZhiMCQiu"
+                        buttonURL: "https://github.com/YiZhiMCQiu"
                     )
                     
                     ProfileCard(
@@ -66,7 +66,7 @@ struct AboutView: View {
                         name: "PCL.Mac",
                         description: "当前版本：\(SharedConstants.shared.version)-\(SharedConstants.shared.branch)",
                         buttonName: "查看源代码",
-                        buttonUrl: "https://github.com/PCL-Community/PCL-Mac"
+                        buttonURL: "https://github.com/PCL-Community/PCL-Mac"
                     )
                 }
                 .padding(.leading)
@@ -74,14 +74,14 @@ struct AboutView: View {
             }
             .padding()
             
-            StaticMyCardComponent(index: 1, title: "特别鸣谢") {
+            StaticMyCard(index: 1, title: "特别鸣谢") {
                 VStack(spacing: 10) {
                     ProfileCard(
                         imageName: "PCLCommunity",
                         name: "PCL Community",
                         description: "Plain Craft Launcher 非官方社区",
                         buttonName: "进入主页",
-                        buttonUrl: "https://pcl-community.github.io"
+                        buttonURL: "https://pcl-community.github.io"
                     )
                     
                     ProfileCard(
@@ -89,7 +89,7 @@ struct AboutView: View {
                         name: "PCL.Proto",
                         description: "本项目的界面样式参考了 PCL.Proto，部分图标也来源于此",
                         buttonName: "GitHub 仓库",
-                        buttonUrl: "https://github.com/PCL-Community/PCL.Proto"
+                        buttonURL: "https://github.com/PCL-Community/PCL.Proto"
                     )
                 }
                 .padding(.leading)
@@ -97,7 +97,7 @@ struct AboutView: View {
             }
             .padding()
             
-            StaticMyCardComponent(index: 2, title: "许可与版权声明") {
+            StaticMyCard(index: 2, title: "许可与版权声明") {
                 VStack(spacing: 0) {
                     DependencyView(name: "SwiftyJSON", license: "MIT", repo: "SwiftyJSON/SwiftyJSON")
                     DependencyView(name: "ZIPFoundation", license: "MIT", repo: "weichsel/ZIPFoundation")
@@ -124,7 +124,7 @@ struct AboutView: View {
         }
         
         var body: some View {
-            MyListItemComponent {
+            MyListItem {
                 HStack {
                     VStack(alignment: .leading) {
                         HStack(spacing: 0) {

@@ -1,5 +1,5 @@
 //
-//  ButtonComponent.swift
+//  MyButton.swift
 //  PCL.Mac
 //
 //  Created by YiZhiMCQiu on 2025/5/19.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct MyButtonComponent: View {
+struct MyButton: View {
     @ObservedObject private var dataManager: DataManager = DataManager.shared
 
     let text: String
@@ -70,7 +70,7 @@ struct MyButtonComponent: View {
 
 
 #Preview {
-    MyButtonComponent(text: "测试") { }
+    MyButton(text: "测试") { }
         .padding()
         .background(Color(hex: 0xC4CEE6))
 }

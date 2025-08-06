@@ -16,12 +16,12 @@ struct JavaInstallView: View {
     
     var body: some View {
         ScrollView {
-            MyTipComponent(text: "搜索结果均为 Azul Zulu Java，包含 JDK 和 JRE 版本。", color: .blue)
+            MyTip(text: "搜索结果均为 Azul Zulu Java，包含 JDK 和 JRE 版本。", color: .blue)
                 .padding()
                 .padding(.bottom, -28)
-            TitlelessMyCardComponent(index: 1) {
+            TitlelessMyCard(index: 1) {
                 HStack {
-                    MyTextFieldComponent(text: $version, placeholder: "搜索版本")
+                    MyTextField(text: $version, placeholder: "搜索版本")
                         .onSubmit {
                             search()
                         }
@@ -35,7 +35,7 @@ struct JavaInstallView: View {
             }
             .padding()
             if let packages = packages {
-                TitlelessMyCardComponent(index: 2) {
+                TitlelessMyCard(index: 2) {
                     VStack(spacing: 0) {
                         if packages.isEmpty {
                             Text("无匹配结果")
@@ -82,7 +82,7 @@ struct JavaPackageView: View {
     }
     
     var body: some View {
-        MyListItemComponent {
+        MyListItem {
             HStack(alignment: .center) {
                 VStack(alignment: .leading) {
                     Text("\(package.type.rawValue.uppercased()) \(package.version[0])")

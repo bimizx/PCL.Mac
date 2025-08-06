@@ -15,11 +15,11 @@ struct PersonalizationView: View {
     
     var body: some View {
         ScrollView {
-            StaticMyCardComponent(title: "基础") {
+            StaticMyCard(title: "基础") {
                 VStack(spacing: 15) {
                     ZStack(alignment: .topLeading) {
                         Spacer()
-                        MyComboBoxComponent(
+                        MyComboBox(
                             options: themes,
                             selection: $selectedTheme,
                             label: { $0.name }) { content in
@@ -36,7 +36,7 @@ struct PersonalizationView: View {
                     }
                     
                     HStack {
-                        MyButtonComponent(text: "解锁更多主题") {
+                        MyButton(text: "解锁更多主题") {
                             dataManager.router.append(.themeUnlock)
                         }
                         .frame(height: 35)
@@ -47,7 +47,7 @@ struct PersonalizationView: View {
                     HStack {
                         Text("配色方案")
                             .padding(.trailing, 10)
-                        MyComboBoxComponent(
+                        MyComboBox(
                             options: [ColorSchemeOption.light, ColorSchemeOption.dark, ColorSchemeOption.system],
                             selection: $settings.colorScheme,
                             label: { $0.getLabel() }) { content in
@@ -65,9 +65,9 @@ struct PersonalizationView: View {
             }
             .padding()
             
-            StaticMyCardComponent(index: 1, title: "窗口按钮样式") {
+            StaticMyCard(index: 1, title: "窗口按钮样式") {
                 HStack {
-                    MyComboBoxComponent(
+                    MyComboBox(
                         options: [WindowControlButtonStyle.pcl, WindowControlButtonStyle.macOS],
                         selection: $settings.windowControlButtonStyle,
                         label: { $0.getLabel() }) { content in

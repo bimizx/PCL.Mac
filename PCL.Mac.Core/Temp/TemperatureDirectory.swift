@@ -8,7 +8,7 @@
 import Foundation
 
 public class TemperatureDirectory {
-    public var root: URL { SharedConstants.shared.temperatureUrl.appending(path: name) }
+    public var root: URL { SharedConstants.shared.temperatureURL.appending(path: name) }
     private let name: String
     
     public init(name: String) {
@@ -23,7 +23,7 @@ public class TemperatureDirectory {
     public func free() {
         do {
             let contents = try FileManager.default.contentsOfDirectory(
-                at: SharedConstants.shared.temperatureUrl,
+                at: SharedConstants.shared.temperatureURL,
                 includingPropertiesForKeys: nil,
                 options: []
             )

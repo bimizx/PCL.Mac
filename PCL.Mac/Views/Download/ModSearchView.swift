@@ -40,7 +40,7 @@ struct ModListItem: View {
     }
     
     var body: some View {
-        MyListItemComponent {
+        MyListItem {
             HStack {
                 if let icon = state.iconCache[summary.projectId] {
                     icon
@@ -56,7 +56,7 @@ struct ModListItem: View {
                         .clipShape(RoundedRectangle(cornerRadius: 10))
                         .onAppear {
                             Task {
-                                if let url = summary.iconUrl,
+                                if let url = summary.iconURL,
                                    let data = await Requests.get(url).data,
                                    let nsImage = NSImage(data: data) {
                                     DispatchQueue.main.async {
@@ -72,7 +72,7 @@ struct ModListItem: View {
                         .foregroundStyle(Color("TextColor"))
                     HStack {
                         ForEach(summary.tags.compactMap { ModListItem.tagMap[$0] }, id: \.self) { tag in
-                            MyTagComponent(label: tag, backgroundColor: Color("TagColor"), fontSize: 12)
+                            MyTag(label: tag, backgroundColor: Color("TagColor"), fontSize: 12)
                         }
                         
                         Text(summary.description)
@@ -283,7 +283,7 @@ struct ModSearchView: View {
             .padding()
             
             if let summaries = state.summaries {
-                TitlelessMyCardComponent {
+                TitlelessMyCard {
                     VStack(spacing: 0) {
                         ForEach(summaries) { summary in
                             ModListItem(summary: summary)
@@ -337,7 +337,7 @@ struct ModQueueOverlay: View {
                         .shadow(color: isHovered ? Color(hex: 0x0B5BCB) : .gray, radius: 2, x: 0.5, y: 0.5)
                     HStack {
                         ForEach(state.pendingDownloadMods, id: \.self) { version in
-                            MyListItemComponent {
+                            MyListItem {
                                 (state.iconCache[version.projectId] ?? Image("ModIconPlaceholder"))
                                     .resizable()
                                     .scaledToFit()
@@ -350,12 +350,12 @@ struct ModQueueOverlay: View {
                             }
                         }
                         Spacer()
-                        MyButtonComponent(text: "清空") {
+                        MyButton(text: "清空") {
                             state.pendingDownloadMods.removeAll()
                             hint("已清空模组下载队列！", .finish)
                         }
                         .fixedSize()
-                        MyButtonComponent(text: "开始", foregroundStyle: AppSettings.shared.theme.getTextStyle()) {
+                        MyButton(text: "开始", foregroundStyle: AppSettings.shared.theme.getTextStyle()) {
                             guard let instance = DataManager.shared.defaultInstance else {
                                 hint("请先在版本列表中选择一个实例！", .critical)
                                 return

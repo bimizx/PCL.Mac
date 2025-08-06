@@ -1,5 +1,5 @@
 //
-//  ListComponent.swift
+//  MyCard.swift
 //  PCL.Mac
 //
 //  Created by YiZhiMCQiu on 2025/5/18.
@@ -61,7 +61,7 @@ fileprivate struct ContentHeightKey: PreferenceKey {
     }
 }
 
-struct MyCardComponent<Content: View>: View {
+struct MyCard<Content: View>: View {
     @ObservedObject private var dataManager: DataManager = .shared
 
     let title: String
@@ -154,13 +154,13 @@ struct MyCardComponent<Content: View>: View {
         }
     }
     
-    func onToggle(_ callback: @escaping (Bool) -> Void) -> MyCardComponent {
+    func onToggle(_ callback: @escaping (Bool) -> Void) -> MyCard {
         var copy = self
         copy.onToggle = callback
         return copy
     }
     
-    func cardId(_ id: String) -> MyCardComponent {
+    func cardId(_ id: String) -> MyCard {
         var copy = self
         copy.id = id
         copy.loadState()
@@ -184,14 +184,14 @@ struct MyCardComponent<Content: View>: View {
         }
     }
     
-    func noAnimation() -> MyCardComponent {
+    func noAnimation() -> MyCard {
         var copy = self
         copy.hasAnimation = false
         return copy
     }
 }
 
-struct StaticMyCardComponent<Content: View>: View {
+struct StaticMyCard<Content: View>: View {
     @ObservedObject private var dataManager: DataManager = .shared
 
     let index: Int
@@ -216,14 +216,14 @@ struct StaticMyCardComponent<Content: View>: View {
         }
     }
     
-    func noAnimation() -> StaticMyCardComponent {
+    func noAnimation() -> StaticMyCard {
         var copy = self
         copy.hasAnimation = false
         return copy
     }
 }
 
-struct TitlelessMyCardComponent<Content: View>: View {
+struct TitlelessMyCard<Content: View>: View {
     let content: () -> Content
     let index: Int
     
@@ -243,7 +243,7 @@ struct TitlelessMyCardComponent<Content: View>: View {
         }
     }
     
-    func noAnimation() -> TitlelessMyCardComponent {
+    func noAnimation() -> TitlelessMyCard {
         var copy = self
         copy.hasAnimation = false
         return copy

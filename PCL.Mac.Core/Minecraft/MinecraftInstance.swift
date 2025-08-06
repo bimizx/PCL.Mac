@@ -37,7 +37,7 @@ public class MinecraftInstance: Identifiable, Equatable, Hashable {
     }
     
     public static func create(_ minecraftDirectory: MinecraftDirectory, _ name: String, config: MinecraftConfig? = nil) -> MinecraftInstance? {
-        create(minecraftDirectory, minecraftDirectory.versionsUrl.appending(path: name), config: config)
+        create(minecraftDirectory, minecraftDirectory.versionsURL.appending(path: name), config: config)
     }
     
     public static func create(_ minecraftDirectory: MinecraftDirectory, _ runningDirectory: URL, config: MinecraftConfig? = nil) -> MinecraftInstance? {
@@ -84,7 +84,7 @@ public class MinecraftInstance: Identifiable, Equatable, Hashable {
         
         // 寻找可用 Java
         if self.config.javaPath == nil {
-            self.config.javaPath = MinecraftInstance.findSuitableJava(self.version!)?.executableUrl.path
+            self.config.javaPath = MinecraftInstance.findSuitableJava(self.version!)?.executableURL.path
         }
         self.saveConfig()
         return true
@@ -213,10 +213,10 @@ public class MinecraftInstance: Identifiable, Equatable, Hashable {
                 if json["loader"].exists() {
                     manifest = ClientManifest.createFromFabricManifest(.init(json), runningDirectory)
                 } else {
-                    manifest = try ClientManifest.parse(data, instanceUrl: runningDirectory)
+                    manifest = try ClientManifest.parse(data, instanceURL: runningDirectory)
                 }
             default:
-                manifest = try ClientManifest.parse(data, instanceUrl: runningDirectory)
+                manifest = try ClientManifest.parse(data, instanceURL: runningDirectory)
             }
             guard let manifest = manifest else { return false }
             self.manifest = manifest

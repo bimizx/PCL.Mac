@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct JavaComponent: View {
+struct JavaListItemView: View {
     @ObservedObject private var dataManager: DataManager = .shared
     
     let jvm: JavaVirtualMachine
@@ -15,7 +15,7 @@ struct JavaComponent: View {
     private var javaPath: URL? {
         guard let directory = AppSettings.shared.currentMinecraftDirectory,
               let defaultInstance = AppSettings.shared.defaultInstance,
-              let instance = MinecraftInstance.create(directory, directory.versionsUrl.appending(path: defaultInstance)) else {
+              let instance = MinecraftInstance.create(directory, directory.versionsURL.appending(path: defaultInstance)) else {
             return nil
         }
         
@@ -26,14 +26,14 @@ struct JavaComponent: View {
         self.jvm = jvm
         guard let directory = AppSettings.shared.currentMinecraftDirectory,
               let defaultInstance = AppSettings.shared.defaultInstance,
-              let instance = MinecraftInstance.create(directory, directory.versionsUrl.appending(path: defaultInstance)) else {
+              let instance = MinecraftInstance.create(directory, directory.versionsURL.appending(path: defaultInstance)) else {
             return
         }
         self.instance = instance
     }
     
     var body: some View {
-        MyListItemComponent(isSelected: javaPath == jvm.executableUrl) {
+        MyListItem(isSelected: javaPath == jvm.executableURL) {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("\(jvm.getTypeLabel()) \(jvm.displayVersion)")
@@ -41,13 +41,13 @@ struct JavaComponent: View {
                         .padding(.leading, 2)
                     HStack {
                         if let implementor = jvm.implementor {
-                            MyTagComponent(label: implementor, backgroundColor: Color("TagColor"), fontSize: 12)
+                            MyTag(label: implementor, backgroundColor: Color("TagColor"), fontSize: 12)
                         }
-                        MyTagComponent(label: String(describing: jvm.arch), backgroundColor: Color("TagColor"), fontSize: 12)
-                        MyTagComponent(label: jvm.callMethod.getDisplayName(), backgroundColor: Color("TagColor"), fontSize: 12)
+                        MyTag(label: String(describing: jvm.arch), backgroundColor: Color("TagColor"), fontSize: 12)
+                        MyTag(label: jvm.callMethod.getDisplayName(), backgroundColor: Color("TagColor"), fontSize: 12)
                     }
                     .foregroundStyle(Color(hex: 0x8C8C8C))
-                    Text(jvm.executableUrl.path)
+                    Text(jvm.executableURL.path)
                         .font(.custom("PCL English", size: 14))
                         .textSelection(.enabled)
                         .foregroundStyle(Color(hex: 0x8C8C8C))
@@ -56,7 +56,7 @@ struct JavaComponent: View {
                 if jvm.isAddedByUser {
                     Image(systemName: "trash")
                         .onTapGesture {
-                            AppSettings.shared.userAddedJvmPaths.removeAll { $0 == jvm.executableUrl }
+                            AppSettings.shared.userAddedJvmPaths.removeAll { $0 == jvm.executableURL }
                             do {
                                 try JavaSearch.searchAndSet()
                             } catch {
@@ -69,7 +69,7 @@ struct JavaComponent: View {
         }
         .animation(.easeInOut(duration: 0.2), value: javaPath)
         .onTapGesture {
-            self.instance?.config.javaPath = jvm.executableUrl.path
+            self.instance?.config.javaPath = jvm.executableURL.path
             self.instance?.saveConfig()
             dataManager.objectWillChange.send()
         }

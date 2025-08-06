@@ -8,13 +8,13 @@
 import Foundation
 
 public class JavaVirtualMachine: Identifiable, Equatable {
-    static let Error = JavaVirtualMachine(arch: .unknown, version: -1, displayVersion: "错误", executableUrl: URL(fileURLWithPath: "Error"), callMethod: .incompatible, _isError: true)
+    static let Error = JavaVirtualMachine(arch: .unknown, version: -1, displayVersion: "错误", executableURL: URL(fileURLWithPath: "Error"), callMethod: .incompatible, _isError: true)
     
     public let arch: Architectury
     public var version: Int
     public var displayVersion: String
     public var implementor: String?
-    public let executableUrl: URL
+    public let executableURL: URL
     public let callMethod: CallMethod
     public let isJdk: Bool?
     public var isError: Bool {
@@ -32,12 +32,12 @@ public class JavaVirtualMachine: Identifiable, Equatable {
     
     public let id = UUID()
     
-    public init(arch: Architectury, version: Int, displayVersion: String, implementor: String? = nil, executableUrl: URL, callMethod: CallMethod, isJdk: Bool? = nil, _isError: Bool? = nil, _isAddedByUser: Bool? = nil) {
+    public init(arch: Architectury, version: Int, displayVersion: String, implementor: String? = nil, executableURL: URL, callMethod: CallMethod, isJdk: Bool? = nil, _isError: Bool? = nil, _isAddedByUser: Bool? = nil) {
         self.arch = arch
         self.version = version
         self.displayVersion = displayVersion
         self.implementor = implementor
-        self.executableUrl = executableUrl
+        self.executableURL = executableURL
         self.callMethod = callMethod
         self.isJdk = isJdk
         self._isError = _isError
@@ -52,22 +52,22 @@ public class JavaVirtualMachine: Identifiable, Equatable {
     }
     
     private func asyncDetectVersion() async {
-        (version, displayVersion) = JavaVirtualMachine.detectVersion(url: executableUrl)
+        (version, displayVersion) = JavaVirtualMachine.detectVersion(url: executableURL)
     }
     
-    public static func of(_ executableUrl: URL, _ addedByUser: Bool? = nil) -> JavaVirtualMachine {
+    public static func of(_ executableURL: URL, _ addedByUser: Bool? = nil) -> JavaVirtualMachine {
         // 判断文件是否合法
-        guard FileManager.default.fileExists(atPath: executableUrl.path) else {
-            err("\(executableUrl) not found!")
+        guard FileManager.default.fileExists(atPath: executableURL.path) else {
+            err("\(executableURL) not found!")
             return Error
         }
-        guard executableUrl.isFileURL else {
-            err("\(executableUrl.path()) 不是文件!")
+        guard executableURL.isFileURL else {
+            err("\(executableURL.path()) 不是文件!")
             return Error
         }
         
         // 设置架构及调用方式
-        let arch: Architectury = .getArchOfFile(executableUrl)
+        let arch: Architectury = .getArchOfFile(executableURL)
         let callMethod: CallMethod?
         if arch == Architectury.system || arch == .fatFile {
             callMethod = .direct
@@ -78,23 +78,23 @@ public class JavaVirtualMachine: Identifiable, Equatable {
         }
         
         // 获取版本信息
-        let releaseUrls = [
-            executableUrl.parent().parent().appending(path: "release"),
-            executableUrl.parent().parent().parent().appending(path: "release")
+        let releaseURLs = [
+            executableURL.parent().parent().appending(path: "release"),
+            executableURL.parent().parent().parent().appending(path: "release")
         ]
         var version: Int = 0
         var displayVersion: String = "未知"
         var asyncDetect: Bool = true
         var implementor: String?
         
-        for releaseUrl in releaseUrls {
-            if FileManager.default.fileExists(atPath: releaseUrl.path) {
-                let release = PropertiesParser.parse(fileUrl: releaseUrl)
+        for releaseURL in releaseURLs {
+            if FileManager.default.fileExists(atPath: releaseURL.path) {
+                let release = PropertiesParser.parse(fileURL: releaseURL)
                 if let javaVersion = release["JAVA_VERSION"] {
                     displayVersion = javaVersion
                     version = Int(displayVersion.split(separator: ".")[displayVersion.starts(with: "1.") ? 1 : 0])!
                 } else {
-                    err("加载 \(executableUrl.path()) 时出现错误: 未找到键 JAVA_VERSION 对应的值")
+                    err("加载 \(executableURL.path()) 时出现错误: 未找到键 JAVA_VERSION 对应的值")
                 }
                 implementor = release["IMPLEMENTOR"]
                 asyncDetect = false
@@ -104,15 +104,15 @@ public class JavaVirtualMachine: Identifiable, Equatable {
         
         // 检查是否为 JDK
         var isJdk: Bool? = nil
-        if executableUrl.path != "/usr/bin/java" {
-            if FileManager.default.fileExists(atPath: executableUrl.parent().appending(path: "javac").path) {
+        if executableURL.path != "/usr/bin/java" {
+            if FileManager.default.fileExists(atPath: executableURL.parent().appending(path: "javac").path) {
                 isJdk = true
             } else {
                 isJdk = false
             }
         }
         
-        let jvm = JavaVirtualMachine(arch: arch, version: version, displayVersion: displayVersion, implementor: implementor, executableUrl: executableUrl, callMethod: callMethod ?? .incompatible, isJdk: isJdk, _isAddedByUser: addedByUser)
+        let jvm = JavaVirtualMachine(arch: arch, version: version, displayVersion: displayVersion, implementor: implementor, executableURL: executableURL, callMethod: callMethod ?? .incompatible, isJdk: isJdk, _isAddedByUser: addedByUser)
         if asyncDetect {
             Task {
                 await jvm.asyncDetectVersion()
@@ -158,7 +158,7 @@ public class JavaVirtualMachine: Identifiable, Equatable {
     }
     
     public static func == (jvm1: JavaVirtualMachine, jvm2: JavaVirtualMachine) -> Bool {
-        return jvm1.executableUrl == jvm2.executableUrl
+        return jvm1.executableURL == jvm2.executableURL
     }
 }
 
@@ -179,8 +179,8 @@ public enum Architectury {
         }
     }
     
-    public static func getArchOfFile(_ executableUrl: URL) -> Architectury {
-        guard let fh = try? FileHandle(forReadingFrom: executableUrl) else { return .unknown }
+    public static func getArchOfFile(_ executableURL: URL) -> Architectury {
+        guard let fh = try? FileHandle(forReadingFrom: executableURL) else { return .unknown }
         defer { try? fh.close() }
 
         guard let magicData = try? fh.read(upToCount: 4), magicData.count == 4 else { return .unknown }

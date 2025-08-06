@@ -1,5 +1,5 @@
 //
-//  MyTagComponent.swift
+//  MyTag.swift
 //  PCL.Mac
 //
 //  Created by YiZhiMCQiu on 2025/6/22.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct MyTagComponent: View {
+struct MyTag: View {
     let label: String
     let backgroundColor: Color
     let fontSize: CGFloat

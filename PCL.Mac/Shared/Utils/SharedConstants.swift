@@ -10,11 +10,11 @@ import Foundation
 public struct SharedConstants {
     public static let shared = SharedConstants()
     
-    public let applicationContentsUrl: URL
-    public let applicationResourcesUrl: URL
-    public let logUrl: URL
-    public let applicationSupportUrl: URL = .applicationSupportDirectory.appending(path: "PCL-Mac")
-    public let temperatureUrl: URL
+    public let applicationContentsURL: URL
+    public let applicationResourcesURL: URL
+    public let logURL: URL
+    public let applicationSupportURL: URL = .applicationSupportDirectory.appending(path: "PCL-Mac")
+    public let temperatureURL: URL
     
     public let dateFormatter = DateFormatter()
     
@@ -23,10 +23,10 @@ public struct SharedConstants {
     public let branch: String
     
     private init() {
-        self.applicationContentsUrl = Bundle.main.bundleURL.appending(path: "Contents")
-        self.applicationResourcesUrl = self.applicationContentsUrl.appending(path: "Resources")
-        self.logUrl = applicationSupportUrl.appending(path: "Logs").appending(path: "app.log")
-        self.temperatureUrl = applicationSupportUrl.appending(path: "Temp")
+        self.applicationContentsURL = Bundle.main.bundleURL.appending(path: "Contents")
+        self.applicationResourcesURL = self.applicationContentsURL.appending(path: "Resources")
+        self.logURL = applicationSupportURL.appending(path: "Logs").appending(path: "app.log")
+        self.temperatureURL = applicationSupportURL.appending(path: "Temp")
         
         self.dateFormatter.dateFormat = "yyyy/MM/dd HH:mm"
         self.dateFormatter.timeZone = TimeZone(identifier: "Asia/Shanghai")

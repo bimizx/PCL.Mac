@@ -35,7 +35,7 @@ struct DownloadView: View {
                         .padding(.leading, 12)
                         .padding(.top, 20)
                         .padding(.bottom, 4)
-                    MyListComponent(
+                    MyList(
                         cases: .constant([.minecraftDownload])
                     ) { type, isSelected in
                         createListItemView(type)
@@ -48,7 +48,7 @@ struct DownloadView: View {
                         .padding(.leading, 12)
                         .padding(.top, 32)
                         .padding(.bottom, 4)
-                    MyListComponent(
+                    MyList(
                         cases: .constant([.modSearch]),
                         animationIndex: 2
                     ) { type, isSelected in

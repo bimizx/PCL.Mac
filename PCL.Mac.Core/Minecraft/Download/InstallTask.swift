@@ -136,7 +136,7 @@ public class MinecraftInstallTask: InstallTask {
     public var manifest: ClientManifest?
     public var assetIndex: AssetIndex?
     public var name: String
-    public var versionUrl: URL { minecraftDirectory.versionsUrl.appending(path: name) }
+    public var versionURL: URL { minecraftDirectory.versionsURL.appending(path: name) }
     public let minecraftVersion: MinecraftVersion
     public let minecraftDirectory: MinecraftDirectory
     public let startTask: (MinecraftInstallTask) async -> Void
@@ -187,7 +187,7 @@ public class FabricInstallTask: InstallTask {
     
     public func start(_ task: MinecraftInstallTask) {
         Task {
-            await ModLoaderInstaller.installFabric(version: task.minecraftVersion, minecraftDirectory: task.minecraftDirectory, runningDirectory: task.versionUrl, self.loaderVersion)
+            await ModLoaderInstaller.installFabric(version: task.minecraftVersion, minecraftDirectory: task.minecraftDirectory, runningDirectory: task.versionURL, self.loaderVersion)
             callback?()
         }
     }

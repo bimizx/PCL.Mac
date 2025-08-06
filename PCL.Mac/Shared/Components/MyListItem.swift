@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct MyListItemComponent<Content: View>: View {
+struct MyListItem<Content: View>: View {
     let isSelected: Bool
     let content: () -> Content
     

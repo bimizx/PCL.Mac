@@ -24,7 +24,7 @@ struct AccountManagementView: View, SubRouteContainer {
         .onAppear {
             dataManager.leftTab(130) {
                 VStack(alignment: .leading, spacing: 0) {
-                    MyListComponent(
+                    MyList(
                         root: .accountManagement,
                         cases: .constant([.accountList, .newAccount])
                     ) { type, isSelected in
@@ -77,9 +77,9 @@ fileprivate struct AccountView: View {
     let account: AnyAccount
     
     var body: some View {
-        MyListItemComponent {
+        MyListItem {
             HStack {
-                MinecraftAvatarComponent(type: .username, src: account.name, size: 40)
+                MinecraftAvatar(type: .username, src: account.name, size: 40)
                 VStack(alignment: .leading) {
                     ZStack(alignment: .leading) {
                         Text(account.name)
@@ -98,14 +98,14 @@ fileprivate struct AccountView: View {
                     }
                     
                     HStack {
-                        MyTagComponent(label: "\(authMethodName)验证", backgroundColor: Color(hex: 0x8C8C8C, alpha: 0.2))
+                        MyTag(label: "\(authMethodName)验证", backgroundColor: Color(hex: 0x8C8C8C, alpha: 0.2))
                             .font(.custom("PCL English", size: 12))
                             .foregroundStyle(Color("TextColor"))
                         Spacer()
                     }
                 }
                 Spacer()
-                MyListItemComponent {
+                MyListItem {
                     Image(systemName: "xmark")
                         .bold()
                         .foregroundStyle(Color("TextColor"))

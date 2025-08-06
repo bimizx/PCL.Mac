@@ -82,7 +82,7 @@ public class AppSettings: ObservableObject {
     @AppStorage("fullScreen") public var fullScreen: Bool = false
     
     /// 下载自定义文件时的保存 URL
-    @AppStorage("customFilesSaveUrl") public var customFilesSaveUrl: URL = URL(fileURLWithUserPath: "~/Downloads")
+    @AppStorage("customFilesSaveURL") public var customFilesSaveURL: URL = URL(fileURLWithUserPath: "~/Downloads")
     
     /// 使用过的主题解锁码
     @CodableAppStorage("usedThemeCodes") public var usedThemeCodes: [String] = []
@@ -106,7 +106,7 @@ public class AppSettings: ObservableObject {
         }
         
         if let directory = currentMinecraftDirectory {
-            if !minecraftDirectories.contains(where: { $0.rootUrl == directory.rootUrl }) {
+            if !minecraftDirectories.contains(where: { $0.rootURL == directory.rootURL }) {
                 minecraftDirectories.append(directory)
             }
             
@@ -120,14 +120,14 @@ public class AppSettings: ObservableObject {
     }
     
     public func removeDirectory(url: URL) {
-        if currentMinecraftDirectory?.rootUrl == url || currentMinecraftDirectory == nil {
+        if currentMinecraftDirectory?.rootURL == url || currentMinecraftDirectory == nil {
             currentMinecraftDirectory = .default
             if case .versionList = DataManager.shared.router.getLast() {
                 DataManager.shared.router.removeLast()
                 DataManager.shared.router.append(.versionList(directory: .default))
             }
         }
-        minecraftDirectories.removeAll(where: { $0.rootUrl == url })
+        minecraftDirectories.removeAll(where: { $0.rootURL == url })
         
         if minecraftDirectories.isEmpty {
             minecraftDirectories.append(currentMinecraftDirectory!)

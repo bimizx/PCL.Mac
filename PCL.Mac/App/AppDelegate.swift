@@ -50,7 +50,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         log("App 初始化完成, 耗时 \(Int((Date().timeIntervalSince1970 - start) * 1000))ms")
         
         let daemonProcess = Process()
-        daemonProcess.executableURL = SharedConstants.shared.applicationResourcesUrl.appending(path: "daemon")
+        daemonProcess.executableURL = SharedConstants.shared.applicationResourcesURL.appending(path: "daemon")
         do {
             try daemonProcess.run()
             log("守护进程已启动")

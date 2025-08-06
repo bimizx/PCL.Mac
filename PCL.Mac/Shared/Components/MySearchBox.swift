@@ -20,7 +20,7 @@ struct MySearchBox: View {
     }
     
     var body: some View {
-        TitlelessMyCardComponent {
+        TitlelessMyCard {
             HStack {
                 Image("SearchIcon")
                     .resizable()

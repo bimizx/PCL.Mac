@@ -1,5 +1,5 @@
 //
-//  MyTipComponent.swift
+//  MyTip.swift
 //  PCL.Mac
 //
 //  Created by YiZhiMCQiu on 2025/7/20.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct MyTipComponent: View {
+struct MyTip: View {
     let text: String
     let color: TipColor
     
@@ -45,7 +45,7 @@ enum TipColor {
 }
 
 #Preview {
-    MyTipComponent(text: "这是一行测试文本", color: .blue)
+    MyTip(text: "这是一行测试文本", color: .blue)
         .padding()
         .background(Theme.pcl.getBackgroundStyle())
 }

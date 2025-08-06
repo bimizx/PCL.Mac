@@ -286,7 +286,7 @@ public class ClientManifest {
         }
     }
     
-    public static func createFromFabricManifest(_ fabricManifest: FabricManifest?, _ instanceUrl: URL) -> ClientManifest? {
+    public static func createFromFabricManifest(_ fabricManifest: FabricManifest?, _ instanceURL: URL) -> ClientManifest? {
         guard let fabricManifest = fabricManifest else { return nil }
         let manifest: ClientManifest = .init(
             id: fabricManifest.loaderVersion,
@@ -302,11 +302,11 @@ public class ClientManifest {
         )
         
         let parent: ClientManifest
-        let parentUrl = instanceUrl.appending(path: ".pcl_mac").appending(path: "\(fabricManifest.minecraftVersion).json")
+        let parentURL = instanceURL.appending(path: ".pcl_mac").appending(path: "\(fabricManifest.minecraftVersion).json")
         
         do {
-            let data = try FileHandle(forReadingFrom: parentUrl).readToEnd()!
-            guard let manifest = try ClientManifest.parse(data, instanceUrl: instanceUrl) else { return nil }
+            let data = try FileHandle(forReadingFrom: parentURL).readToEnd()!
+            guard let manifest = try ClientManifest.parse(data, instanceURL: instanceURL) else { return nil }
             parent = manifest
         } catch {
             err("无法解析 inheritsFrom: \(error.localizedDescription)")
@@ -316,24 +316,24 @@ public class ClientManifest {
         return merge(parent: parent, manifest: manifest)
     }
 
-    public static func parse(_ data: Data, instanceUrl: URL?) throws -> ClientManifest? {
+    public static func parse(_ data: Data, instanceURL: URL?) throws -> ClientManifest? {
         let json = try JSON(data: data)
         
     checkParent:
         if let inheritsFrom = json["inheritsFrom"].string,
-           let instanceUrl = instanceUrl {
-            let parentUrl = instanceUrl.appending(path: ".pcl_mac").appending(path: "\(inheritsFrom).json")
+           let instanceURL = instanceURL {
+            let parentURL = instanceURL.appending(path: ".pcl_mac").appending(path: "\(inheritsFrom).json")
             
-            guard FileManager.default.fileExists(atPath: parentUrl.path) else {
-                err("\(instanceUrl.lastPathComponent) 的客户端清单中有 inheritsFrom 字段，但其对应的 JSON 不存在")
+            guard FileManager.default.fileExists(atPath: parentURL.path) else {
+                err("\(instanceURL.lastPathComponent) 的客户端清单中有 inheritsFrom 字段，但其对应的 JSON 不存在")
                 break checkParent
             }
             
             let parent: ClientManifest
             guard let manifest = ClientManifest(json: json) else { return nil }
             do {
-                let data = try FileHandle(forReadingFrom: parentUrl).readToEnd()!
-                guard let manifest = try ClientManifest.parse(data, instanceUrl: instanceUrl) else { return nil }
+                let data = try FileHandle(forReadingFrom: parentURL).readToEnd()!
+                guard let manifest = try ClientManifest.parse(data, instanceURL: instanceURL) else { return nil }
                 parent = manifest
             } catch {
                 err("无法解析 inheritsFrom: \(error.localizedDescription)")

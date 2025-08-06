@@ -75,7 +75,7 @@ struct TitleBarComponent: View {
                         .aspectRatio(contentMode: .fit)
                         .frame(height: 19)
                         .bold()
-                    MyTagComponent(label: "Mac", backgroundColor: .white)
+                    MyTag(label: "Mac", backgroundColor: .white)
                         .foregroundStyle(AppSettings.shared.theme.getTextStyle())
                 }
                 Spacer()

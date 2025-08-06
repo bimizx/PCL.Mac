@@ -59,7 +59,7 @@ public enum AppRoute: Hashable {
         switch self {
         case .installing(let task): "installing?task=\(task.id)"
         case .modDownload(let summary): "modDownload?summary=\(summary.modId)"
-        case .versionList(let directory): "versionList?rootUrl=\(directory.rootUrl.path)"
+        case .versionList(let directory): "versionList?rootURL=\(directory.rootURL.path)"
         case .versionSettings(let instance): "versionSettings?instance=\(instance.config.name)"
         default:
             String(describing: self)
@@ -69,7 +69,7 @@ public enum AppRoute: Hashable {
     func isSame(_ another: AppRoute) -> Bool {
         if case .versionList(let directory1) = self,
            case .versionList(let directory2) = another {
-            return directory1.rootUrl == directory2.rootUrl
+            return directory1.rootURL == directory2.rootURL
         }
         
         return self == another

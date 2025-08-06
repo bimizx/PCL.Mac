@@ -1,5 +1,5 @@
 //
-//  MinecraftAvatarComponent.swift
+//  MinecraftAvatar.swift
 //  PCL.Mac
 //
 //  Created by YiZhiMCQiu on 2025/6/30.
@@ -12,14 +12,14 @@ enum AvatarInputType {
     case username, uuid, url
 }
 
-struct MinecraftAvatarComponent: View {
+struct MinecraftAvatar: View {
     let type: AvatarInputType
     let src: String
     private(set) var size: CGFloat = 58
     
     @State private var imageData: Data?
 
-    var skinUrl: URL {
+    var skinURL: URL {
         switch type {
         case .username:
             return URL(string: "https://minotar.net/skin/\(src)")!
@@ -40,7 +40,7 @@ struct MinecraftAvatarComponent: View {
         }
         .onAppear {
             Task {
-                if let data = await Requests.get(skinUrl).data {
+                if let data = await Requests.get(skinURL).data {
                     DispatchQueue.main.async {
                         self.imageData = data
                     }
@@ -88,5 +88,5 @@ fileprivate struct SkinLayerView: View {
 }
 
 #Preview {
-    MinecraftAvatarComponent(type: .username, src: "MinecraftVenti")
+    MinecraftAvatar(type: .username, src: "MinecraftVenti")
 }

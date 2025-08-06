@@ -55,7 +55,7 @@ struct InstallingView: View {
         HStack {
             VStack {
                 ForEach(tasks.getTasks()) { task in
-                    StaticMyCardComponent(title: task.getTitle()) {
+                    StaticMyCard(title: task.getTitle()) {
                         getEntries(task)
                     }
                     .padding()

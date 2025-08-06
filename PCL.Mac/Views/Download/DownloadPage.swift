@@ -24,7 +24,7 @@ struct DownloadPage: View {
     var body: some View {
         ZStack {
             ScrollView {
-                TitlelessMyCardComponent {
+                TitlelessMyCard {
                     HStack(alignment: .center) {
                         Image("Back")
                             .resizable()
@@ -39,7 +39,7 @@ struct DownloadPage: View {
                             .resizable()
                             .scaledToFit()
                             .frame(width: 35)
-                        MyTextFieldComponent(text: self.$name)
+                        MyTextField(text: self.$name)
                             .foregroundStyle(Color("TextColor"))
                     }
                 }
@@ -115,7 +115,7 @@ fileprivate struct FabricLoaderCard: View {
         ZStack {
             Group {
                 if let versions = versions, !versions.isEmpty {
-                    MyCardComponent(index: 1, title: "Fabric") {
+                    MyCard(index: 1, title: "Fabric") {
                         LazyVStack(spacing: 0) {
                             ForEach(versions) { version in
                                 ListItem(iconName: "FabricIcon", title: version.loaderVersion, description: version.stable ? "稳定版" : "测试版", isSelected: selected?.loaderVersion == version.loaderVersion)
@@ -132,7 +132,7 @@ fileprivate struct FabricLoaderCard: View {
                         showText = !isUnfolded
                     }
                 } else {
-                    TitlelessMyCardComponent(index: 1) {
+                    TitlelessMyCard(index: 1) {
                         HStack {
                             MaskedTextRectangle(text: "Fabric")
                             Spacer()
@@ -209,7 +209,7 @@ fileprivate struct FabricLoaderCard: View {
         }
         
         var body: some View {
-            MyListItemComponent(isSelected: isSelected) {
+            MyListItem(isSelected: isSelected) {
                 HStack {
                     Image(iconName)
                         .resizable()

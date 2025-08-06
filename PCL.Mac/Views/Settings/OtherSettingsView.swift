@@ -14,14 +14,14 @@ struct OtherSettingsView: View {
         HStack {
             ScrollView(.vertical, showsIndicators: true) {
                 VStack {
-                    MyButtonComponent(text: "打开日志") {
-                        NSWorkspace.shared.activateFileViewerSelecting([SharedConstants.shared.logUrl])
+                    MyButton(text: "打开日志") {
+                        NSWorkspace.shared.activateFileViewerSelecting([SharedConstants.shared.logURL])
                     }
                     .frame(height: 40)
                     .padding()
                     .padding(.bottom, -23)
                     
-                    MyButtonComponent(text: "更新启动器") {
+                    MyButton(text: "更新启动器") {
                         Task {
                             guard !SharedConstants.shared.isDevelopment else {
                                 hint("你本地测试更新啥啊……", .critical)

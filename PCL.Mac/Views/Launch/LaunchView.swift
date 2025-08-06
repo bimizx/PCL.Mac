@@ -14,10 +14,10 @@ fileprivate struct LeftTab: View {
     @State private var instance: MinecraftInstance?
     
     private var accountView: some View {
-        MyListItemComponent {
+        MyListItem {
             VStack {
                 if let account = accountManager.getAccount() {
-                    MinecraftAvatarComponent(type: .username, src: account.name)
+                    MinecraftAvatar(type: .username, src: account.name)
                     Text(account.name)
                         .font(.custom("PCL English", size: 16))
                         .foregroundStyle(Color("TextColor"))
@@ -50,7 +50,7 @@ fileprivate struct LeftTab: View {
             accountView
             Spacer()
             if let instance = self.instance {
-                MyButtonComponent(text: "启动游戏", descriptionText: instance.config.name, foregroundStyle: AppSettings.shared.theme.getTextStyle()) {
+                MyButton(text: "启动游戏", descriptionText: instance.config.name, foregroundStyle: AppSettings.shared.theme.getTextStyle()) {
                     let launchOptions: LaunchOptions = .init()
                     
                     guard launchPrecheck(launchOptions) else { return }
@@ -63,7 +63,7 @@ fileprivate struct LeftTab: View {
                 .padding()
                 .padding(.bottom, -27)
             } else {
-                MyButtonComponent(text: "下载游戏", descriptionText: "未找到可用的游戏版本") {
+                MyButton(text: "下载游戏", descriptionText: "未找到可用的游戏版本") {
                     dataManager.router.setRoot(.download)
                 }
                 .frame(height: 55)
@@ -71,11 +71,11 @@ fileprivate struct LeftTab: View {
                 .padding(.bottom, -27)
             }
             HStack(spacing: 12) {
-                MyButtonComponent(text: "版本选择") {
+                MyButton(text: "版本选择") {
                     dataManager.router.append(.versionSelect)
                 }
                 if AppSettings.shared.defaultInstance != nil {
-                    MyButtonComponent(text: "版本设置") {
+                    MyButton(text: "版本设置") {
                         if let instance = self.instance {
                             dataManager.router.append(.versionSettings(instance: instance))
                         }
@@ -91,7 +91,7 @@ fileprivate struct LeftTab: View {
         .onAppear {
             if let directory = AppSettings.shared.currentMinecraftDirectory,
                let defaultInstance = AppSettings.shared.defaultInstance,
-               let instance = MinecraftInstance.create(directory, directory.versionsUrl.appending(path: defaultInstance)) {
+               let instance = MinecraftInstance.create(directory, directory.versionsURL.appending(path: defaultInstance)) {
                 self.instance = instance
             }
         }
@@ -158,7 +158,7 @@ struct LaunchView: View {
             }
             
             if SharedConstants.shared.isDevelopment {
-                StaticMyCardComponent(index: 0, title: "警告") {
+                StaticMyCard(index: 0, title: "警告") {
                     VStack(spacing: 4) {
                         Text("你正在使用开发版本的 PCL.Mac！")
                             .font(.custom("PCL English", size: 14))
@@ -177,7 +177,7 @@ struct LaunchView: View {
                 }
                 .padding()
                 
-                StaticMyCardComponent(index: 1, title: "日志") {
+                StaticMyCard(index: 1, title: "日志") {
                     VStack {
                         ScrollView(.horizontal) {
                             VStack(alignment: .leading, spacing: 4) {
@@ -190,8 +190,8 @@ struct LaunchView: View {
                         .scrollIndicators(.never)
                         .padding(.top, 5)
                         
-                        MyButtonComponent(text: "打开日志") {
-                            NSWorkspace.shared.activateFileViewerSelecting([SharedConstants.shared.logUrl])
+                        MyButton(text: "打开日志") {
+                            NSWorkspace.shared.activateFileViewerSelecting([SharedConstants.shared.logURL])
                         }
                         .frame(height: 40)
                     }

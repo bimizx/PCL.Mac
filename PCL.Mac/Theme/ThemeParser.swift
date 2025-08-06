@@ -13,7 +13,7 @@ public class ThemeParser {
     public let themes = {
         var result: [ThemeInfo] = []
         
-        for folder in [SharedConstants.shared.applicationResourcesUrl, SharedConstants.shared.applicationSupportUrl.appending(path: "Themes")] {
+        for folder in [SharedConstants.shared.applicationResourcesURL, SharedConstants.shared.applicationSupportURL.appending(path: "Themes")] {
             if let files = try? FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil, options: [.skipsHiddenFiles]) {
                 let jsonFiles = files.filter { $0.pathExtension.lowercased() == "json" }
                 for jsonFile in jsonFiles {

@@ -29,7 +29,7 @@ public class JavaSearch {
     }
     
     public static func search() throws -> [JavaVirtualMachine] {
-        var executableUrls: [URL] = [
+        var executableURLs: [URL] = [
             URL(fileURLWithPath: "/usr/bin/java")
         ]
         
@@ -42,15 +42,15 @@ public class JavaSearch {
             .filter { FileManager.default.fileExists(atPath: $0) }
         
         for javaDirectoryParent in javaDirectoryParents {
-            let parentUrl = URL(fileURLWithPath: javaDirectoryParent)
+            let parentURL = URL(fileURLWithPath: javaDirectoryParent)
             for javaDirectory in try FileManager.default.contentsOfDirectory(atPath: javaDirectoryParent) {
-                let javaHomeUrl = parentUrl.appending(path: javaDirectory).appending(path: "Contents").appending(path: "Home")
-                executableUrls.append(javaHomeUrl.appending(path: "bin").appending(path: "java"))
-                executableUrls.append(javaHomeUrl.appending(path: "jre").appending(path: "bin").appending(path: "java"))
+                let javaHomeURL = parentURL.appending(path: javaDirectory).appending(path: "Contents").appending(path: "Home")
+                executableURLs.append(javaHomeURL.appending(path: "bin").appending(path: "java"))
+                executableURLs.append(javaHomeURL.appending(path: "jre").appending(path: "bin").appending(path: "java"))
             }
         }
         
-        return executableUrls
+        return executableURLs
             .filter { FileManager.default.fileExists(atPath: $0.path)}
             .map { JavaVirtualMachine.of($0) }
             .filter { !$0.isError }

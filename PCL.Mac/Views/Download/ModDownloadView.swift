@@ -22,7 +22,7 @@ fileprivate struct ModVersionListView: View {
             ForEach(sortedReleaseVersions, id: \.self) { version in
                 ForEach(summary.loaders, id: \.self) { loader in
                     if let versions: [ModVersion] = versionMap[ModPlatformKey(loader: loader, minecraftVersion: version)] {
-                        MyCardComponent(title: "\(loader.getName()) \(version.displayName)") {
+                        MyCard(title: "\(loader.getName()) \(version.displayName)") {
                             LazyVStack(alignment: .leading, spacing: 0) {
                                 if let version = versions.first,
                                    !version.dependencies.isEmpty {
@@ -73,7 +73,7 @@ fileprivate struct ModVersionListItem: View {
     let version: ModVersion
     
     var body: some View {
-        MyListItemComponent {
+        MyListItem {
             HStack {
                 Image(version.type.capitalized + "Icon")
                     .resizable()
@@ -122,16 +122,16 @@ struct ModDownloadView: View {
         Group {
             if let summary = summary {
                 ScrollView {
-                    TitlelessMyCardComponent {
+                    TitlelessMyCard {
                         VStack {
                             ModListItem(summary: summary)
                             HStack(spacing: 25) {
-                                MyButtonComponent(text: "转到 Modrinth", foregroundStyle: AppSettings.shared.theme.getTextStyle()) {
-                                    NSWorkspace.shared.open(summary.infoUrl)
+                                MyButton(text: "转到 Modrinth", foregroundStyle: AppSettings.shared.theme.getTextStyle()) {
+                                    NSWorkspace.shared.open(summary.infoURL)
                                 }
                                 .frame(width: 160, height: 40)
                                 
-                                MyButtonComponent(text: "复制名称") {
+                                MyButton(text: "复制名称") {
                                     NSPasteboard.general.setString(summary.name, forType: .string)
                                 }
                                 .frame(width: 160, height: 40)

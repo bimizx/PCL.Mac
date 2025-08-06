@@ -36,16 +36,16 @@ public class MinecraftInstaller {
     private static func downloadClientManifest(_ task: MinecraftInstallTask) async {
         task.updateStage(.clientJson)
         let minecraftVersion = task.minecraftVersion.displayName
-        let clientJsonUrl = task.versionUrl.appending(path: "\(task.name).json")
+        let clientJsonURL = task.versionURL.appending(path: "\(task.name).json")
         await withCheckedContinuation { continuation in
             let downloader = ProgressiveDownloader(
                 task: task,
                 urls: [URL(string: DataManager.shared.versionManifest!.versions.find { $0.id == minecraftVersion }!.url)!],
-                destinations: [clientJsonUrl],
+                destinations: [clientJsonURL],
                 completion: {
                 // 解析 JSON
-                if let data = try? Data(contentsOf: clientJsonUrl),
-                   let manifest: ClientManifest = try? .parse(data, instanceUrl: nil) {
+                if let data = try? Data(contentsOf: clientJsonURL),
+                   let manifest: ClientManifest = try? .parse(data, instanceURL: nil) {
                     task.manifest = manifest
                     ArtifactVersionMapper.map(task.manifest!)
                 } else {
@@ -64,7 +64,7 @@ public class MinecraftInstaller {
             let downloader = ProgressiveDownloader(
                 task: task,
                 urls: [URL(string: task.manifest!.clientDownload!.url)!],
-                destinations: [task.versionUrl.appending(path: "\(task.name).jar")],
+                destinations: [task.versionURL.appending(path: "\(task.name).jar")],
                 skipIfExists: skipIfExists,
                 completion: continuation.resume
             )
@@ -81,17 +81,17 @@ public class MinecraftInstaller {
         }
         
         task.updateStage(.clientIndex)
-        let assetIndexUrl: URL = URL(string: manifest.assetIndex.url)!
-        let destUrl: URL = task.minecraftDirectory.assetsUrl.appending(component: "indexes").appending(component: "\(manifest.assetIndex.id).json")
+        let assetIndexURL: URL = URL(string: manifest.assetIndex.url)!
+        let destURL: URL = task.minecraftDirectory.assetsURL.appending(component: "indexes").appending(component: "\(manifest.assetIndex.id).json")
         await withCheckedContinuation { continuation in
             let downloader = ProgressiveDownloader(
                 task: task,
-                urls: [assetIndexUrl],
-                destinations: [destUrl],
+                urls: [assetIndexURL],
+                destinations: [destURL],
                 skipIfExists: true,
                 completion: {
                 do {
-                    let data = try Data(contentsOf: destUrl)
+                    let data = try Data(contentsOf: destURL)
                     task.assetIndex = try .parse(data)
                 } catch {
                     err("在解析 JSON 时发生错误: \(error.localizedDescription)")
@@ -112,7 +112,7 @@ public class MinecraftInstaller {
         
         for object in objects {
             urls.append(object.appendTo(URL(string: "https://resources.download.minecraft.net")!))
-            destinations.append(object.appendTo(task.minecraftDirectory.assetsUrl.appending(path: "objects")))
+            destinations.append(object.appendTo(task.minecraftDirectory.assetsURL.appending(path: "objects")))
         }
         
         await withCheckedContinuation { continuation in
@@ -137,7 +137,7 @@ public class MinecraftInstaller {
         
         for library in task.manifest!.getNeededLibraries() {
             if let artifact = library.artifact {
-                let dest = task.minecraftDirectory.librariesUrl.appending(path: artifact.path)
+                let dest = task.minecraftDirectory.librariesURL.appending(path: artifact.path)
                 if CacheStorage.default.copy(name: library.name, to: dest) {
                     continue
                 }
@@ -160,7 +160,7 @@ public class MinecraftInstaller {
         
         for library in task.manifest!.getNeededLibraries() {
             if urls.contains(where: { $0.absoluteString == library.artifact!.url }) {
-                CacheStorage.default.add(name: library.name, path: task.minecraftDirectory.librariesUrl.appending(path: library.artifact!.path))
+                CacheStorage.default.add(name: library.name, path: task.minecraftDirectory.librariesURL.appending(path: library.artifact!.path))
             }
         }
     }
@@ -173,7 +173,7 @@ public class MinecraftInstaller {
         var destinations: [URL] = []
         
         for (library, artifact) in task.manifest!.getNeededNatives() {
-            let dest = task.minecraftDirectory.librariesUrl.appending(path: artifact.path)
+            let dest = task.minecraftDirectory.librariesURL.appending(path: artifact.path)
             if CacheStorage.default.copy(name: library.name, to: dest) {
                 continue
             }
@@ -181,7 +181,7 @@ public class MinecraftInstaller {
             destinations.append(dest)
         }
         
-        try? FileManager.default.createDirectory(at: task.versionUrl.appending(path: "natives"), withIntermediateDirectories: true)
+        try? FileManager.default.createDirectory(at: task.versionURL.appending(path: "natives"), withIntermediateDirectories: true)
         
         await withCheckedContinuation { continuation in
             let downloader = ProgressiveDownloader(
@@ -197,26 +197,26 @@ public class MinecraftInstaller {
         
         for (library, artifact) in task.manifest!.getNeededNatives() {
             if urls.contains(where: { $0.absoluteString == artifact.url }) {
-                CacheStorage.default.add(name: library.name, path: task.minecraftDirectory.librariesUrl.appending(path: artifact.path))
+                CacheStorage.default.add(name: library.name, path: task.minecraftDirectory.librariesURL.appending(path: artifact.path))
             }
         }
     }
     
     // MARK: 解压本地库
     private static func unzipNatives(_ task: MinecraftInstallTask) {
-        let nativesUrl: URL = task.versionUrl.appending(path: "natives")
+        let nativesURL: URL = task.versionURL.appending(path: "natives")
         for (_, native) in task.manifest!.getNeededNatives() {
-            let jarUrl: URL = task.minecraftDirectory.librariesUrl.appending(path: native.path)
-            Util.unzip(archiveUrl: jarUrl, destination: nativesUrl, replace: true)
-            processLibs(nativesUrl)
+            let jarURL: URL = task.minecraftDirectory.librariesURL.appending(path: native.path)
+            Util.unzip(archiveURL: jarURL, destination: nativesURL, replace: true)
+            processLibs(nativesURL)
         }
     }
     
     // MARK: 处理解压结果
-    private static func processLibs(_ nativesUrl: URL) {
+    private static func processLibs(_ nativesURL: URL) {
         let fileManager = FileManager.default
         guard let enumerator = fileManager.enumerator(
-            at: nativesUrl, includingPropertiesForKeys: [.isDirectoryKey],
+            at: nativesURL, includingPropertiesForKeys: [.isDirectoryKey],
             options: [.skipsHiddenFiles]
         ) else { return }
         for case let fileURL as URL in enumerator {
@@ -236,20 +236,20 @@ public class MinecraftInstaller {
             
             // 拷贝到 natives 根目录
             do {
-                let destinationURL = nativesUrl.appendingPathComponent(fileURL.lastPathComponent)
+                let destinationURL = nativesURL.appendingPathComponent(fileURL.lastPathComponent)
                 if destinationURL == fileURL { continue }
                 if fileManager.fileExists(atPath: destinationURL.path) {
                     try fileManager.removeItem(at: destinationURL)
                 }
                 try fileManager.moveItem(at: fileURL, to: destinationURL)
             } catch {
-                err("无法拷贝本地库: \(error.localizedDescription) (\(fileURL.path()) -> \(nativesUrl.path()))")
+                err("无法拷贝本地库: \(error.localizedDescription) (\(fileURL.path()) -> \(nativesURL.path()))")
             }
         }
         
         // 清理非 dylib 文件
         do {
-            let contents = try fileManager.contentsOfDirectory(at: nativesUrl, includingPropertiesForKeys: nil)
+            let contents = try fileManager.contentsOfDirectory(at: nativesURL, includingPropertiesForKeys: nil)
             for fileURL in contents {
                 if !fileURL.pathExtension.lowercased().hasSuffix("dylib") && !fileURL.pathExtension.lowercased().hasSuffix("jnilib") {
                     try fileManager.removeItem(at: fileURL)
@@ -264,14 +264,14 @@ public class MinecraftInstaller {
     private static func finalWork(_ task: MinecraftInstallTask) {
         let _1_12_2 = MinecraftVersion(displayName: "1.12.2")
         // 拷贝 log4j2.xml
-        let targetUrl: URL = task.versionUrl.appending(path: "log4j2.xml")
+        let targetURL: URL = task.versionURL.appending(path: "log4j2.xml")
         try? FileManager.default.copyItem(
-            at: SharedConstants.shared.applicationResourcesUrl.appending(path: task.minecraftVersion >= _1_12_2 ? "log4j2.xml" : "log4j2-1.12-.xml"),
-            to: targetUrl
+            at: SharedConstants.shared.applicationResourcesURL.appending(path: task.minecraftVersion >= _1_12_2 ? "log4j2.xml" : "log4j2-1.12-.xml"),
+            to: targetURL
         )
         
         // 初始化实例
-        let instance = MinecraftInstance.create(.init(rootUrl: task.versionUrl.parent().parent(), name: ""), task.versionUrl, config: MinecraftConfig(name: task.name))
+        let instance = MinecraftInstance.create(.init(rootURL: task.versionURL.parent().parent(), name: ""), task.versionURL, config: MinecraftConfig(name: task.name))
         
         instance?.saveConfig()
         
@@ -281,7 +281,7 @@ public class MinecraftInstaller {
             process.executableURL = URL(fileURLWithPath: "/usr/bin/java")
             process.environment = ProcessInfo.processInfo.environment
             process.currentDirectoryURL = URL(fileURLWithPath: "/tmp")
-            process.arguments = ["-jar", SharedConstants.shared.applicationResourcesUrl.appending(path: "glfw-patcher.jar").path, task.minecraftDirectory.librariesUrl.appending(path: glfw.artifact!.path).path]
+            process.arguments = ["-jar", SharedConstants.shared.applicationResourcesURL.appending(path: "glfw-patcher.jar").path, task.minecraftDirectory.librariesURL.appending(path: glfw.artifact!.path).path]
             do {
                 try process.run()
                 process.waitUntilExit()

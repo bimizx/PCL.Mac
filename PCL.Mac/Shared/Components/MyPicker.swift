@@ -1,5 +1,5 @@
 //
-//  MyPickerComponent.swift
+//  MyPicker.swift
 //  PCL.Mac
 //
 //  Created by YiZhiMCQiu on 2025/7/27.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct MyPickerComponent<Entry: Hashable>: View {
+struct MyPicker<Entry: Hashable>: View {
     @ObservedObject private var overlayManager: OverlayManager = .shared
     @Binding private var selected: Entry
     @State private var isHovered: Bool = false
@@ -92,7 +92,7 @@ fileprivate struct PickerMenu<Entry: Hashable>: View {
         ZStack {
             VStack(spacing: 0) {
                 ForEach(entries, id: \.self) { entry in
-                    MyListItemComponent {
+                    MyListItem {
                         HStack {
                             Text(getText(entry))
                                 .font(.custom("PCL English", size: 14))

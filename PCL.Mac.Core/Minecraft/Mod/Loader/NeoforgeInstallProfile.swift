@@ -44,13 +44,13 @@ public class NeoforgeInstallProfile {
     
     public class Library {
         public let mavenCoordinate: String
-        public let downloadUrl: URL
+        public let downloadURL: URL
         public let path: String
         
         public init(_ json: JSON) {
             self.mavenCoordinate = json["name"].stringValue
             self.path = json["downloads"].dictionaryValue["artifact"]!.dictionaryValue["path"]!.stringValue
-            self.downloadUrl = URL(string: "https://bmclapi2.bangbang93.com/maven")!.appending(path: self.path)
+            self.downloadURL = URL(string: "https://bmclapi2.bangbang93.com/maven")!.appending(path: self.path)
         }
     }
 }

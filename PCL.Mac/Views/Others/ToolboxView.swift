@@ -10,17 +10,17 @@ import SwiftUI
 struct ToolboxView: View {
     @ObservedObject private var settings: AppSettings = .shared
     
-    @State private var downloadUrl: String = ""
+    @State private var downloadURL: String = ""
     @State private var errorMessage: String = ""
-    @State private var customFilesSaveUrl: String = AppSettings.shared.customFilesSaveUrl.path
+    @State private var customFilesSaveURL: String = AppSettings.shared.customFilesSaveURL.path
     @State private var fileName: String = ""
     
     var body: some View {
         ScrollView {
-            StaticMyCardComponent(title: "下载自定义文件") {
+            StaticMyCard(title: "下载自定义文件") {
                 VStack {
                     Text("使用 PCL.Mac 的高速多线程下载引擎下载任意文件。请注意，部分网站（例如百度网盘）可能还会报错 (403) 已禁止，无法正常下载。\n注：自定义下载进度获取暂未完成，所以显示 0.0% 是正常的！")
-                    CustomDownloadOption(label: "下载地址", $downloadUrl) { urlString in
+                    CustomDownloadOption(label: "下载地址", $downloadURL) { urlString in
                         if let scheme = URL(string: urlString)?.scheme, scheme == "http" || scheme == "https" {
                             return ""
                         } else {
@@ -28,13 +28,13 @@ struct ToolboxView: View {
                         }
                     }
                     HStack {
-                        CustomDownloadOption(label: "保存到", $customFilesSaveUrl) { urlString in
+                        CustomDownloadOption(label: "保存到", $customFilesSaveURL) { urlString in
                             let url = URL(fileURLWithUserPath: urlString)
                             var isDirectory: ObjCBool = false
                             let exists = FileManager.default.fileExists(atPath: url.path, isDirectory: &isDirectory)
                             let isValid = url.isFileURL && exists && isDirectory.boolValue
                             if isValid {
-                                settings.customFilesSaveUrl = url
+                                settings.customFilesSaveURL = url
                             }
                             return isValid ? "" : "无效的保存位置！"
                         }
@@ -48,16 +48,16 @@ struct ToolboxView: View {
                                 
                                 let result = panel.runModal()
                                 if result == .OK, let url = panel.urls.first {
-                                    settings.customFilesSaveUrl = url
+                                    settings.customFilesSaveURL = url
                                 }
                             }
-                            .onChange(of: settings.customFilesSaveUrl) {
-                                customFilesSaveUrl = settings.customFilesSaveUrl.path
+                            .onChange(of: settings.customFilesSaveURL) {
+                                customFilesSaveURL = settings.customFilesSaveURL.path
                             }
                     }
                     CustomDownloadOption(label: "文件名", $fileName) { !$0.isEmpty && $0 != "." && $0 != ".." && !$0.contains("/") && $0.utf8.count <= 255 ? "" : "文件名无效！" }
-                        .onChange(of: downloadUrl) {
-                            if let url = URL(string: downloadUrl),
+                        .onChange(of: downloadURL) {
+                            if let url = URL(string: downloadURL),
                                let fileName = Util.getFileName(url: url) {
                                 self.fileName = fileName
                             } else {
@@ -66,23 +66,23 @@ struct ToolboxView: View {
                         }
                     
                     HStack(spacing: 10) {
-                        MyButtonComponent(text: "开始下载", foregroundStyle: settings.theme.getTextStyle()) {
-                            guard let url = URL(string: downloadUrl),
+                        MyButton(text: "开始下载", foregroundStyle: settings.theme.getTextStyle()) {
+                            guard let url = URL(string: downloadURL),
                                   let scheme = url.scheme,
                                   scheme == "http" || scheme == "https" else {
                                 hint("URL 无效！", .critical)
                                 return
                             }
                             
-                            let task = CustomFileDownloadTask(url: url, destination: settings.customFilesSaveUrl.appending(path: fileName))
+                            let task = CustomFileDownloadTask(url: url, destination: settings.customFilesSaveURL.appending(path: fileName))
                             DataManager.shared.inprogressInstallTasks = .single(task, key: "customFile")
                             task.start()
                             hint("开始下载 \(fileName)")
                         }
                         .frame(width: 140)
                         
-                        MyButtonComponent(text: "打开文件夹") {
-                            NSWorkspace.shared.open(settings.customFilesSaveUrl)
+                        MyButton(text: "打开文件夹") {
+                            NSWorkspace.shared.open(settings.customFilesSaveURL)
                         }
                         .frame(width: 140)
                     }
@@ -120,7 +120,7 @@ fileprivate struct CustomDownloadOption: View {
             }
             .frame(width: 100)
             VStack {
-                MyTextFieldComponent(text: $text)
+                MyTextField(text: $text)
                     .onChange(of: text) {
                         withAnimation(.spring(duration: 0.2)) {
                             errorMessage = check(text)

@@ -28,7 +28,7 @@ struct InstanceModsView: View {
     var body: some View {
         if instance.clientBrand == .vanilla {
             VStack {
-                TitlelessMyCardComponent {
+                TitlelessMyCard {
                     VStack {
                         Text("该实例不可使用 Mod")
                             .font(.custom("PCL English", size: 22))
@@ -45,13 +45,13 @@ struct InstanceModsView: View {
                         .padding(4)
                         
                         HStack(spacing: 24) {
-                            MyButtonComponent(text: "转到下载页面", foregroundStyle: AppSettings.shared.theme.getTextStyle()) {
+                            MyButton(text: "转到下载页面", foregroundStyle: AppSettings.shared.theme.getTextStyle()) {
                                 dataManager.router.setRoot(.download)
                                 dataManager.router.append(.minecraftDownload)
                             }
                             .frame(width: 170, height: 40)
                             
-                            MyButtonComponent(text: "实例选择") {
+                            MyButton(text: "实例选择") {
                                 dataManager.router.setRoot(.versionSelect)
                             }
                             .frame(width: 170, height: 40)
@@ -64,7 +64,7 @@ struct InstanceModsView: View {
             .frame(maxWidth: .infinity)
         } else {
             ScrollView {
-                MyTipComponent(text: "目前只支持 Fabric Mod 识别！", color: .blue)
+                MyTip(text: "目前只支持 Fabric Mod 识别！", color: .blue)
                     .frame(maxWidth: .infinity)
                     .padding()
                 
@@ -74,13 +74,13 @@ struct InstanceModsView: View {
                 .padding()
                 .padding(.top, -36)
                 
-                TitlelessMyCardComponent(index: 1) {
+                TitlelessMyCard(index: 1) {
                     HStack(spacing: 16) {
-                        MyButtonComponent(text: "打开文件夹", foregroundStyle: AppSettings.shared.theme.getTextStyle()) {
+                        MyButton(text: "打开文件夹", foregroundStyle: AppSettings.shared.theme.getTextStyle()) {
                             NSWorkspace.shared.open(instance.runningDirectory.appending(path: "mods"))
                         }
                         .frame(width: 120, height: 35)
-                        MyButtonComponent(text: "下载新资源") {
+                        MyButton(text: "下载新资源") {
                             dataManager.router.setRoot(.download)
                             dataManager.router.append(.modSearch)
                         }
@@ -92,7 +92,7 @@ struct InstanceModsView: View {
                 .padding()
                 
                 if let mods = mods {
-                    TitlelessMyCardComponent(index: 2) {
+                    TitlelessMyCard(index: 2) {
                         VStack(spacing: 0) {
                             ForEach(mods.filter { filter($0.mod) }) { modItem in
                                 ModView(modItem: modItem)
@@ -186,7 +186,7 @@ struct InstanceModsView: View {
         }
         
         var body: some View {
-            MyListItemComponent {
+            MyListItem {
                 HStack(alignment: .center) {
                     getIconImage()
                         .resizable()
@@ -204,7 +204,7 @@ struct InstanceModsView: View {
                         }
                         HStack {
                             ForEach((mod.summary?.tags ?? []).compactMap { ModListItem.tagMap[$0] }, id: \.self) { tag in
-                                MyTagComponent(label: tag, backgroundColor: Color("TagColor"), fontSize: 12)
+                                MyTag(label: tag, backgroundColor: Color("TagColor"), fontSize: 12)
                             }
                             
                             Text(mod.summary?.description ?? mod.description)
@@ -273,7 +273,7 @@ struct InstanceModsView: View {
                     return icon
                 } else {
                     Task {
-                        if let url = summary.iconUrl,
+                        if let url = summary.iconURL,
                            let data = await Requests.get(url).data,
                            let nsImage = NSImage(data: data) {
                             DispatchQueue.main.async {

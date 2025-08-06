@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct MyComboBoxComponent<Option: Hashable, Content: View>: View {
+struct MyComboBox<Option: Hashable, Content: View>: View {
     let options: [Option]
     @Binding var selection: Option
     let label: (Option) -> String
@@ -16,13 +16,13 @@ struct MyComboBoxComponent<Option: Hashable, Content: View>: View {
     var body: some View {
         content(
             ForEach(options, id: \.self) { option in
-                AnyView(MyComboBoxItemComponent(selection: $selection, value: option, text: label(option)))
+                AnyView(MyComboBoxItemView(selection: $selection, value: option, text: label(option)))
             }
         )
     }
 }
 
-struct MyComboBoxItemComponent<Option: Hashable>: View {
+struct MyComboBoxItemView<Option: Hashable>: View {
     @ObservedObject private var dataManager: DataManager = .shared
     
     @Binding var selection: Option
@@ -73,6 +73,6 @@ struct MyComboBoxItemComponent<Option: Hashable>: View {
 }
 
 #Preview {
-    MyComboBoxItemComponent(selection: .constant(1), value: 2, text: "")
+    MyComboBoxItemView(selection: .constant(1), value: 2, text: "")
         .padding()
 }

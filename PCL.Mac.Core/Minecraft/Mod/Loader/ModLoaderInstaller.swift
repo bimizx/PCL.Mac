@@ -55,7 +55,7 @@ public class ModLoaderInstaller {
             await withCheckedContinuation { continuation in
                 let downloader = ProgressiveDownloader(
                     urls: manifest.libraries.map { URL(string: $0.artifact!.url)! },
-                    destinations: manifest.libraries.map { minecraftDirectory.librariesUrl.appending(path: $0.artifact!.path)},
+                    destinations: manifest.libraries.map { minecraftDirectory.librariesURL.appending(path: $0.artifact!.path)},
                     skipIfExists: true,
                     completion: continuation.resume
                 )
@@ -91,13 +91,13 @@ public class ModLoaderInstaller {
                 return
             }
             
-            let temp = SharedConstants.shared.temperatureUrl.appending(path: "neoforge_install")
+            let temp = SharedConstants.shared.temperatureURL.appending(path: "neoforge_install")
             let installer = temp.appending(path: "installer.jar")
             
             // 1. 下载安装器
             await withCheckedContinuation { continuation in
                 let downloader = ProgressiveDownloader(
-                    urls: [manifest.installerUrl],
+                    urls: [manifest.installerURL],
                     destinations: [installer],
                     completion: continuation.resume
                 )
@@ -125,7 +125,7 @@ public class ModLoaderInstaller {
             // 4. 安装所需依赖
             await withCheckedContinuation { continuation in
                 let downloader = ProgressiveDownloader(
-                    urls: profile.libraries.map { $0.downloadUrl },
+                    urls: profile.libraries.map { $0.downloadURL },
                     destinations: profile.libraries.map { temp.appending(path: $0.path) },
                     skipIfExists: true,
                     completion: continuation.resume
@@ -147,9 +147,9 @@ public class ModLoaderInstaller {
                     "SIDE": "client",
                     "MINECRAFT_JAR": instance.runningDirectory.appending(path: instance.config.name + ".jar").path,
                     "MINECRAFT_VERSION": instance.runningDirectory.appending(path: instance.config.name + ".jar").path,
-                    "ROOT": instance.minecraftDirectory.rootUrl.path,
+                    "ROOT": instance.minecraftDirectory.rootURL.path,
                     "INSTALLER": installer.path,
-                    "LIBRARY_DIR": instance.minecraftDirectory.librariesUrl.path
+                    "LIBRARY_DIR": instance.minecraftDirectory.librariesURL.path
                 ]
             )  { (current, _) in current }
             
@@ -201,7 +201,7 @@ public class ModLoaderInstaller {
             return String(String(str.dropFirst()).dropLast())
         } else if str.hasPrefix("[") && str.hasSuffix("]") {
             let path = Util.toPath(mavenCoordinate: String(String(str.dropFirst()).dropLast()))
-            return directory != nil ? directory!.librariesUrl.appending(path: path).path : path
+            return directory != nil ? directory!.librariesURL.appending(path: path).path : path
         }
         return str
     }

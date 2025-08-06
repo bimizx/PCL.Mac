@@ -16,19 +16,19 @@ struct DebugView: View {
     
     var body: some View {
         VStack {
-            MyButtonComponent(text: "测试弹出框") {
+            MyButton(text: "测试弹出框") {
                 ContentView.setPopup(PopupOverlay("测试", "这是一行文本\n这也是一行文本\n这是一行很\(String(repeating: "长", count: 50))的文本", [.Ok]))
             }
             .frame(height: 40)
             .padding()
             .padding(.bottom, -23)
-            MyButtonComponent(text: "测试错误弹出框") {
+            MyButton(text: "测试错误弹出框") {
                 ContentView.setPopup(PopupOverlay("测试", "这是一行文本\n这也是一行文本\n这是一行很\(String(repeating: "长", count: 50))的文本", [.Ok], .error))
             }
             .frame(height: 40)
             .padding()
             .padding(.bottom, -23)
-            MyButtonComponent(text: "测试提示") {
+            MyButton(text: "测试提示") {
                 switch hintClickCount % 3 {
                 case 0:
                     HintManager.default.add(Hint(text: "测试普通", type: .info))
@@ -44,13 +44,13 @@ struct DebugView: View {
             .frame(height: 40)
             .padding()
             .padding(.bottom, -23)
-            MyButtonComponent(text: "测试配色方案更换") {
+            MyButton(text: "测试配色方案更换") {
                 settings.colorScheme = (settings.colorScheme == .light ? .dark : .light)
             }
             .frame(height: 40)
             .padding()
             .padding(.bottom, -23)
-            MyComboBoxComponent(
+            MyComboBox(
                 options: [ColorSchemeOption.light, ColorSchemeOption.dark, ColorSchemeOption.system],
                 selection: $settings.colorScheme,
                 label: { $0.getLabel() }) { content in
@@ -59,7 +59,7 @@ struct DebugView: View {
                 }
             }
             .padding()
-            MyPickerComponent(selected: $selectedEntry, entries: entries, textProvider: { $0 })
+            MyPicker(selected: $selectedEntry, entries: entries, textProvider: { $0 })
                 .padding()
             Spacer()
         }

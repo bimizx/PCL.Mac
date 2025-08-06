@@ -94,7 +94,7 @@ public class Aria2Manager {
     }
     
     private init() {
-        executableURL = SharedConstants.shared.applicationSupportUrl.appending(path: "Aria2").appending(path: "aria2c")
+        executableURL = SharedConstants.shared.applicationSupportURL.appending(path: "Aria2").appending(path: "aria2c")
         try? FileManager.default.createDirectory(at: executableURL.parent(), withIntermediateDirectories: true)
         guard FileManager.default.fileExists(atPath: executableURL.path) else {
             self.port = nil

@@ -26,7 +26,7 @@ struct OthersView: View {
         .onAppear {
             dataManager.leftTab(140) {
                 VStack(alignment: .leading, spacing: 0) {
-                    MyListComponent(
+                    MyList(
                         root: .others,
                         cases: .constant(SharedConstants.shared.isDevelopment ? [.about, .toolbox, .debug] : [.about, .toolbox])
                     ) { type, isSelected in

@@ -1,5 +1,5 @@
 //
-//  MyTextFieldComponent.swift
+//  MyTextField.swift
 //  PCL.Mac
 //
 //  Created by YiZhiMCQiu on 2025/5/28.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct MyTextFieldComponent: View {
+struct MyTextField: View {
     @ObservedObject private var dataManager: DataManager = .shared
     @Binding var text: String
     @State private var isHovered: Bool = false

@@ -1,5 +1,5 @@
 //
-//  MyListComponent.swift
+//  MyList.swift
 //  PCL.Mac
 //
 //  Created by YiZhiMCQiu on 2025/6/19.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct MyListComponent<Content: View>: View {
+struct MyList<Content: View>: View {
     @ObservedObject private var dataManager: DataManager = .shared
     
     let content: (AppRoute, Bool) -> Content

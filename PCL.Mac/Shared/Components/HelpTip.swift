@@ -1,5 +1,5 @@
 //
-//  HelpTipComponent.swift
+//  HelpTip.swift
 //  PCL.Mac
 //
 //  Created by YiZhiMCQiu on 2025/7/26.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct HelpTipComponent: View {
+struct HelpTip: View {
     @ObservedObject private var overlayManager: OverlayManager = .shared
     
     @State private var overlayId: UUID?

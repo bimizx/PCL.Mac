@@ -25,7 +25,7 @@ struct VersionListView: View {
         }
         
         var body: some View {
-            MyListItemComponent {
+            MyListItem {
                 HStack {
                     Image(self.instance.getIconName())
                         .resizable()
@@ -66,7 +66,7 @@ struct VersionListView: View {
                 ScrollView {
                     let notVanillaVersions = minecraftDirectory.instances.filter { $0.clientBrand != .vanilla }
                     if !notVanillaVersions.isEmpty {
-                        MyCardComponent(index: 0, title: "可安装 Mod") {
+                        MyCard(index: 0, title: "可安装 Mod") {
                             LazyVStack {
                                 ForEach(
                                     notVanillaVersions
@@ -80,7 +80,7 @@ struct VersionListView: View {
                         }
                         .padding()
                     }
-                    MyCardComponent(index: 1, title: "常规版本") {
+                    MyCard(index: 1, title: "常规版本") {
                         LazyVStack {
                             ForEach(
                                 minecraftDirectory.instances

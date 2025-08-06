@@ -11,13 +11,13 @@ import Cocoa
 public class MinecraftLauncher {
     private let instance: MinecraftInstance
     private let id = UUID()
-    public let logUrl: URL
+    public let logURL: URL
     
     public init?(_ instance: MinecraftInstance) {
         self.instance = instance
-        self.logUrl = SharedConstants.shared.applicationSupportUrl.appending(path: "GameLogs").appending(path: id.uuidString + ".log")
-        try? FileManager.default.createDirectory(at: logUrl.parent(), withIntermediateDirectories: true)
-        FileManager.default.createFile(atPath: logUrl.path, contents: Data())
+        self.logURL = SharedConstants.shared.applicationSupportURL.appending(path: "GameLogs").appending(path: id.uuidString + ".log")
+        try? FileManager.default.createDirectory(at: logURL.parent(), withIntermediateDirectories: true)
+        FileManager.default.createFile(atPath: logURL.path, contents: Data())
     }
     
     public func launch(_ options: LaunchOptions, _ callback: @MainActor @escaping (Int32) -> Void = { _ in }) {
@@ -45,7 +45,7 @@ public class MinecraftLauncher {
             process.standardOutput = pipe
             process.standardError = pipe
             
-            let logHandle = try FileHandle(forWritingTo: logUrl)
+            let logHandle = try FileHandle(forWritingTo: logURL)
             pipe.fileHandleForReading.readabilityHandler = { handle in
                 for line in String(data: handle.availableData, encoding: .utf8)!.split(separator: "\n") {
                     raw(line.replacing("\t", with: "    "))
@@ -78,7 +78,7 @@ public class MinecraftLauncher {
             log("\(instance.config.name) 进程已退出, 退出代码 \(process.terminationStatus)")
             if process.terminationStatus == 0 {
                 debug("检测到退出代码为 0，已删除日志")
-                try? FileManager.default.removeItem(at: self.logUrl)
+                try? FileManager.default.removeItem(at: self.logURL)
             }
             DispatchQueue.main.async {
                 callback(process.terminationStatus)
@@ -96,7 +96,7 @@ public class MinecraftLauncher {
             "launcher_version": "1.0.0",
             "classpath": buildClasspath(),
             "classpath_separator": ":",
-            "library_directory": instance.minecraftDirectory.librariesUrl.path,
+            "library_directory": instance.minecraftDirectory.librariesURL.path,
             "version_name": instance.config.name
         ]
         
@@ -142,7 +142,7 @@ public class MinecraftLauncher {
         var urls: [String] = []
         for (_, value) in latestMap {
             let path = value.path
-            urls.append(instance.minecraftDirectory.librariesUrl.appending(path: path).path)
+            urls.append(instance.minecraftDirectory.librariesURL.appending(path: path).path)
         }
         urls.append(instance.runningDirectory.appending(path: "\(instance.config.name).jar").path)
 
@@ -154,7 +154,7 @@ public class MinecraftLauncher {
             "auth_player_name": options.playerName,
             "version_name": instance.version!.displayName,
             "game_directory": instance.runningDirectory.path,
-            "assets_root": instance.minecraftDirectory.assetsUrl.path,
+            "assets_root": instance.minecraftDirectory.assetsURL.path,
             "assets_index_name": instance.manifest.assetIndex.id,
             "auth_uuid": options.uuid.uuidString.replacingOccurrences(of: "-", with: "").lowercased(),
             "auth_access_token": options.accessToken,

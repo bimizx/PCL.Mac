@@ -86,7 +86,7 @@ public class JavaInstallTask: InstallTask {
                 completeOneFile()
                 updateStage(.javaInstall)
                 
-                Util.unzip(archiveUrl: zipDestination, destination: temp.root, replace: false)
+                Util.unzip(archiveURL: zipDestination, destination: temp.root, replace: false)
                 self.progress = 0.75
                 
                 
