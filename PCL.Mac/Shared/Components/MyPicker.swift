@@ -31,9 +31,6 @@ struct MyPicker<Entry: Hashable>: View {
                     Text(getText(selected))
                         .font(.custom("PCL English", size: 14))
                         .foregroundStyle(Color("TextColor"))
-                        .onHover { hover in
-                            self.isHovered = hover
-                        }
                         .padding(.leading, 5)
                         .lineLimit(1)
                     Spacer()
@@ -42,16 +39,16 @@ struct MyPicker<Entry: Hashable>: View {
                         .scaledToFit()
                         .frame(width: 14, height: 14)
                         .rotationEffect(.degrees(showMenu ? 180 : 0), anchor: .center)
-                        .foregroundStyle(self.isHovered ? Color(hex: 0x4890F5) : Color(hex: 0x96C0F9))
+                        .foregroundStyle(AppSettings.shared.theme.getAccentColor().opacity(isHovered ? 1.0 : 0.5))
                         .padding(.trailing, 5)
                 }
                 .animation(.easeInOut(duration: 0.3), value: showMenu)
                 
                 RoundedRectangle(cornerRadius: 4)
-                    .stroke(self.isHovered ? Color(hex: 0x4890F5) : Color(hex: 0x96C0F9), lineWidth: 1)
+                    .stroke(AppSettings.shared.theme.getAccentColor().opacity(isHovered ? 1.0 : 0.5), lineWidth: 1.5)
                     .allowsHitTesting(false)
             }
-            .animation(.easeInOut(duration: 0.1), value: self.isHovered)
+            .animation(.easeInOut(duration: 0.2), value: self.isHovered)
             .frame(height: 27)
             .contentShape(Rectangle())
             .onTapGesture {
@@ -63,7 +60,7 @@ struct MyPicker<Entry: Hashable>: View {
                     overlayId = overlayManager.addOverlay(
                         view: PickerMenu(entries: entries.filter { $0 != selected }, onSelect: { selected = $0 ; overlayManager.removeOverlay(with: self.overlayId!) }, getText: getText)
                             .frame(width: geo.size.width)
-                            .foregroundStyle(Color(hex: 0x4890F5)),
+                            .foregroundStyle(AppSettings.shared.theme.getAccentColor()),
                         at: CGPoint(x: frame.minX, y: frame.maxY)
                     )
                 }
@@ -72,6 +69,9 @@ struct MyPicker<Entry: Hashable>: View {
                 if isFocused == false, let overlayId = overlayId {
                     overlayManager.removeOverlay(with: overlayId)
                 }
+            }
+            .onHover { hover in
+                self.isHovered = hover
             }
         }
         .onDisappear {
