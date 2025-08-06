@@ -33,9 +33,9 @@ struct MySearchBox: View {
                 .focused($isFocused)
                 .font(.custom("PCL English", size: 16))
                 .textFieldStyle(.plain)
-                .onChange(of: query) { newValue in
-                    if newValue.count > 50 {
-                        query = String(newValue.prefix(50))
+                .onChange(of: query) {
+                    if query.count > 50 {
+                        query = String(query.prefix(50))
                     }
                 }
                 .onSubmit {

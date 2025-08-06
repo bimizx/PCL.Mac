@@ -47,7 +47,7 @@ struct NewAccountView: View {
             }
             Spacer()
         }
-        .onChange(of: state.type) { new in
+        .onChange(of: state.type) {
             isAppeared = true
         }
         .animation(.spring(response: 0.3, dampingFraction: 0.85), value: state.type)
@@ -110,8 +110,8 @@ fileprivate struct NewOfflineAccountView: View {
                     MyTipComponent(text: warningText, color: .red)
                 }
                 MyTextFieldComponent(text: $state.playerName, placeholder: "玩家名")
-                    .onChange(of: state.playerName) { name in
-                        warningText = checkPlayerName(name)
+                    .onChange(of: state.playerName) {
+                        warningText = checkPlayerName(state.playerName)
                     }
                     .onSubmit(addAccount)
                 HStack {

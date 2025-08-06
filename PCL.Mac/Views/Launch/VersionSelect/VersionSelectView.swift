@@ -74,8 +74,8 @@ struct VersionSelectView: View, SubRouteContainer {
             }
         }
         .onDrop(of: [.folder], delegate: VersionDropDelegate())
-        .onChange(of: settings.minecraftDirectories) { new in
-            directoryRoutes = new.map { .versionList(directory: $0) }
+        .onChange(of: settings.minecraftDirectories) {
+            directoryRoutes = settings.minecraftDirectories.map { .versionList(directory: $0) }
         }
     }
     

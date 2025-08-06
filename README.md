@@ -35,7 +35,7 @@ SwiftUI 重构的 macOS 版 [PCL2](https://github.com/Hex-Dragon/PCL2)，追求�
 
 ## 兼容性
 
-仅支持 **macOS 13.0 及以上**。
+仅支持 **macOS 14.0 及以上**。
 
 ## 鸣谢
 

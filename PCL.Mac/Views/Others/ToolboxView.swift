@@ -51,12 +51,12 @@ struct ToolboxView: View {
                                     settings.customFilesSaveUrl = url
                                 }
                             }
-                            .onChange(of: settings.customFilesSaveUrl) { _ in
+                            .onChange(of: settings.customFilesSaveUrl) {
                                 customFilesSaveUrl = settings.customFilesSaveUrl.path
                             }
                     }
                     CustomDownloadOption(label: "文件名", $fileName) { !$0.isEmpty && $0 != "." && $0 != ".." && !$0.contains("/") && $0.utf8.count <= 255 ? "" : "文件名无效！" }
-                        .onChange(of: downloadUrl) { _ in
+                        .onChange(of: downloadUrl) {
                             if let url = URL(string: downloadUrl),
                                let fileName = Util.getFileName(url: url) {
                                 self.fileName = fileName
@@ -121,7 +121,7 @@ fileprivate struct CustomDownloadOption: View {
             .frame(width: 100)
             VStack {
                 MyTextFieldComponent(text: $text)
-                    .onChange(of: text) { _ in
+                    .onChange(of: text) {
                         withAnimation(.spring(duration: 0.2)) {
                             errorMessage = check(text)
                         }

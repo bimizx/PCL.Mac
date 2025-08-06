@@ -99,7 +99,7 @@ struct VersionListView: View {
             }
         }
         .id(minecraftDirectory)
-        .onChange(of: minecraftDirectory, perform: loadInstances)
+        .onChange(of: minecraftDirectory) { loadInstances(minecraftDirectory) }
         .onAppear { loadInstances(minecraftDirectory) }
     }
     

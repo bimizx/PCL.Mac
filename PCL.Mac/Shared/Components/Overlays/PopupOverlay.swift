@@ -110,9 +110,9 @@ struct PopupOverlay: View, Identifiable, Equatable {
         .onAppear {
             dataManager.popupState = .popped
         }
-        .onChange(of: dataManager.popupState) { newState in
+        .onChange(of: dataManager.popupState) {
             withAnimation(nil) {
-                stateNoAnim = newState
+                stateNoAnim = dataManager.popupState
             }
         }
     }

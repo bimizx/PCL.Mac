@@ -68,8 +68,8 @@ struct MyPickerComponent<Entry: Hashable>: View {
                     )
                 }
             }
-            .onChange(of: isFocused) { newValue in
-                if newValue == false, let overlayId = overlayId {
+            .onChange(of: isFocused) {
+                if isFocused == false, let overlayId = overlayId {
                     overlayManager.removeOverlay(with: overlayId)
                 }
             }

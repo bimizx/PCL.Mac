@@ -80,7 +80,7 @@ struct ContentView: View {
                         dataManager.leftTabContent
                             .scaleEffect(isLeftTabVisible ? 1 : 0.9 , anchor: .center)
                             .opacity(isLeftTabVisible ? 1 : 0)
-                            .onChange(of: dataManager.leftTabId) { _ in
+                            .onChange(of: dataManager.leftTabId) {
                                 isLeftTabVisible = false
                                 withAnimation(.spring(response: 0.3, dampingFraction: 0.65)) {
                                     isLeftTabVisible = true

@@ -26,9 +26,9 @@ struct MyTextFieldComponent: View {
         ZStack {
             TextField(self.placeholder, text: self.$text)
                 .focused($isFocused)
-                .onChange(of: text) { newValue in
+                .onChange(of: text) {
                     if numberOnly {
-                        text = newValue.filter { $0.isNumber }
+                        text = text.filter { $0.isNumber }
                     }
                 }
                 .onSubmit {
