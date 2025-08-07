@@ -110,43 +110,15 @@ public class MinecraftLauncher {
     }
     
     private func buildClasspath() -> String {
-        var latestMap: [String: (version: String, path: String)] = [:]
-
+        var urls: [URL] = []
         for library in instance.manifest.getNeededLibraries() {
             if let artifact = library.artifact {
-                let coord = Util.parse(mavenCoordinate: library.name)
-                let key = "\(coord.groupId):\(coord.artifactId)"
-                if let old = latestMap[key] {
-                    if coord.version.compare(old.version, options: .numeric) == .orderedDescending {
-                        latestMap[key] = (coord.version, artifact.path)
-                    }
-                } else {
-                    latestMap[key] = (coord.version, artifact.path)
-                }
+                urls.append(instance.minecraftDirectory.librariesURL.appending(path: artifact.path))
             }
         }
+        urls.append(instance.runningDirectory.appending(path: "\(instance.config.name).jar"))
 
-        for coordinate in instance.config.additionalLibraries {
-            let coord = Util.parse(mavenCoordinate: coordinate)
-            let key = "\(coord.groupId):\(coord.artifactId)"
-            let path = Util.toPath(mavenCoordinate: coordinate)
-            if let old = latestMap[key] {
-                if coord.version.compare(old.version, options: .numeric) == .orderedDescending {
-                    latestMap[key] = (coord.version, path)
-                }
-            } else {
-                latestMap[key] = (coord.version, path)
-            }
-        }
-
-        var urls: [String] = []
-        for (_, value) in latestMap {
-            let path = value.path
-            urls.append(instance.minecraftDirectory.librariesURL.appending(path: path).path)
-        }
-        urls.append(instance.runningDirectory.appending(path: "\(instance.config.name).jar").path)
-
-        return urls.joined(separator: ":")
+        return urls.map { $0.path }.joined(separator: ":")
     }
     
     private func buildGameArguments(_ options: LaunchOptions) -> [String] {

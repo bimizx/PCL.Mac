@@ -23,12 +23,12 @@ struct PCL_MacTests {
     
     
     @Test func testLibraries() {
-        guard let instance = MinecraftInstance.create(.default, URL(fileURLWithUserPath: "~/PCL-Mac-minecraft/versions/1.16.5")) else {
+        guard let instance = MinecraftInstance.create(.default, URL(fileURLWithUserPath: "~/minecraft/versions/24w14potato")) else {
             fatalError()
         }
         
-        for (_, artifact) in instance.manifest.getNeededNatives() {
-            print(artifact.path)
+        for library in instance.manifest.getNeededLibraries() {
+            print(library.artifact!.path)
         }
     }
 }

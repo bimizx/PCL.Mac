@@ -367,15 +367,6 @@ public class ClientManifest {
         for lib in getAllowedLibraries() {
             if let artifact = lib.getNativeArtifact() {
                 result[lib] = artifact
-            } else if let artifact = lib.artifact,
-                      lib.name.hasPrefix("org.lwjgl"),
-                      lib.name.contains("natives") {
-//                if lib.classifier!.hasSuffix("arm64") && ExecArchitectury.SystemArch == .arm64
-//                    || !lib.classifier!.hasSuffix("arm64") && ExecArchitectury.SystemArch == .x64 {
-                    result[lib] = artifact
-//                } else {
-//                    debug("已筛出与系统架构不匹配的本地库: \(lib.name)")
-//                }
             }
         }
         return result

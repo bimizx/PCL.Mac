@@ -8,7 +8,7 @@
 import Foundation
 
 public class MinecraftDirectory: Codable, Identifiable, Hashable {
-    public static let `default`: MinecraftDirectory = .init(rootURL: URL(fileURLWithUserPath: "~/PCL-Mac-minecraft"), name: "默认文件夹")
+    public static let `default`: MinecraftDirectory = .init(rootURL: .applicationSupportDirectory.appending(path: "minecraft"), name: "默认文件夹")
     
     public var id: UUID
     public let rootURL: URL

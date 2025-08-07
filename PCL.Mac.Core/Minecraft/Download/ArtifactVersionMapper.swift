@@ -18,27 +18,26 @@ public struct ArtifactVersionMapper {
             switch library.groupId {
             case "org.lwjgl":
                 if library.version.starts(with: "3.") && library.version != "3.3.3" {
-                    changeVersion(library, "3.3.1")
+                    changeVersion(library, "3.3.2")
                 }
+                library.artifact?.url = "https://libraries.minecraft.net/\(Util.toPath(mavenCoordinate: library.name))"
                 library.artifact?.url = "https://libraries.minecraft.net/org/lwjgl/\(library.artifactId)/\(library.version)/\(library.artifactId)-\(library.version).jar"
             
             case "net.java.dev.jna":
                 if library.version == "4.4.0" {
                     changeVersion(library, "5.14.0")
                 }
-                library.artifact?.url = "https://libraries.minecraft.net/net/java/dev/jna/\(library.artifactId)/\(library.version)/\(library.artifactId)-\(library.version).jar"
+                library.artifact?.url = "https://libraries.minecraft.net/\(Util.toPath(mavenCoordinate: library.name))"
             case "ca.weblite":
                 if library.artifactId == "java-objc-bridge" {
                     library.name = "org.glavo.hmcl.mmachina:java-objc-bridge:1.1.0-mmachina.1"
-                    library.artifact?.url = "https://repo1.maven.org/maven2/org/glavo/hmcl/mmachina/java-objc-bridge/1.1.0-mmachina.1/java-objc-bridge-1.1.0-mmachina.1.jar"
-                    library.artifact?.path = "org/glavo/hmcl/mmachina/java-objc-bridge/1.1.0-mmachina.1/java-objc-bridge-1.1.0-mmachina.1.jar"
-                    continue
+                    library.artifact?.url = "https://repo1.maven.org/maven2/\(Util.toPath(mavenCoordinate: library.name))"
                 }
             default:
                 continue
             }
             
-            library.artifact?.path = URL(string: library.artifact!.url)!.path
+            library.artifact?.path = Util.toPath(mavenCoordinate: library.name)
         }
         
         // MARK: - 替换本地库版本
@@ -47,9 +46,6 @@ public struct ArtifactVersionMapper {
             case "org.lwjgl":
                 if library.version.starts(with: "3.") && library.version != "3.3.3" {
                     changeVersion(library, "3.3.1")
-                    if !library.name.hasSuffix("arm64") {
-                        library.name.append("-arm64")
-                    }
                 }
                 artifact.url = "https://libraries.minecraft.net/org/lwjgl/\(library.artifactId)/\(library.version)/\(library.artifactId)-\(library.version)-natives-macos-arm64.jar"
             case "org.lwjgl.lwjgl":
