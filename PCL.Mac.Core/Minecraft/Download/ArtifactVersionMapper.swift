@@ -21,7 +21,6 @@ public struct ArtifactVersionMapper {
                     changeVersion(library, "3.3.2")
                 }
                 library.artifact?.url = "https://libraries.minecraft.net/\(Util.toPath(mavenCoordinate: library.name))"
-                library.artifact?.url = "https://libraries.minecraft.net/org/lwjgl/\(library.artifactId)/\(library.version)/\(library.artifactId)-\(library.version).jar"
             
             case "net.java.dev.jna":
                 if library.version == "4.4.0" {
@@ -45,7 +44,7 @@ public struct ArtifactVersionMapper {
             switch library.groupId {
             case "org.lwjgl":
                 if library.version.starts(with: "3.") && library.version != "3.3.3" {
-                    changeVersion(library, "3.3.1")
+                    changeVersion(library, "3.3.2")
                 }
                 artifact.url = "https://libraries.minecraft.net/org/lwjgl/\(library.artifactId)/\(library.version)/\(library.artifactId)-\(library.version)-natives-macos-arm64.jar"
             case "org.lwjgl.lwjgl":

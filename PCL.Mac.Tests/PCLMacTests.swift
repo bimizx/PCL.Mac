@@ -23,7 +23,7 @@ struct PCL_MacTests {
     
     
     @Test func testLibraries() {
-        guard let instance = MinecraftInstance.create(.default, URL(fileURLWithUserPath: "~/minecraft/versions/24w14potato")) else {
+        guard let instance = MinecraftInstance.create(.default, URL(fileURLWithUserPath: "~/minecraft/versions/23w13a_or_b")) else {
             fatalError()
         }
         
