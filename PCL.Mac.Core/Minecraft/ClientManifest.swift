@@ -39,15 +39,7 @@ public class ClientManifest {
         self.type = json["type"].stringValue
         self.assets = json["assets"].stringValue
         self.assetIndex = AssetIndex(json: json["assetIndex"])
-        self.libraries = []
-        let libraries = json["libraries"].arrayValue.map(Library.init(json:))
-        for library in libraries {
-            guard let library = library else {
-                err("无法解析 Library (\(self.id)")
-                return nil
-            }
-            self.libraries.append(library)
-        }
+        self.libraries = json["libraries"].arrayValue.compactMap(Library.init(json:))
         self.arguments = json["arguments"].exists() ? Arguments(json: json["arguments"]) : nil
         self.minecraftArguments = json["minecraftArguments"].string
         self.javaVersion = json["javaVersion"]["majorVersion"].int
@@ -149,8 +141,10 @@ public class ClientManifest {
             return nativeDl
         }
         
-        public static func ==(lhs: Library, rhs: Library) -> Bool { lhs.name == rhs.name }
-        public func hash(into hasher: inout Hasher) { hasher.combine(name) }
+        public static func == (lhs: Library, rhs: Library) -> Bool { lhs.name == rhs.name }
+        public func hash(into hasher: inout Hasher) {
+            hasher.combine(name)
+        }
     }
 
     public class Arguments {
@@ -347,6 +341,8 @@ public class ClientManifest {
     
     private static func merge(parent: ClientManifest, manifest: ClientManifest) -> ClientManifest {
         parent.libraries.insert(contentsOf: manifest.libraries, at: 0)
+        var librarySet: Set<HashableLibrary> = .init()
+        parent.libraries = parent.libraries.filter { librarySet.insert(.init($0)).inserted }
         parent.arguments?.game.append(contentsOf: manifest.arguments?.game ?? [])
         parent.arguments?.jvm.append(contentsOf: manifest.arguments?.jvm ?? [])
         parent.mainClass = manifest.mainClass
@@ -357,11 +353,13 @@ public class ClientManifest {
     public func getNeededLibraries() -> [Library] {
         getAllowedLibraries().filter { $0.getNativeArtifact() == nil }
     }
+    
     public func getAllowedLibraries() -> [Library] {
         libraries.filter { lib in
             (lib.rules.isEmpty ? true : lib.rules.allSatisfy { $0.match() })
         }
     }
+    
     public func getNeededNatives() -> [Library: DownloadInfo] {
         var result: [Library: DownloadInfo] = [:]
         for lib in getAllowedLibraries() {
@@ -371,6 +369,7 @@ public class ClientManifest {
         }
         return result
     }
+    
     public func getArguments() -> Arguments {
         if let arguments = self.arguments {
             return arguments
@@ -387,6 +386,26 @@ public class ClientManifest {
             return Arguments(game: gameArgs, jvm: jvmArgs)
         } else {
             return Arguments(game: [], jvm: [])
+        }
+    }
+    
+    private class HashableLibrary: Hashable {
+        private let library: Library
+        
+        init(_ library: Library) {
+            self.library = library
+        }
+        
+        static func == (lhs: HashableLibrary, rhs: HashableLibrary) -> Bool {
+            lhs.library.groupId == rhs.library.groupId
+            && lhs.library.artifactId == rhs.library.artifactId
+            && lhs.library.classifier == rhs.library.classifier
+        }
+        
+        func hash(into hasher: inout Hasher) {
+            hasher.combine(library.groupId)
+            hasher.combine(library.artifactId)
+            hasher.combine(library.classifier)
         }
     }
 }
