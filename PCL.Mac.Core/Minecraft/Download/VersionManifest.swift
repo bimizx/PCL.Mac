@@ -100,14 +100,10 @@ public class VersionManifest: Codable {
     public static func isAprilFoolVersion(_ version: GameVersion) -> Bool {
         version.id = version.id.replacingOccurrences(of: "point", with: ".")
         if aprilFoolVersions.contains(version.id.lowercased()) { return true }
-        if version.type == .snapshot // 是快照
+        return version.type == .snapshot // 是快照
             && version.id.wholeMatch(of: /[0-9]{2}w[0-9]{2}.{1}/) == nil // 且不是标准快照格式 (如 23w33a)
             && version.id.rangeOfCharacter(from: .letters) != nil // 至少有一个字母 (筛掉 1.x 与 1.x.x)
             && !version.id.contains("-pre") && !version.id.contains("-rc") // 不是 Pre Release 或 Release Candidate
-        {
-            return true
-        }
-        return false
     }
     
     public static func getAprilFoolDescription(_ name: String) -> String {

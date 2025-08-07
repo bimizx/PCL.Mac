@@ -93,7 +93,7 @@ struct InstanceModsView: View {
                 
                 if let mods = mods {
                     TitlelessMyCard(index: 2) {
-                        VStack(spacing: 0) {
+                        LazyVStack(spacing: 0) {
                             ForEach(mods.filter { filter($0.mod) }) { modItem in
                                 ModView(modItem: modItem)
                             }

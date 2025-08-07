@@ -31,8 +31,10 @@ struct VersionSettingsView: View, SubRouteContainer {
                 InstanceOverviewView(instance: instance)
             case .instanceSettings:
                 InstanceSettingsView(instance: instance)
-            default:
+            case .instanceMods:
                 InstanceModsView(instance: instance)
+            default:
+                Spacer()
             }
         }
         .onAppear {
