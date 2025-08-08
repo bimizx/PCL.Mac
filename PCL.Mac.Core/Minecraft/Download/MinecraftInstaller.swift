@@ -80,9 +80,14 @@ public class MinecraftInstaller {
             return
         }
         
+        guard let assetIndex = manifest.assetIndex else {
+            task.assetIndex = .init(objects: [])
+            return
+        }
+        
         task.updateStage(.clientIndex)
-        let assetIndexURL: URL = URL(string: manifest.assetIndex.url)!
-        let destURL: URL = task.minecraftDirectory.assetsURL.appending(component: "indexes").appending(component: "\(manifest.assetIndex.id).json")
+        let assetIndexURL: URL = URL(string: assetIndex.url)!
+        let destURL: URL = task.minecraftDirectory.assetsURL.appending(component: "indexes").appending(component: "\(assetIndex.id).json")
         await withCheckedContinuation { continuation in
             let downloader = ProgressiveDownloader(
                 task: task,

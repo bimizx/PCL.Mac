@@ -15,12 +15,16 @@ public class Aria2Manager {
     private let port: Int?
     
     public func download(url: URL, destination: URL, progress: ((Double, Int) -> Void)? = nil) async throws {
+        try await download(urls: [url], destination: destination, progress: progress)
+    }
+    
+    public func download(urls: [URL], destination: URL, progress: ((Double, Int) -> Void)? = nil) async throws {
         guard FileManager.default.fileExists(atPath: executableURL.path) else {
             throw NSError(domain: "aria2", code: -1, userInfo: [NSLocalizedDescriptionKey: "\(executableURL.path) 不存在"])
         }
         
         let id = try await sendRpc("aria2.addUri", [
-            [url.absoluteString],
+            urls.map { $0.absoluteString },
             [
                 "dir": destination.parent().path,
                 "out": destination.lastPathComponent,
@@ -33,7 +37,7 @@ public class Aria2Manager {
                 ]
             ]
         ]).stringValue
-        debug("开始下载 \(url.absoluteString)")
+        debug("开始下载 \(urls[0].absoluteString)")
         
         while true {
             let response = try await sendRpc("aria2.tellStatus", [id, ["downloadSpeed", "totalLength", "completedLength", "status"]])

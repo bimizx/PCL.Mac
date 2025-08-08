@@ -127,7 +127,7 @@ public class MinecraftLauncher {
             "version_name": instance.version!.displayName,
             "game_directory": instance.runningDirectory.path,
             "assets_root": instance.minecraftDirectory.assetsURL.path,
-            "assets_index_name": instance.manifest.assetIndex.id,
+            "assets_index_name": instance.manifest.assetIndex?.id ?? "",
             "auth_uuid": options.uuid.uuidString.replacingOccurrences(of: "-", with: "").lowercased(),
             "auth_access_token": options.accessToken,
             "user_type": "msa",

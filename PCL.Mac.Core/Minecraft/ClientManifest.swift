@@ -12,7 +12,7 @@ public class ClientManifest {
     public let id: String
     public var mainClass: String
     public let type: String
-    public let assetIndex: AssetIndex
+    public let assetIndex: AssetIndex?
     public let assets: String
     public var libraries: [Library]
     public let arguments: Arguments?
@@ -20,7 +20,7 @@ public class ClientManifest {
     public let javaVersion: Int?
     public let clientDownload: DownloadInfo?
     
-    private init(id: String, mainClass: String, type: String, assetIndex: AssetIndex, assets: String, libraries: [Library], arguments: Arguments?, minecraftArguments: String?, javaVersion: Int?, clientDownload: DownloadInfo?) {
+    private init(id: String, mainClass: String, type: String, assetIndex: AssetIndex?, assets: String, libraries: [Library], arguments: Arguments?, minecraftArguments: String?, javaVersion: Int?, clientDownload: DownloadInfo?) {
         self.id = id
         self.mainClass = mainClass
         self.type = type
@@ -38,7 +38,7 @@ public class ClientManifest {
         self.mainClass = json["mainClass"].stringValue
         self.type = json["type"].stringValue
         self.assets = json["assets"].stringValue
-        self.assetIndex = AssetIndex(json: json["assetIndex"])
+        self.assetIndex = json["assetIndex"].exists() ? AssetIndex(json: json["assetIndex"]) : nil
         self.libraries = json["libraries"].arrayValue.compactMap(Library.init(json:))
         self.arguments = json["arguments"].exists() ? Arguments(json: json["arguments"]) : nil
         self.minecraftArguments = json["minecraftArguments"].string
