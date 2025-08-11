@@ -10,7 +10,7 @@ import Foundation
 public class JavaVirtualMachine: Identifiable, Equatable {
     static let Error = JavaVirtualMachine(arch: .unknown, version: -1, displayVersion: "错误", executableURL: URL(fileURLWithPath: "Error"), callMethod: .incompatible, _isError: true)
     
-    public let arch: Architectury
+    public let arch: Architecture
     public var version: Int
     public var displayVersion: String
     public var implementor: String?
@@ -32,7 +32,7 @@ public class JavaVirtualMachine: Identifiable, Equatable {
     
     public let id = UUID()
     
-    public init(arch: Architectury, version: Int, displayVersion: String, implementor: String? = nil, executableURL: URL, callMethod: CallMethod, isJdk: Bool? = nil, _isError: Bool? = nil, _isAddedByUser: Bool? = nil) {
+    public init(arch: Architecture, version: Int, displayVersion: String, implementor: String? = nil, executableURL: URL, callMethod: CallMethod, isJdk: Bool? = nil, _isError: Bool? = nil, _isAddedByUser: Bool? = nil) {
         self.arch = arch
         self.version = version
         self.displayVersion = displayVersion
@@ -67,11 +67,11 @@ public class JavaVirtualMachine: Identifiable, Equatable {
         }
         
         // 设置架构及调用方式
-        let arch: Architectury = .getArchOfFile(executableURL)
+        let arch: Architecture = .getArchOfFile(executableURL)
         let callMethod: CallMethod?
-        if arch == Architectury.system || arch == .fatFile {
+        if arch == Architecture.system || arch == .fatFile {
             callMethod = .direct
-        } else if Architectury.system == .arm64 {
+        } else if Architecture.system == .arm64 {
             callMethod = .transition
         } else {
             callMethod = .incompatible
@@ -159,56 +159,6 @@ public class JavaVirtualMachine: Identifiable, Equatable {
     
     public static func == (jvm1: JavaVirtualMachine, jvm2: JavaVirtualMachine) -> Bool {
         return jvm1.executableURL == jvm2.executableURL
-    }
-}
-
-public enum Architectury {
-    public static var system: Architectury {
-        get {
-            if _systemArch == nil {
-                var systemInfo = utsname()
-                uname(&systemInfo)
-                let machineMirror = Mirror(reflecting: systemInfo.machine)
-                let identifier = machineMirror.children.reduce("") { identifier, element in
-                    guard let value = element.value as? Int8, value != 0 else { return identifier }
-                    return identifier + String(UnicodeScalar(UInt8(value)))
-                }
-                _systemArch = (identifier == "arm64" ? .arm64 : .x64)
-            }
-            return _systemArch!
-        }
-    }
-    
-    public static func getArchOfFile(_ executableURL: URL) -> Architectury {
-        guard let fh = try? FileHandle(forReadingFrom: executableURL) else { return .unknown }
-        defer { try? fh.close() }
-
-        guard let magicData = try? fh.read(upToCount: 4), magicData.count == 4 else { return .unknown }
-        let magic = magicData.withUnsafeBytes { $0.load(as: UInt32.self) }
-        
-        if magic == 0xBEBAFECA || magic == 0xBFBAFECA {
-            return .fatFile
-        }
-        
-        guard let cputypeData = try? fh.read(upToCount: 4), cputypeData.count == 4 else { return .unknown }
-        let cputype = cputypeData.withUnsafeBytes { $0.load(as: UInt32.self) }
-
-        switch cputype {
-        case 0x1000007: return .x64
-        case 0x100000C: return .arm64
-        default: return .unknown
-        }
-    }
-    
-    private static var _systemArch: Architectury? = nil
-    case arm64, x64, fatFile, unknown
-    
-    public static func fromString(_ string: String) -> Architectury {
-        switch string {
-        case "aarch64", "arm64", "arm": .arm64
-        case "x86", "x64", "x86_64", "amd64": .x64
-        default: .unknown
-        }
     }
 }
 

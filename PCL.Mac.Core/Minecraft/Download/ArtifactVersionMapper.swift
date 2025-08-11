@@ -9,7 +9,7 @@ import Foundation
 
 public struct ArtifactVersionMapper {
     public static func map(_ manifest: ClientManifest) {
-        if Architectury.system != .arm64 {
+        if Architecture.system != .arm64 {
             return
         }
         
