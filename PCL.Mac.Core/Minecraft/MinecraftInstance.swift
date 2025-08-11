@@ -25,6 +25,7 @@ public class MinecraftInstance: Identifiable, Equatable, Hashable {
     public private(set) var manifest: ClientManifest!
     public var config: MinecraftConfig!
     public var clientBrand: ClientBrand!
+    public var isUsingRosetta: Bool = false
     
     public let id: UUID = UUID()
     
@@ -83,8 +84,8 @@ public class MinecraftInstance: Identifiable, Equatable, Hashable {
         }
         
         // 寻找可用 Java
-        if self.config.javaPath == nil {
-            self.config.javaPath = MinecraftInstance.findSuitableJava(self.version!)?.executableURL.path
+        if self.config.javaURL == nil {
+            self.config.javaURL = MinecraftInstance.findSuitableJava(self.version!)?.executableURL
         }
         self.saveConfig()
         return true
@@ -162,7 +163,17 @@ public class MinecraftInstance: Identifiable, Equatable, Hashable {
             log("正在登录")
             launchOptions.accessToken = await account.getAccessToken()
         }
-        launchOptions.javaPath = URL(fileURLWithPath: config.javaPath)
+        launchOptions.javaPath = config.javaURL
+        
+        loadManifest()
+        if Architecture.getArchOfFile(launchOptions.javaPath) == .arm64 && Architecture.system == .arm64 {
+            ArtifactVersionMapper.map(manifest)
+            isUsingRosetta = false
+        } else {
+            ArtifactVersionMapper.map(manifest, arch: .x64)
+            isUsingRosetta = true
+            warn("正在使用 Rosetta 运行 Minecraft")
+        }
         
         if !config.skipResourcesCheck && !launchOptions.skipResourceCheck {
             log("正在进行资源完整性检查")
@@ -202,6 +213,7 @@ public class MinecraftInstance: Identifiable, Equatable, Hashable {
         }
     }
     
+    @discardableResult
     private func loadManifest() -> Bool {
         do {
             let data = try FileHandle(forReadingFrom: runningDirectory.appending(path: runningDirectory.lastPathComponent + ".json")).readToEnd()!
@@ -220,7 +232,6 @@ public class MinecraftInstance: Identifiable, Equatable, Hashable {
             }
             guard let manifest = manifest else { return false }
             self.manifest = manifest
-            ArtifactVersionMapper.map(self.manifest)
         } catch {
             err("无法加载客户端清单: \(error.localizedDescription)")
             return false
@@ -263,7 +274,7 @@ public class MinecraftInstance: Identifiable, Equatable, Hashable {
 public struct MinecraftConfig: Codable {
     public let name: String
     public var additionalLibraries: Set<String> = []
-    public var javaPath: String!
+    public var javaURL: URL!
     public var skipResourcesCheck: Bool = false
     public var maxMemory: Int32 = 4096
     public var qualityOfService: QualityOfService = .default
@@ -272,7 +283,7 @@ public struct MinecraftConfig: Codable {
     public init(_ json: JSON) {
         self.name = json["name"].stringValue
         self.additionalLibraries = .init(json["additionalLibraries"].array?.map { $0.stringValue } ?? [])
-        self.javaPath = json["javaPath"].string
+        self.javaURL = URL(fileURLWithPath: json["javaURL"].string ?? json["javaPath"].stringValue) // 旧版本字段
         self.skipResourcesCheck = json["skipResourcesCheck"].boolValue
         self.maxMemory = json["maxMemory"].int32 ?? 4096
         self.qualityOfService = .init(rawValue: json["qualityOfService"].intValue) ?? .default
@@ -282,9 +293,9 @@ public struct MinecraftConfig: Codable {
         }
     }
     
-    public init(name: String, javaPath: String? = nil) {
+    public init(name: String, javaURL: URL? = nil) {
         self.name = name
-        self.javaPath = javaPath
+        self.javaURL = javaURL
     }
 }
 
