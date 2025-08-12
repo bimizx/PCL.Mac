@@ -22,9 +22,9 @@ public enum AnyAccount: Account, Identifiable, Equatable {
     
     private var account: any Account {
         switch self {
-        case .offline(let a): return a
-        case .microsoft(let a): return a
-        case .yggdrasil(let a): return a
+        case .offline(let account): return account
+        case .microsoft(let account): return account
+        case .yggdrasil(let account): return account
         }
     }
     
@@ -36,16 +36,7 @@ public enum AnyAccount: Account, Identifiable, Equatable {
         lhs.id == rhs.id
     }
     
-    public func putAccessToken(options: LaunchOptions) async {
-        switch self {
-        case .offline(let offlineAccount):
-            offlineAccount.putAccessToken(options: options)
-        case .microsoft(let msAccount):
-            await msAccount.putAccessToken(options: options)
-        case .yggdrasil(let yggdrasilAccount):
-            await yggdrasilAccount.putAccessToken(options: options)
-        }
-    }
+    public func putAccessToken(options: LaunchOptions) async { await account.putAccessToken(options: options) }
     
     // MARK: - Codable
     private enum CodingKeys: String, CodingKey { case type, payload }
@@ -79,7 +70,7 @@ public enum AnyAccount: Account, Identifiable, Equatable {
         let url: URL
         switch self {
         case .offline(_), .microsoft(_):
-            url = URL(string: "https://crafatar.com/skins/\(id.uuidString.replacingOccurrences(of: "-", with: "").lowercased())")!
+            url = URL(string: "https://crafatar.com/skins/\(uuid.uuidString.replacingOccurrences(of: "-", with: "").lowercased())")!
         case .yggdrasil(let yggdrasilAccount):
             let textures = try await yggdrasilAccount.client.getProfile(id: yggdrasilAccount.uuid).properties["textures"]!
             let json = try JSON(data: Data(base64Encoded: textures) ?? .init())
