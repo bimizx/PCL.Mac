@@ -8,48 +8,42 @@
 import SwiftUI
 import CoreGraphics
 
-enum AvatarInputType {
-    case username, uuid, url
-}
-
 struct MinecraftAvatar: View {
-    let type: AvatarInputType
-    let src: String
-    private(set) var size: CGFloat = 58
+    @State private var skinData: Data?
     
-    @State private var imageData: Data?
+    private let account: AnyAccount
+    private let src: String
+    private let size: CGFloat
 
-    var skinURL: URL {
-        switch type {
-        case .username:
-            return URL(string: "https://minotar.net/skin/\(src)")!
-        case .uuid:
-            return URL(string: "https://crafatar.com/skins/\(src)")!
-        case .url:
-            return URL(string: src)!
+    init(account: AnyAccount, src: String, size: CGFloat = 58) {
+        self.account = account
+        self.src = src
+        self.size = size
+        if let cached = SkinCacheStorage.shared.skinCache[account.uuid] {
+            self._skinData = State(initialValue: cached)
         }
     }
 
     var body: some View {
         ZStack {
-            if let data = imageData {
+            if let data = skinData {
                 SkinLayerView(imageData: data, startX: 8, startY: 16, width: 8 * 5.4 / 58 * size, height: 8 * 5.4 / 58 * size)
                     .shadow(color: Color.black.opacity(0.2), radius: 1)
                 SkinLayerView(imageData: data, startX: 40, startY: 16, width: 7.99 * 6.1 / 58 * size, height: 7.99 * 6.1 / 58 * size)
             }
         }
-        .onAppear {
-            Task {
-                if let data = await Requests.get(skinURL).data {
-                    DispatchQueue.main.async {
-                        self.imageData = data
-                    }
-                }
-            }
-        }
         .frame(width: size, height: size)
         .clipped()
         .padding(6)
+        .task {
+            if skinData == nil {
+                do {
+                    self.skinData = try await SkinCacheStorage.shared.loadSkin(account: account)
+                } catch {
+                    err("无法加载头像: \(error.localizedDescription)")
+                }
+            }
+        }
     }
 }
 
@@ -85,8 +79,4 @@ fileprivate struct SkinLayerView: View {
             }
         }
     }
-}
-
-#Preview {
-    MinecraftAvatar(type: .username, src: "MinecraftVenti")
 }
