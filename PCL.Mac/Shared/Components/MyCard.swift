@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct BaseCardContainer<Content: View>: View {
+    @ObservedObject private var settings: AppSettings = .shared
     @State private var isHovered: Bool = false
     @State private var isAppeared: Bool = false
     
@@ -27,7 +28,7 @@ struct BaseCardContainer<Content: View>: View {
             .padding()
             .background(
                 RoundedRectangle(cornerRadius: 5)
-                    .fill(Color("MyCardBackgroundColor"))
+                    .fill(settings.useUltraThinMaterial ? AnyShapeStyle(.ultraThinMaterial) : .init(Color("MyCardBackgroundColor")))
                     .shadow(
                         color: isHovered ? AppSettings.shared.theme.getAccentColor() : .gray,
                         radius: 2, x: 0.5, y: 0.5

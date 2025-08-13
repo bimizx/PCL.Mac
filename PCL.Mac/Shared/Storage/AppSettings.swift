@@ -87,6 +87,9 @@ public class AppSettings: ObservableObject {
     /// 使用过的主题解锁码
     @CodableAppStorage("usedThemeCodes") public var usedThemeCodes: [String] = []
     
+    /// 是否启用超薄材质
+    @CodableAppStorage("useUltraThinMaterial") public var useUltraThinMaterial: Bool = false
+    
     public func updateColorScheme() {
         if colorScheme != .system {
             NSApp.appearance = colorScheme == .light ? NSAppearance(named: .aqua) : NSAppearance(named: .darkAqua)

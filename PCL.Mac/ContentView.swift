@@ -106,7 +106,7 @@ struct ContentView: View {
             }
             HStack(spacing: 0) {
                 Rectangle()
-                    .fill(Color("BackgroundColor"))
+                    .fill(AppSettings.shared.useUltraThinMaterial ? AnyShapeStyle(.ultraThickMaterial) : .init(Color("BackgroundColor")))
                     .shadow(radius: 2)
                     .frame(width: dataManager.leftTabWidth)
                     .overlay(

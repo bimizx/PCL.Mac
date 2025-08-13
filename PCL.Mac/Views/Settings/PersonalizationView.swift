@@ -44,40 +44,44 @@ struct PersonalizationView: View {
                         Spacer()
                     }
                     
-                    HStack {
-                        Text("配色方案")
-                            .padding(.trailing, 10)
+                    OptionStack("配色方案") {
                         MyComboBox(
                             options: [ColorSchemeOption.light, ColorSchemeOption.dark, ColorSchemeOption.system],
                             selection: $settings.colorScheme,
-                            label: { $0.getLabel() }) { content in
-                                HStack(spacing: 40) {
-                                    content
-                                }
+                            label: { $0.getLabel() }
+                        ) { content in
+                            HStack(spacing: 40) {
+                                content
                             }
-                            .onChange(of: settings.colorScheme) {
-                                settings.updateColorScheme()
-                            }
-                        Spacer()
+                        }
+                        .onChange(of: settings.colorScheme) {
+                            settings.updateColorScheme()
+                        }
                     }
                 }
                 .padding()
             }
             .padding()
             
-            StaticMyCard(index: 1, title: "窗口按钮样式") {
-                HStack {
-                    MyComboBox(
-                        options: [WindowControlButtonStyle.pcl, WindowControlButtonStyle.macOS],
-                        selection: $settings.windowControlButtonStyle,
-                        label: { $0.getLabel() }) { content in
+            StaticMyCard(index: 1, title: "其它") {
+                VStack {
+                    OptionStack("窗口按钮样式") {
+                        MyComboBox(
+                            options: [WindowControlButtonStyle.pcl, WindowControlButtonStyle.macOS],
+                            selection: $settings.windowControlButtonStyle,
+                            label: { $0.getLabel() }
+                        ) { content in
                             HStack(spacing: 120) {
                                 content
                             }
                         }
-                    Spacer()
+                    }
+                    .padding()
+                    OptionStack("超薄材质") {
+                        Toggle("", isOn: $settings.useUltraThinMaterial)
+                    }
+                    .padding()
                 }
-                .padding()
             }
             .padding()
         }
@@ -88,5 +92,24 @@ struct PersonalizationView: View {
             self.themes = ThemeParser.shared.themes.filter(ThemeOwnershipChecker.shared.isUnlocked(_:))
             self.selectedTheme = ThemeParser.shared.themes.find { $0.id == settings.themeId } ?? selectedTheme
         }
+    }
+}
+
+fileprivate struct OptionStack<Content: View>: View {
+    private let label: String
+    private let content: () -> Content
+    
+    init(_ label: String, @ViewBuilder _ content: @escaping () -> Content) {
+        self.label = label
+        self.content = content
+    }
+    
+    var body: some View {
+        ZStack(alignment: .leading) {
+            Text(label)
+            content()
+                .offset(x: 120)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
