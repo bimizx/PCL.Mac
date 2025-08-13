@@ -32,16 +32,16 @@ public class ThemeParser {
     public func fromJSON(_ json: JSON) -> Theme {
         let id = json["id"].stringValue
         log("正在加载主题 \(id)")
-        
+        let images: [NSImage] = json["images"].arrayValue.compactMap { NSImage(data: Data(base64Encoded: $0.stringValue) ?? .init()) }
         let accentColor = parseColor(json["accentColor"])
-        let mainStyle = parseStyle(json["mainStyle"])
-        let backgroundStyle = parseStyle(json["backgroundStyle"])
+        let mainStyle = parseStyle(json["mainStyle"], images)
+        let backgroundStyle = parseStyle(json["backgroundStyle"], images)
         let textStyle = parseStyle(json["textStyle"].exists() ? json["textStyle"] : json["titleStyle"])
         
         return Theme(id: id, accentColor: accentColor, mainStyle: mainStyle, backgroundStyle: backgroundStyle, textStyle: textStyle)
     }
     
-    public func parseStyle(_ json: JSON) -> AnyShapeStyle {
+    public func parseStyle(_ json: JSON, _ images: [NSImage] = []) -> AnyShapeStyle {
         let type = json["type"].stringValue
         
         switch type {
@@ -49,6 +49,8 @@ public class ThemeParser {
             return AnyShapeStyle(parseColor(json))
         case "linearGradient":
             if let gradient = parseGradient(json) { return AnyShapeStyle(gradient) }
+        case "imagePaint":
+            if let imagePaint = parseImagePaint(json, images) { return AnyShapeStyle(imagePaint) }
         default:
             let _: Any? = nil
         }
@@ -83,6 +85,7 @@ public class ThemeParser {
         return Color(hex: 0x000000)
     }
     
+    /// 解析渐变
     public func parseGradient(_ json: JSON) -> AnyShapeStyle? {
         if json["type"].stringValue == "linearGradient" {
             guard let startPointArray = json["startPoint"].array,
@@ -117,6 +120,13 @@ public class ThemeParser {
         }
         
         return nil
+    }
+    
+    /// 解析图片
+    public func parseImagePaint(_ json: JSON, _ images: [NSImage]) -> ImagePaint? {
+        let imageIndex = json["image"].intValue
+        if imageIndex >= images.count || imageIndex < 0 { return nil }
+        return ImagePaint(image: Image(nsImage: images[imageIndex]), scale: 0.5)
     }
     
     private init() {}
