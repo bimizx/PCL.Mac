@@ -12,9 +12,10 @@ struct VersionListView: View {
     let minecraftDirectory: MinecraftDirectory
     
     struct VersionView: View, Identifiable {
-        let name: String
-        let description: String
-        let instance: MinecraftInstance
+        @State private var isHovered: Bool = false
+        private let name: String
+        private let description: String
+        private let instance: MinecraftInstance
         
         let id: UUID = UUID()
         
@@ -43,6 +44,21 @@ struct VersionListView: View {
                             .padding(.bottom, 5)
                     }
                     Spacer()
+                    if isHovered {
+                        HStack {
+                            Image(systemName: "xmark")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 10)
+                                .bold()
+                                .foregroundStyle(AppSettings.shared.theme.getTextStyle())
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    deleteInstance()
+                                }
+                        }
+                        .padding(.trailing, 12)
+                    }
                 }
             }
             .onTapGesture {
@@ -50,6 +66,59 @@ struct VersionListView: View {
                 DataManager.shared.router.setRoot(.launch)
             }
             .padding(.top, -8)
+            .onHover { isHovered in
+                self.isHovered = isHovered
+            }
+            .animation(.easeInOut(duration: 0.2), value: isHovered)
+        }
+        
+        private func deleteInstance() {
+            Task {
+                let result = await PopupManager.shared.showAsync(
+                    PopupModel(
+                        .normal,
+                        "删除版本",
+                        "确定要删除版本 \"\(instance.config.name)\" 吗？\n\n此操作将永久删除该版本的所有文件，包括模组、资源包等。\n真的很久！",
+                        [
+                            PopupButtonModel(label: "取消", style: .normal),
+                            PopupButtonModel(label: "删除", style: .danger)
+                        ]
+                    )
+                )
+                
+                if result == 1 { // 用户点击了删除按钮
+                    do {
+                        let versionName = instance.config.name
+                        let runningDirectory = instance.runningDirectory
+                        
+                        // 删除版本文件夹
+                        try FileManager.default.removeItem(at: runningDirectory)
+                        
+                        // 清理MinecraftInstance缓存
+                        MinecraftInstance.clearCache(for: runningDirectory)
+                        
+                        // 如果删除的是当前默认实例，清空默认实例设置
+                        if AppSettings.shared.defaultInstance == versionName {
+                            AppSettings.shared.defaultInstance = nil
+                        }
+                        
+                        // 重新加载实例列表
+                        instance.minecraftDirectory.loadInnerInstances { instances in
+                            // 如果删除的是默认实例且还有其他实例，自动选择第一个作为新的默认实例
+                            if AppSettings.shared.defaultInstance == nil && !instances.isEmpty {
+                                AppSettings.shared.defaultInstance = instances.first?.config.name
+                            }
+                            
+                            DataManager.shared.router.path = [.versionSelect, .versionList(directory: instance.minecraftDirectory)]
+                        }
+                        
+                        hint("版本 \"\(versionName)\" 已删除", .finish)
+                    } catch {
+                        err("删除版本失败: \(error.localizedDescription)")
+                        hint("删除版本失败: \(error.localizedDescription)", .critical)
+                    }
+                }
+            }
         }
     }
     var body: some View {

@@ -21,13 +21,13 @@ public enum AppRoute: Hashable {
     case newAccount
     case installing(tasks: InstallTasks)
     case versionSelect
-    case modDownload(summary: ModSummary)
+    case projectDownload(summary: ProjectSummary)
     case announcementHistory
     case versionSettings(instance: MinecraftInstance)
     
     // MyList 导航
     case minecraftDownload
-    case modSearch
+    case projectSearch(type: ProjectType)
     case versionList(directory: MinecraftDirectory)
     case instanceOverview
     case instanceSettings
@@ -46,7 +46,7 @@ public enum AppRoute: Hashable {
     var isRoot: Bool {
         switch self {
         case .launch, .download, .multiplayer, .settings, .others,
-                .minecraftDownload, .modSearch,
+                .minecraftDownload, .projectSearch(_),
                 .about, .toolbox, .debug,
                 .personalization, .javaSettings, .otherSettings:
             return true
@@ -58,9 +58,10 @@ public enum AppRoute: Hashable {
     var name: String {
         switch self {
         case .installing(let task): "installing?task=\(task.id)"
-        case .modDownload(let summary): "modDownload?summary=\(summary.modId)"
+        case .projectDownload(let summary): "projectDownload?summary=\(summary.modId)"
         case .versionList(let directory): "versionList?rootURL=\(directory.rootURL.path)"
         case .versionSettings(let instance): "versionSettings?instance=\(instance.config.name)"
+        case .projectSearch(let type): "projectSearch?type=\(type)"
         default:
             String(describing: self)
         }
@@ -70,7 +71,7 @@ public enum AppRoute: Hashable {
         switch self {
         case .installing(_): "下载管理"
         case .versionSelect, .versionList: "版本选择"
-        case .modDownload(let summary): "资源下载 - \(summary.name)"
+        case .projectDownload(let summary): "资源下载 - \(summary.name)"
         case .accountManagement, .accountList, .newAccount: "账号管理"
         case .announcementHistory: "历史公告"
         case .versionSettings, .instanceOverview, .instanceSettings, .instanceMods: "版本设置 - \(AppSettings.shared.defaultInstance ?? "")"
@@ -103,7 +104,7 @@ public class AppRouter: ObservableObject {
             LaunchView()
         case .accountManagement, .accountList, .newAccount:
             AccountManagementView()
-        case .download, .minecraftDownload, .modSearch:
+        case .download, .minecraftDownload, .projectSearch(_):
             DownloadView()
         case .multiplayer:
             MultiplayerView()
@@ -115,8 +116,8 @@ public class AppRouter: ObservableObject {
             InstallingView(tasks: tasks)
         case .versionSelect, .versionList(_):
             VersionSelectView()
-        case .modDownload(let summary):
-            ModDownloadView(id: summary.modId)
+        case .projectDownload(let summary):
+            ProjectDownloadView(id: summary.modId)
         case .announcementHistory:
             AnnouncementHistoryView()
         case .versionSettings, .instanceOverview, .instanceSettings, .instanceMods:

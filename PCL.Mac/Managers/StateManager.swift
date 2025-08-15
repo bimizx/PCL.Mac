@@ -12,7 +12,7 @@ import SwiftUI
 class StateManager: ObservableObject {
     static let shared = StateManager()
     
-    @Published var modSearch: ModSearchViewState = .init()
+    @Published var projectSearch: ProjectSearchViewState = .init()
     @Published var newAccount: NewAccountViewState = .init()
     @Published var cardStates: [String : Bool] = [:]
 }

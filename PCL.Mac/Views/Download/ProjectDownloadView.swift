@@ -1,5 +1,5 @@
 //
-//  ModDownloadView.swift
+//  ProjectDownloadView.swift
 //  PCL.Mac
 //
 //  Created by YiZhiMCQiu on 2025/6/20.
@@ -8,21 +8,21 @@
 import SwiftUI
 
 // 别问为什么抽出来，问就是 The compiler is unable to type-check this expression in reasonable time; try breaking up the expression into distinct sub-expressions
-fileprivate struct ModVersionListView: View {
+fileprivate struct ProjectVersionListView: View {
     @ObservedObject private var dataManager: DataManager = .shared
-    @ObservedObject private var state: ModSearchViewState = StateManager.shared.modSearch
+    @ObservedObject private var state: ProjectSearchViewState = StateManager.shared.projectSearch
     @State private var requestID = UUID()
-    @State private var versionMap: ModVersionMap = [:]
+    @State private var versionMap: ProjectVersionMap = [:]
     
-    let summary: ModSummary
+    let summary: ProjectSummary
     let versions: [String]
     
     var body: some View {
         VStack {
-            ForEach(sortedReleaseVersions, id: \.self) { version in
-                ForEach(summary.loaders, id: \.self) { loader in
-                    if let versions: [ModVersion] = versionMap[ModPlatformKey(loader: loader, minecraftVersion: version)] {
-                        MyCard(title: "\(loader.getName()) \(version.displayName)") {
+            ForEach(versionMap.gameVersions, id: \.self) { version in
+                ForEach(versionMap.loaders, id: \.self) { loader in
+                    if let versions: [ProjectVersion] = versionMap[ProjectPlatformKey(loader: loader, minecraftVersion: version)] {
+                        MyCard(title: getCardTitle(loader, version)) {
                             LazyVStack(alignment: .leading, spacing: 0) {
                                 if let version = versions.first,
                                    !version.dependencies.isEmpty {
@@ -30,9 +30,9 @@ fileprivate struct ModVersionListView: View {
                                         .font(.custom("PCL English", size: 14))
                                         .padding(4)
                                     ForEach(version.dependencies, id: \.self) { dependency in
-                                        ModListItem(summary: dependency.summary)
+                                        ProjectListItem(summary: dependency.summary)
                                             .onTapGesture {
-                                                dataManager.router.append(.modDownload(summary: dependency.summary))
+                                                dataManager.router.append(.projectDownload(summary: dependency.summary))
                                             }
                                     }
                                     Text("版本列表")
@@ -40,7 +40,7 @@ fileprivate struct ModVersionListView: View {
                                         .padding(4)
                                 }
                                 ForEach(versions) { version in
-                                    ModVersionListItem(version: version)
+                                    ProjectVersionListItem(version: version)
                                     .onTapGesture {
                                         state.addToQueue(version)
                                     }
@@ -54,23 +54,25 @@ fileprivate struct ModVersionListView: View {
             }
         }
         .task(id: requestID) {
-            if let map = try? await ModSearcher.shared.getVersionMap(id: summary.modId) {
+            do {
+                let map = try await ModrinthProjectSearcher.shared.getVersionMap(id: summary.modId)
                 DispatchQueue.main.async {
                     self.versionMap = map
                 }
+            } catch {
+                err("无法加载版本列表: \(error.localizedDescription)")
             }
         }
     }
     
-    private var sortedReleaseVersions: [MinecraftVersion] {
-        summary.gameVersions
-            .filter { $0.type == .release }
-            .sorted(by: >)
+    private func getCardTitle(_ loader: ClientBrand, _ version: MinecraftVersion) -> String {
+        if loader == .vanilla { return version.displayName }
+        return loader.getName() + " " + version.displayName
     }
 }
 
-fileprivate struct ModVersionListItem: View {
-    let version: ModVersion
+fileprivate struct ProjectVersionListItem: View {
+    let version: ProjectVersion
     
     var body: some View {
         MyListItem {
@@ -108,10 +110,10 @@ fileprivate struct ModVersionListItem: View {
     }
 }
 
-struct ModDownloadView: View {
+struct ProjectDownloadView: View {
     @ObservedObject private var dataManager: DataManager = .shared
-    @ObservedObject private var state: ModSearchViewState = StateManager.shared.modSearch
-    @State private var summary: ModSummary?
+    @ObservedObject private var state: ProjectSearchViewState = StateManager.shared.projectSearch
+    @State private var summary: ProjectSummary?
     let id: String
     
     init(id: String) {
@@ -124,7 +126,7 @@ struct ModDownloadView: View {
                 ScrollView {
                     TitlelessMyCard {
                         VStack {
-                            ModListItem(summary: summary)
+                            ProjectListItem(summary: summary)
                             HStack(spacing: 25) {
                                 MyButton(text: "转到 Modrinth", foregroundStyle: AppSettings.shared.theme.getTextStyle()) {
                                     NSWorkspace.shared.open(summary.infoURL)
@@ -142,7 +144,7 @@ struct ModDownloadView: View {
                     }
                     .padding()
                     if let versions = summary.versions {
-                        ModVersionListView(summary: summary, versions: versions)
+                        ProjectVersionListView(summary: summary, versions: versions)
                     }
                 }
                 .scrollIndicators(.never)
@@ -156,7 +158,7 @@ struct ModDownloadView: View {
         }
         .task(id: id) {
             summary = nil
-            summary = try? await ModSearcher.shared.get(id)
+            summary = try? await ModrinthProjectSearcher.shared.get(id)
         }
     }
 }
