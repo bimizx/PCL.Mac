@@ -32,8 +32,8 @@ public class ThemeOwnershipChecker {
         return String(hash.compactMap { String(format: "%02x", $0) }.joined().prefix(16))
     }
     
-    public func tryUnlock(code: String) -> String? {
-        guard let keyData = getDeviceHash().data(using: .utf8),
+    private func decrypt(code: String, key: String) -> String? {
+        guard let keyData = key.data(using: .utf8),
               let combinedData = Data(base64Encoded: code),
               combinedData.count > (12 + 16) else { return nil }
         
@@ -49,14 +49,28 @@ public class ThemeOwnershipChecker {
                 tag: tag
             )
             let decryptedData = try AES.GCM.open(sealedBox, using: symmetricKey)
-            let json = try JSON(data: decryptedData)
-            if json["verify"].intValue == 20250517 {
-                return json["theme"].stringValue
-            }
-            return nil
+            return String(data: decryptedData, encoding: .utf8)
         } catch {
             return nil
         }
+    }
+    
+    public func tryUnlockOld(code: String) -> String? {
+        if let jsonString = decrypt(code: code, key: getDeviceHash()),
+           let data = jsonString.data(using: .utf8),
+           let json = try? JSON(data: data),
+           json["verify"].intValue == 20250517 {
+            return json["theme"].stringValue
+        }
+        
+        return nil
+    }
+    
+    public func tryUnlock(code: String) -> String? {
+        if let code = decrypt(code: code, key: THEME_KEY) {
+            return tryUnlockOld(code: code)
+        }
+        return nil
     }
     
     public func isUnlocked(_ theme: ThemeInfo) -> Bool {
@@ -68,7 +82,7 @@ public class ThemeOwnershipChecker {
     
     private init() {
         for code in AppSettings.shared.usedThemeCodes {
-            if let theme = tryUnlock(code: code) {
+            if let theme = tryUnlockOld(code: code) ?? tryUnlock(code: code) {
                 self.unlockedThemes.append(theme)
             }
         }

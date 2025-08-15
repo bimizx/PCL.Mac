@@ -33,13 +33,13 @@ public class UpdateCheck {
             "https://api.github.com/repos/PCL-Community/PCL.Mac/actions/artifacts",
             headers: [
                 "Accept": "application/vnd.github+json",
-                "Authorization": "Bearer \(artifactPAT)"
+                "Authorization": "Bearer \(ARTIFACT_PAT)"
             ]
         ).json {
             let artifact = json["artifacts"].arrayValue[0]
             let formatter = ISO8601DateFormatter()
             let date = formatter.date(from: artifact["created_at"].stringValue)!
-            print("最新工件构建时间: \(SharedConstants.shared.dateFormatter.string(from: date))")
+            log("最新工件构建时间: \(SharedConstants.shared.dateFormatter.string(from: date))")
             let url = URL(string: artifact["archive_download_url"].stringValue)!
             return .init(time: date, url: url)
         }
@@ -50,7 +50,7 @@ public class UpdateCheck {
         var request = URLRequest(url: update.url)
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
-        request.setValue("Bearer \(artifactPAT)", forHTTPHeaderField: "Authorization")
+        request.setValue("Bearer \(ARTIFACT_PAT)", forHTTPHeaderField: "Authorization")
 
         let config = URLSessionConfiguration.default
         let session = URLSession(configuration: config, delegate: NoRedirectSessionDelegate(), delegateQueue: nil)
