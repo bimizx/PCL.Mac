@@ -26,7 +26,6 @@ jobs:
       
       - name: Generate Secrets.xcconfig
         run: |
-            echo "CLIENT_ID = $CLIENT_ID" > Secrets.xcconfig
             echo "IS_DEVELOPMENT = false" >> Secrets.xcconfig
             echo "BRANCH = $BRANCH" >> Secrets.xcconfig
         env:
@@ -36,8 +35,10 @@ jobs:
       - name: Replace secrets
         run: |
             sed -i '' "s/{{ARTIFACT_PAT}}/$ARTIFACT_PAT/g" PCL.Mac/Secrets.swift
+            sed -i '' "s/{{CLIENT_ID}}/$CLIENT_ID/g" PCL.Mac/Secrets.swift
         env:
           ARTIFACT_PAT: ${{ secrets.ARTIFACT_PAT }}
+          CLIENT_ID: ${{ secrets.CLIENT_ID }}
 
       - name: Build Universal Binary (xcodebuild)
         run: |

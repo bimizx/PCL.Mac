@@ -43,7 +43,7 @@ public class MsLogin {
         let json = try await Requests.post(
             "https://login.microsoftonline.com/consumers/oauth2/v2.0/devicecode",
             body: [
-                "client_id": Bundle.main.object(forInfoDictionaryKey: "CLIENT_ID") as! String,
+                "client_id": Secrets.getClientID(),
                 "scope": "XboxLive.signin offline_access"
             ],
             encodeMethod: .urlEncoded
@@ -83,7 +83,7 @@ public class MsLogin {
                 "https://login.microsoftonline.com/consumers/oauth2/v2.0/token",
                 body: [
                     "grant_type": "urn:ietf:params:oauth:grant-type:device_code",
-                    "client_id": Bundle.main.object(forInfoDictionaryKey: "CLIENT_ID") as! String,
+                    "client_id": Secrets.getClientID(),
                     "device_code": deviceAuthResponse.deviceCode
                 ],
                 encodeMethod: .urlEncoded
@@ -103,7 +103,7 @@ public class MsLogin {
         let json = try await Requests.post(
             "https://login.microsoftonline.com/consumers/oauth2/v2.0/token",
             body: [
-                "client_id": Bundle.main.object(forInfoDictionaryKey: "CLIENT_ID") as! String,
+                "client_id": Secrets.getClientID(),
                 "refresh_token": refreshToken,
                 "grant_type": "refresh_token",
                 "scope": "XboxLive.signin offline_access"
