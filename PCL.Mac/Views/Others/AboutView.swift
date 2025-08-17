@@ -47,7 +47,7 @@ struct AboutView: View {
                 VStack(spacing: 10) {
                     ProfileCard(
                         imageName: "LtCatt",
-                        name: "龙腾猫越",
+                        name: "龙腾猫跃",
                         description: "Plain Craft Launcher 的作者！",
                         buttonName: "赞助作者",
                         buttonURL: "https://afdian.com/a/LTCat"
