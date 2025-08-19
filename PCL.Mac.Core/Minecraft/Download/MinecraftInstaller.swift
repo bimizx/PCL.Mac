@@ -44,8 +44,7 @@ public class MinecraftInstaller {
                 destinations: [clientJsonURL],
                 completion: {
                 // 解析 JSON
-                if let data = try? Data(contentsOf: clientJsonURL),
-                   let manifest: ClientManifest = try? .parse(data, instanceURL: nil) {
+                if let manifest: ClientManifest = try? .parse(url: clientJsonURL, minecraftDirectory: nil) {
                     task.manifest = manifest
                 } else {
                     err("无法解析 JSON")
@@ -311,10 +310,17 @@ public class MinecraftInstaller {
             await downloadClientManifest(task)
             await downloadAssetIndex(task)
             updateProgress(task)
-            if let fabricTask = DataManager.shared.inprogressInstallTasks?.tasks["fabric"] as? FabricInstallTask {
-                fabricTask.start(task)
-            }
             await downloadClientJar(task)
+            
+            // 安装 Mod Loader
+            if let fabricTask = DataManager.shared.inprogressInstallTasks?.tasks["fabric"] as? FabricInstallTask {
+                await fabricTask.install(task)
+            } else if let forgeTask = DataManager.shared.inprogressInstallTasks?.tasks["forge"] as? ForgeInstallTask {
+                await forgeTask.install(task)
+            } else if let neoforgeTask = DataManager.shared.inprogressInstallTasks?.tasks["neoforge"] as? NeoforgeInstallTask {
+                await neoforgeTask.install(task)
+            }
+            
             await downloadHashResourcesFiles(task)
             await downloadLibraries(task)
             await downloadNatives(task)

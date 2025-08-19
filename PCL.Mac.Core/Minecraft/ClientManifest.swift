@@ -16,22 +16,10 @@ public class ClientManifest {
     public let assets: String
     public var libraries: [Library]
     public let arguments: Arguments?
-    public let minecraftArguments: String?
+    public var minecraftArguments: String?
     public let javaVersion: Int?
     public let clientDownload: DownloadInfo?
-    
-    private init(id: String, mainClass: String, type: String, assetIndex: AssetIndex?, assets: String, libraries: [Library], arguments: Arguments?, minecraftArguments: String?, javaVersion: Int?, clientDownload: DownloadInfo?) {
-        self.id = id
-        self.mainClass = mainClass
-        self.type = type
-        self.assetIndex = assetIndex
-        self.assets = assets
-        self.libraries = libraries
-        self.arguments = arguments
-        self.minecraftArguments = minecraftArguments
-        self.javaVersion = javaVersion
-        self.clientDownload = clientDownload
-    }
+    public let clientMappingsDownload: DownloadInfo?
 
     private init?(json: JSON) {
         self.id = json["id"].stringValue
@@ -44,6 +32,7 @@ public class ClientManifest {
         self.minecraftArguments = json["minecraftArguments"].string
         self.javaVersion = json["javaVersion"]["majorVersion"].int
         self.clientDownload = json["downloads"]["client"].exists() ? .init(json: json["downloads"]["client"]) : nil
+        self.clientMappingsDownload = json["downloads"]["client_mappings"].exists() ? .init(json: json["downloads"]["client_mappings"]) : nil
     }
 
     public class AssetIndex {
@@ -105,11 +94,14 @@ public class ClientManifest {
                 return nil
             }
             
-            if json["url"].exists() { // Fabric 依赖
+            if !json["downloads"].exists() {
                 self.rules = []
                 self.natives = [:]
                 let path = Util.toPath(mavenCoordinate: name)
-                self.artifact = DownloadInfo(path: path, url: URL(string: json["url"].stringValue)!.appending(path: path).absoluteString)
+                self.artifact = DownloadInfo(
+                    path: path,
+                    url: (URL(string: json["url"].stringValue) ?? URL(string: "https://bmclapi2.bangbang93.com/maven")!).appending(path: path).absoluteString
+                )
             } else {
                 if split[1] == "launchwrapper" {
                     self.rules = []
@@ -274,54 +266,32 @@ public class ClientManifest {
         }
     }
     
-    public static func createFromFabricManifest(_ fabricManifest: FabricManifest?, _ instanceURL: URL) -> ClientManifest? {
-        guard let fabricManifest = fabricManifest else { return nil }
-        let manifest: ClientManifest = .init(
-            id: fabricManifest.loaderVersion,
-            mainClass: fabricManifest.mainClass,
-            type: "fabric",
-            assetIndex: .init(json: .null),
-            assets: "",
-            libraries: fabricManifest.libraries,
-            arguments: nil,
-            minecraftArguments: nil,
-            javaVersion: nil,
-            clientDownload: nil
-        )
-        
-        let parent: ClientManifest
-        let parentURL = instanceURL.appending(path: ".pcl_mac").appending(path: "\(fabricManifest.minecraftVersion).json")
-        
-        do {
-            let data = try FileHandle(forReadingFrom: parentURL).readToEnd()!
-            guard let manifest = try ClientManifest.parse(data, instanceURL: instanceURL) else { return nil }
-            parent = manifest
-        } catch {
-            err("无法解析 inheritsFrom: \(error.localizedDescription)")
-            return manifest
-        }
-        
-        return merge(parent: parent, manifest: manifest)
-    }
-
-    public static func parse(_ data: Data, instanceURL: URL?) throws -> ClientManifest? {
+    /// 尝试解析与自动合并客户端清单，不会对实例进行操作
+    /// - Parameter url: 清单路径
+    /// - Parameter minecraftDirectory: 若需自动合并，该参数的值为实例所在的 minecraft 目录，否则为空
+    public static func parse(url: URL, minecraftDirectory: MinecraftDirectory? = nil) throws -> ClientManifest? {
+        let data = try FileHandle(forReadingFrom: url).readToEnd() ?? Data()
         let json = try JSON(data: data)
+        
+        if json["loader"].exists() { // 旧版 PCL.Mac Fabric 安装逻辑
+            warn("无法解析旧版 PCL.Mac 安装的 Fabric 版本: \(url.lastPathComponent)")
+            return nil
+        }
         
     checkParent:
         if let inheritsFrom = json["inheritsFrom"].string,
-           let instanceURL = instanceURL {
-            let parentURL = instanceURL.appending(path: ".pcl_mac").appending(path: "\(inheritsFrom).json")
+           let minecraftDirectory = minecraftDirectory {
+            let parentURL = minecraftDirectory.versionsURL.appending(path: inheritsFrom).appending(path: "\(inheritsFrom).json")
             
             guard FileManager.default.fileExists(atPath: parentURL.path) else {
-                err("\(instanceURL.lastPathComponent) 的客户端清单中有 inheritsFrom 字段，但其对应的 JSON 不存在")
-                break checkParent
+                err("\(url.path) 中有 inheritsFrom 字段，但其对应的 JSON 不存在")
+                return nil
             }
             
             let parent: ClientManifest
             guard let manifest = ClientManifest(json: json) else { return nil }
             do {
-                let data = try FileHandle(forReadingFrom: parentURL).readToEnd()!
-                guard let manifest = try ClientManifest.parse(data, instanceURL: instanceURL) else { return nil }
+                guard let manifest = try ClientManifest.parse(url: parentURL, minecraftDirectory: minecraftDirectory) else { return nil }
                 parent = manifest
             } catch {
                 err("无法解析 inheritsFrom: \(error.localizedDescription)")
@@ -334,11 +304,16 @@ public class ClientManifest {
     }
     
     private static func merge(parent: ClientManifest, manifest: ClientManifest) -> ClientManifest {
+        // 修正 libraries
+        ArtifactVersionMapper.map(parent, arch: .x64)
+        ArtifactVersionMapper.map(manifest, arch: .x64)
+        
         parent.libraries.insert(contentsOf: manifest.libraries, at: 0)
         var librarySet: Set<HashableLibrary> = .init()
         parent.libraries = parent.libraries.filter { librarySet.insert(.init($0)).inserted }
         parent.arguments?.game.append(contentsOf: manifest.arguments?.game ?? [])
         parent.arguments?.jvm.append(contentsOf: manifest.arguments?.jvm ?? [])
+        parent.minecraftArguments = manifest.minecraftArguments
         parent.mainClass = manifest.mainClass
         
         return parent
