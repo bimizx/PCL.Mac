@@ -273,7 +273,7 @@ public class ClientManifest {
         let data = try FileHandle(forReadingFrom: url).readToEnd() ?? Data()
         let json = try JSON(data: data)
         
-        if json["loader"].exists() { // 旧版 PCL.Mac Fabric 安装逻辑
+        if json["loader"].exists() && json["intermediary"].exists() && !json["id"].exists() { // 旧版 PCL.Mac Fabric 安装逻辑
             warn("无法解析旧版 PCL.Mac 安装的 Fabric 版本: \(url.lastPathComponent)")
             return nil
         }
