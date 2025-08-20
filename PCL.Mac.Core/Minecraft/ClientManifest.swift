@@ -303,14 +303,18 @@ public class ClientManifest {
         return ClientManifest(json: json)
     }
     
-    private static func merge(parent: ClientManifest, manifest: ClientManifest) -> ClientManifest {
+    public static func deduplicateLibraries(_ manifest: ClientManifest) {
         // 修正 libraries
-        ArtifactVersionMapper.map(parent, arch: .x64)
         ArtifactVersionMapper.map(manifest, arch: .x64)
         
-        parent.libraries.insert(contentsOf: manifest.libraries, at: 0)
         var librarySet: Set<HashableLibrary> = .init()
-        parent.libraries = parent.libraries.filter { librarySet.insert(.init($0)).inserted }
+        manifest.libraries = manifest.libraries.filter { librarySet.insert(.init($0)).inserted }
+    }
+    
+    private static func merge(parent: ClientManifest, manifest: ClientManifest) -> ClientManifest {
+        parent.libraries.insert(contentsOf: manifest.libraries, at: 0)
+        deduplicateLibraries(parent)
+        
         parent.arguments?.game.append(contentsOf: manifest.arguments?.game ?? [])
         parent.arguments?.jvm.append(contentsOf: manifest.arguments?.jvm ?? [])
         parent.minecraftArguments = manifest.minecraftArguments

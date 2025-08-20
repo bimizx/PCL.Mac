@@ -113,6 +113,9 @@ public class MinecraftLauncher {
     }
     
     private func buildClasspath() -> String {
+        // 去重
+        ClientManifest.deduplicateLibraries(instance.manifest)
+        
         var urls: [URL] = []
         for library in instance.manifest.getNeededLibraries() {
             if let artifact = library.artifact {
