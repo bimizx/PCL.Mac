@@ -37,7 +37,7 @@ public class MinecraftCrashHandler {
         FileManager.default.createFile(atPath: tmp.appending(path: "启动命令.command").path, contents: lastLaunchCommand.data(using: .utf8))
         try? FileManager.default.copyItem(at: SharedConstants.shared.logURL, to: tmp.appending(path: "PCL.Mac 启动器日志.txt"))
         try? FileManager.default.copyItem(at: launcher.logURL, to: tmp.appending(path: "游戏崩溃前的输出.txt"))
-        try? FileManager.default.copyItem(at: instance.runningDirectory.appending(path: instance.config.name + ".json"), to: tmp.appending(path: instance.config.name + ".json"))
+        try? FileManager.default.copyItem(at: instance.runningDirectory.appending(path: instance.name + ".json"), to: tmp.appending(path: instance.name + ".json"))
         try? FileManager.default.zipItem(at: tmp, to: destination, shouldKeepParent: false)
         debug("错误报告导出完成")
         try? FileManager.default.removeItem(at: launcher.logURL)
