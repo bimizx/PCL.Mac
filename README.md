@@ -3,27 +3,31 @@
 <div align="center">
   <img alt="Logo" src="/.github/assets/icon.png" width="180">
 
-  [![QQ 群 1047463389](https://img.shields.io/badge/QQ群-1047463389-blue)](https://jq.qq.com/?_wv=1027&k=5X6X9X8X)
-  [![最低平台 macOS 13+](https://img.shields.io/badge/macOS-13.0+-blue)](https://developer.apple.com/macos/)
+  [![Minimum OS Version](https://img.shields.io/badge/macOS-14.0+-81AD18)](https://developer.apple.com/macos/)
+  [![Stars](https://img.shields.io/github/stars/PCL-Community/PCL.Mac?style=flat)](https://github.com/PCL-Community/PCL.Mac/stargazers)
+  [![Activity](https://img.shields.io/github/commit-activity/y/PCL-Community/PCL.Mac?color=FF6C57)](https://github.com/PCL-Community/PCL.Mac/pulse)
+  [![Contributors](https://img.shields.io/github/contributors/PCL-Community/PCL.Mac)](https://github.com/PCL-Community/PCL.Mac/graphs/contributors)
+  <br>
   [![](https://hits.zkitefly.eu.org/?tag=https://github.com/PCL-Community/PCL.Mac)](https://hits.zkitefly.eu.org/?tag=https://github.com/PCL-Community/PCL.Mac&web=true)
 </div>
 
 ## 简介
 
-SwiftUI 重构的 macOS 版 [Plain Craft Launcher](https://github.com/Hex-Dragon/PCL2)，追求更快、更好、更强。  
-让 macOS 也拥有自己的 Minecraft 启动器！
+PCL.Mac 是使用 SwiftUI 框架重构的 [Plain Craft Launcher](https://github.com/Hex-Dragon/PCL2)，支持 macOS 平台。<br>
+支持与主线 (PCL) 与[社区版](https://github.com/PCL-Community/PCL2-CE)一样的游戏安装（原版、Forge、Fabric、NeoForge）、Mod 下载与游戏管理。<br>
+可运行本启动器的最低系统版本为 `macOS 14.0`。
 
 ## 下载
 
 本项目尚处早期开发阶段，可从 [Actions](https://github.com/PCL-Community/PCL.Mac/actions) 下载开发版。
 
 > [!WARNING]
-> 由于 App 未签名，请在终端运行：
-> ```bash
-> sudo spctl --master-disable
-> ```
-> 之后在「设置 → 隐私与安全性」允许「任何来源」的应用。  
-> ~~若你认为可能降低安全性，请每年 V 我们 700 块钱来签名~~
+> 由于 App 未签名，直接打开可能会出现“已损坏”等提示。请：
+> 1. 打开系统设置。
+> 2. 进入「隐私与安全性」。
+> 3. 滑到底部，点击「仍然打开」。
+> 
+> 签名并公证后的版本大概会在 2025 年 12 月发布，到时候就可以开袋即食啦～
 
 ## 分片下载加速
 
@@ -32,10 +36,6 @@ SwiftUI 重构的 macOS 版 [Plain Craft Launcher](https://github.com/Hex-Dragon
 
 > aria2 遵循 GPL v2 协议，详情见 [LICENSE](https://gitee.com/yizhimcqiu/aria2-macos-universal/blob/master/COPYING)。  
 > 本项目分发第三方二进制，非官方编译。如需源码请访问 [aria2 项目主页](https://github.com/aria2/aria2)。
-
-## 兼容性
-
-仅支持 **macOS 14.0 及以上**。
 
 ## 鸣谢
 
