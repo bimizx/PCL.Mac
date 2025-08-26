@@ -112,6 +112,18 @@ struct InstanceOverviewView: View {
                 }
             }
             .padding()
+            
+            TitlelessMyCard(index: 1) {
+                HStack(spacing: 16) {
+                    MyButton(text: "打开文件夹", foregroundStyle: AppSettings.shared.theme.getTextStyle()) {
+                        NSWorkspace.shared.open(instance.runningDirectory)
+                    }
+                    .frame(width: 120, height: 35)
+                    Spacer()
+                }
+                .padding(2)
+            }
+            .padding()
         }
         .scrollIndicators(.never)
     }

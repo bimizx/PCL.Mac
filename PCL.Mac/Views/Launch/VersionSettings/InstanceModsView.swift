@@ -123,6 +123,7 @@ struct InstanceModsView: View {
                             loadSummary(mod: mod)
                         }
                     }
+                    mods = mods.sorted { ($0.mod.name.first ?? " ") < ($1.mod.name.first ?? " ") }
                     await MainActor.run {
                         self.mods = mods
                     }
@@ -204,17 +205,19 @@ struct InstanceModsView: View {
                     .font(.custom("PCL English", size: 12))
                     Spacer()
                     
-                    HStack {
-                        if let summary = mod.summary, isHovered {
-                            Image("InfoIcon")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 16)
-                                .foregroundStyle(AppSettings.shared.theme.getTextStyle())
-                                .contentShape(Rectangle())
-                                .onTapGesture {
-                                    dataManager.router.append(.projectDownload(summary: summary))
-                                }
+                    if isHovered {
+                        HStack {
+                            if let summary = mod.summary {
+                                Image("InfoIcon")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 16)
+                                    .foregroundStyle(AppSettings.shared.theme.getTextStyle())
+                                    .contentShape(Rectangle())
+                                    .onTapGesture {
+                                        dataManager.router.append(.projectDownload(summary: summary))
+                                    }
+                            }
                             
                             Image(isDisabled ? "CheckIcon" : "StopIcon")
                                 .resizable()
@@ -226,8 +229,8 @@ struct InstanceModsView: View {
                                     toggleDisable()
                                 }
                         }
+                        .padding(.trailing, 4)
                     }
-                    .padding(.trailing, 4)
                 }
                 .padding(4)
             }
