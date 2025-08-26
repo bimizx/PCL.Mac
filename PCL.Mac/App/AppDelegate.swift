@@ -38,6 +38,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     // MARK: 初始化 App
     func applicationWillFinishLaunching(_ notification: Notification) {
+        if !FileManager.default.fileExists(atPath: SharedConstants.shared.temperatureURL.path) {
+            try? FileManager.default.createDirectory(at: SharedConstants.shared.temperatureURL, withIntermediateDirectories: true)
+        }
         LogStore.shared.clear()
         let start = Date().timeIntervalSince1970
         log("App 已启动")
