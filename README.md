@@ -29,6 +29,9 @@ PCL.Mac 是使用 SwiftUI 框架重构的 [Plain Craft Launcher](https://github.
 > 
 > 签名并公证后的版本大概会在 2025 年 12 月发布，到时候就可以开袋即食啦～
 
+## 协议声明
+`PCL.Mac.Core` 使用 MIT License，使用其代码时请遵循 MIT License 的规定，保留原有的版权声明和许可条款。
+
 ## 鸣谢
 
 本项目实现参考了 HMCL 等 Minecraft 启动器的实现流程。
