@@ -313,11 +313,8 @@ public class CustomFileDownloadTask: InstallTask {
     public override func start() {
         Task {
             do {
-                try await Aria2Manager.shared.download(url: url, destination: destination) { percent, speed in
-                    self.currentStagePercentage = percent
-                    Task {
-                        await SpeedMeter.shared.addBytes(speed)
-                    }
+                try await SingleFileDownloader.download(url: url, destination: destination) { progress in
+                    self.currentStagePercentage = progress
                 }
             } catch {
                 hint("\(destination.lastPathComponent) 下载失败: \(error.localizedDescription.replacingOccurrences(of: "\n", with: ""))", .critical)

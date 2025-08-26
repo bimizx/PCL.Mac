@@ -78,7 +78,7 @@ public class JavaInstallTask: InstallTask {
             do {
                 updateStage(.javaDownload)
                 let zipDestination = temp.root.appending(path: "\(package.name).zip")
-                try await Aria2Manager.shared.download(url: package.downloadURL, destination: zipDestination) { progress, speed in
+                try await SingleFileDownloader.download(url: package.downloadURL, destination: zipDestination) { progress in
                     self.progress = progress / 2
                     self.currentStagePercentage = progress
                 }

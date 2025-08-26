@@ -71,7 +71,6 @@
 			membershipExceptions = (
 				Announcement/AnnouncementManager.swift,
 				Architecture.swift,
-				Aria2/Aria2Manager.swift,
 				Download/MultiFileDownloader.swift,
 				Download/SingleFileDownloader.swift,
 				Download/SpeedMeter.swift,
@@ -124,7 +123,6 @@
 			membershipExceptions = (
 				Announcement/AnnouncementManager.swift,
 				Architecture.swift,
-				Aria2/Aria2Manager.swift,
 				Download/MultiFileDownloader.swift,
 				Download/SingleFileDownloader.swift,
 				Download/SpeedMeter.swift,

@@ -104,7 +104,6 @@ struct AboutView: View {
                 VStack(spacing: 0) {
                     DependencyView(name: "SwiftyJSON", license: "MIT", repo: "SwiftyJSON/SwiftyJSON")
                     DependencyView(name: "ZIPFoundation", license: "MIT", repo: "weichsel/ZIPFoundation")
-                    DependencyView(name: "aria2", description: "作为外部分片下载器", license: "GNU GPL v2", repo: "aria2/aria2")
                     DependencyView(name: "PCL.Mac.Daemon", description: "自动导出启动器崩溃报告的守护进程", license: "MIT", repo: "VentiStudios/PCL.Mac.Daemon")
                 }
             }

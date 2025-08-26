@@ -29,14 +29,6 @@ PCL.Mac 是使用 SwiftUI 框架重构的 [Plain Craft Launcher](https://github.
 > 
 > 签名并公证后的版本大概会在 2025 年 12 月发布，到时候就可以开袋即食啦～
 
-## 分片下载加速
-
-启动器会自动下载 [aria2](https://github.com/aria2/aria2) 作为分片下载器，提升下载速度。  
-已集成的 Universal Binary 由 [Gitee 仓库](https://gitee.com/yizhimcqiu/aria2-macos-universal) 提供，支持 x86_64 和 arm64。
-
-> aria2 遵循 GPL v2 协议，详情见 [LICENSE](https://gitee.com/yizhimcqiu/aria2-macos-universal/blob/master/COPYING)。  
-> 本项目分发第三方二进制，非官方编译。如需源码请访问 [aria2 项目主页](https://github.com/aria2/aria2)。
-
 ## 鸣谢
 
 本项目实现参考了 HMCL 等 Minecraft 启动器的实现流程。
