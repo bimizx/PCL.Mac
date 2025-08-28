@@ -45,3 +45,4 @@ PCL.Mac 是使用 SwiftUI 框架重构的 [Plain Craft Launcher](https://github.
 - [aria2](https://github.com/aria2/aria2)
 - NT | Krnl32
 - 阿鱼 | 🐟🐟🐟
+- [Ciilu](https://github.com/Ciilu)
