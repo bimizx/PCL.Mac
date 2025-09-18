@@ -6,15 +6,35 @@
 //
 
 import Cocoa
+import SwiftUI
+
+class Window: NSWindow {
+    init(contentView: NSView) {
+        super.init(
+            contentRect: NSRect(x: 0, y: 0, width: 1000, height: 600),
+            styleMask: [.resizable, .miniaturizable],
+            backing: .buffered,
+            defer: false
+        )
+        self.isOpaque = false
+        self.backgroundColor = NSColor.clear
+        self.level = .normal
+        self.hasShadow = true
+        self.contentView = contentView
+        self.center()
+    }
+}
 
 class AppDelegate: NSObject, NSApplicationDelegate {
+    var window: Window!
+    
     // MARK: 注册字体
     private func registerCustomFonts() {
         guard let fontURL = Bundle.main.url(forResource: "PCL", withExtension: "ttf") else {
             err("Bundle 内未找到字体")
             return
         }
-
+        
         var error: Unmanaged<CFError>?
         if CTFontManagerRegisterFontsForURL(fontURL as CFURL, .process, &error) == false {
             if let error = error?.takeUnretainedValue() {
@@ -86,6 +106,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     func applicationDidFinishLaunching(_ notification: Notification) {
+        let swiftUIView = ContentView()
+        let hostingView = NSHostingView(rootView: swiftUIView)
+        hostingView.wantsLayer = true
+        hostingView.layer?.cornerRadius = 10
+        hostingView.layer?.masksToBounds = true
+        window = Window(contentView: hostingView)
+        window.makeKeyAndOrderFront(nil)
+        
         if AppSettings.shared.showPclMacPopup {
             Task {
                 if await PopupManager.shared.showAsync(
