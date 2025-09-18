@@ -12,16 +12,34 @@ class Window: NSWindow {
     init(contentView: NSView) {
         super.init(
             contentRect: NSRect(x: 0, y: 0, width: 1000, height: 600),
-            styleMask: [.resizable, .miniaturizable],
+            styleMask: [.titled, .closable, .resizable, .miniaturizable, .fullSizeContentView],
             backing: .buffered,
             defer: false
         )
+        self.titleVisibility = .hidden
+        self.titlebarAppearsTransparent = true
         self.isOpaque = false
         self.backgroundColor = NSColor.clear
         self.level = .normal
         self.hasShadow = true
         self.contentView = contentView
         self.center()
+    }
+    
+    override func layoutIfNeeded() {
+        super.layoutIfNeeded()
+        if let close = self.standardWindowButton(.closeButton),
+           let min = self.standardWindowButton(.miniaturizeButton),
+           let zoom = self.standardWindowButton(.zoomButton) {
+            
+            if AppSettings.shared.windowControlButtonStyle == .macOS {
+                close.frame.origin = CGPoint(x: 16, y: -4)
+            } else {
+                close.frame.origin = CGPoint(x: 64, y: 64)
+            }
+            min.frame.origin = CGPoint(x: close.frame.maxX + 6, y: close.frame.minY)
+            zoom.frame.origin = CGPoint(x: 64, y: 64)
+        }
     }
 }
 
