@@ -44,6 +44,7 @@ class Window: NSWindow {
 }
 
 class AppDelegate: NSObject, NSApplicationDelegate {
+    private static let exitFlagURL = SharedConstants.shared.applicationSupportURL.appending(path: ".exit.flag")
     var window: Window!
     
     // MARK: 注册字体
@@ -101,6 +102,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         if !FileManager.default.fileExists(atPath: SharedConstants.shared.temperatureURL.path) {
             try? FileManager.default.createDirectory(at: SharedConstants.shared.temperatureURL, withIntermediateDirectories: true)
         }
+        FileManager.default.createFile(atPath: Self.exitFlagURL.path, contents: nil)
         LogStore.shared.clear()
         let start = Date().timeIntervalSince1970
         log("App 已启动")
@@ -115,6 +117,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         let daemonProcess = Process()
         daemonProcess.executableURL = SharedConstants.shared.applicationResourcesURL.appending(path: "daemon")
+        daemonProcess.arguments = [
+            String(describing: ProcessInfo.processInfo.processIdentifier),
+            Self.exitFlagURL.path
+        ]
         do {
             try daemonProcess.run()
             log("守护进程已启动")
@@ -144,11 +150,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        try? FileManager.default.removeItem(at: Self.exitFlagURL)
         LogStore.shared.save()
-        Task {
-            NSApplication.shared.reply(toApplicationShouldTerminate: true)
-        }
-        return .terminateLater
+        return .terminateNow
     }
     
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
