@@ -165,7 +165,7 @@ struct VersionListView: View {
             }
         }
         .id(minecraftDirectory)
-        .onChange(of: minecraftDirectory) { loadInstances(minecraftDirectory) }
+        .onChange(of: minecraftDirectory) { _ in loadInstances(minecraftDirectory) }
         .onAppear { loadInstances(minecraftDirectory) }
     }
     

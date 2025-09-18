@@ -44,7 +44,7 @@ struct DownloadPage: View {
                         VStack {
                             MyTextField(text: $name)
                                 .foregroundStyle(Color("TextColor"))
-                                .onChange(of: name) {
+                                .onChange(of: name) { _ in
                                     checkName()
                                 }
                             if !errorMessage.isEmpty {
@@ -263,7 +263,7 @@ fileprivate struct LoaderCard: View {
         .task {
             await loadVersions()
         }
-        .onChange(of: versions) {
+        .onChange(of: versions) { _ in
             guard let versions else {
                 text = "加载中……"
                 return
@@ -278,7 +278,7 @@ fileprivate struct LoaderCard: View {
                 }
             }
         }
-        .onChange(of: selectedLoader) {
+        .onChange(of: selectedLoader) { _ in
             if let selectedLoader, selectedLoader.loader != loader {
                 text = "与 \(selectedLoader.loader.getName()) 不兼容"
                 showFoldController = false
