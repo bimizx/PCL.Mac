@@ -24,7 +24,7 @@ struct MinecraftLaunchIntent: AppIntent {
             return .result(dialog: "未设置默认 Minecraft 目录。")
         }
         
-        let instance = MinecraftInstance.create(directory, directory.versionsURL.appending(path: instanceName))
+        let instance = MinecraftInstance.create(directory.versionsURL.appending(path: instanceName))
         guard let instance = instance else {
             return .result(dialog: .init("实例不存在。"))
         }
@@ -39,7 +39,7 @@ struct MinecraftLaunchIntent: AppIntent {
         }
         
         Task {
-            await instance.launch(options)
+            await instance.launch(options, LaunchState(options: options))
         }
         
         return .result(dialog: .init("在 \((DispatchTime.now().uptimeNanoseconds - before.uptimeNanoseconds) / 1_000_000)ms 内成功创建进程。"))

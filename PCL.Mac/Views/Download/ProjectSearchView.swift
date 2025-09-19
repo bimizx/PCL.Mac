@@ -97,12 +97,12 @@ struct ProjectListItem: View {
                     Spacer()
                 }
                 Spacer()
-                if isHovered {
-                    Image(systemName: "plus.circle")
+                if isHovered && summary.type != .modpack {
+                    Image("PlusIcon")
                         .resizable()
                         .scaledToFit()
                         .frame(width: 16)
-                        .foregroundStyle(Color(hex: 0x8C8C8C))
+                        .foregroundStyle(AppSettings.shared.theme.getTextStyle())
                         .padding(.trailing)
                         .contentShape(Circle())
                         .onTapGesture {
@@ -373,17 +373,21 @@ struct ProjectQueueOverlay: View {
                         .fixedSize()
                         MyButton(text: "开始", foregroundStyle: AppSettings.shared.theme.getTextStyle()) {
                             guard let instance = DataManager.shared.defaultInstance else {
-                                hint("请先在版本列表中选择一个实例！", .critical)
+                                hint("请先在实例列表中选择一个实例！", .critical)
                                 return
                             }
                             let versions = state.pendingDownloadProjects
-                            let task = ResourceInstallTask(instance: instance, versions: versions)
-                            task.onComplete {
-                                hint("下载完成！", .finish)
-                                state.pendingDownloadProjects.removeAll()
+                            let tasks: InstallTasks = .single(ResourceDownloadTask(instance: instance, versions: versions))
+                            DataManager.shared.inprogressInstallTasks = tasks
+                            tasks.startAll { result in
+                                switch result {
+                                case .success(_):
+                                    hint("下载完成！", .finish)
+                                case .failure(let failure):
+                                    PopupManager.shared.show(.init(.error, "资源下载失败", "\(failure.localizedDescription)\n若要寻求帮助，请进入设置 > 其它 > 打开日志，将选中的文件发给别人，而不是发送此页面的照片或截图。", [.ok]))
+                                }
                             }
-                            DataManager.shared.inprogressInstallTasks = .single(task)
-                            task.start()
+                            state.pendingDownloadProjects.removeAll()
                             if let id = state.projectQueueOverlayId {
                                 OverlayManager.shared.removeOverlay(with: id)
                                 state.projectQueueOverlayId = nil

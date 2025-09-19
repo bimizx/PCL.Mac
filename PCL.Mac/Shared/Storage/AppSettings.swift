@@ -58,7 +58,7 @@ public class AppSettings: ObservableObject {
         }
     }
     
-    /// 启动时若为空自动设置为第一个版本
+    /// 启动时若为空自动设置为第一个实例
     @AppStorage("defaultInstance") public var defaultInstance: String?
     
     /// 配色方案
@@ -68,7 +68,7 @@ public class AppSettings: ObservableObject {
     @CodableAppStorage("lastVersionManifest") public var lastVersionManifest: VersionManifest? = nil
     
     /// 当前 MinecraftDirectory
-    @CodableAppStorage("currentMinecraftDirectory") public var currentMinecraftDirectory: MinecraftDirectory? = .default
+    @CodableAppStorage("currentMinecraftDirectory") public var currentMinecraftDirectory: MinecraftDirectory! = .default
     
     /// 所有 MinecraftDirectory
     @CodableAppStorage("minecraftDirectories") public var minecraftDirectories: [MinecraftDirectory] = [.default]
@@ -125,7 +125,9 @@ public class AppSettings: ObservableObject {
             
             if defaultInstance == nil {
                 directory.loadInnerInstances { instances in
-                    self.defaultInstance = instances.first?.name
+                    if case .success(let instances) = instances {
+                        self.defaultInstance = instances.first?.name
+                    }
                 }
             }
         }
@@ -143,7 +145,7 @@ public class AppSettings: ObservableObject {
         minecraftDirectories.removeAll(where: { $0.rootURL == url })
         
         if minecraftDirectories.isEmpty {
-            minecraftDirectories.append(currentMinecraftDirectory!)
+            minecraftDirectories.append(currentMinecraftDirectory)
         }
         
         DataManager.shared.objectWillChange.send()

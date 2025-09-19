@@ -21,7 +21,6 @@ public class MinecraftInstance: Identifiable, Equatable, Hashable {
     public let minecraftDirectory: MinecraftDirectory
     public let configPath: URL
     public private(set) var version: MinecraftVersion! = nil
-    public var process: Process?
     public private(set) var manifest: ClientManifest!
     public var config: MinecraftConfig!
     public var clientBrand: ClientBrand!
@@ -38,18 +37,20 @@ public class MinecraftInstance: Identifiable, Equatable, Hashable {
         lhs.id == rhs.id
     }
     
-    public static func create(_ minecraftDirectory: MinecraftDirectory, _ name: String, config: MinecraftConfig? = nil) -> MinecraftInstance? {
-        create(minecraftDirectory, minecraftDirectory.versionsURL.appending(path: name), config: config)
+    public static func create(_ directory: MinecraftDirectory, _ name: String, config: MinecraftConfig? = nil) -> MinecraftInstance? {
+        create(directory.versionsURL.appending(path: name), config: config)
     }
     
-    public static func create(_ minecraftDirectory: MinecraftDirectory, _ runningDirectory: URL, config: MinecraftConfig? = nil) -> MinecraftInstance? {
+    public static func create(_ runningDirectory: URL, config: MinecraftConfig? = nil, doCache: Bool = true) -> MinecraftInstance? {
         if let cached = cache[runningDirectory] {
             return cached
         }
         
-        let instance: MinecraftInstance = .init(minecraftDirectory: minecraftDirectory, runningDirectory: runningDirectory, config: config)
+        let instance: MinecraftInstance = .init(runningDirectory: runningDirectory, config: config)
         if instance.setup() {
-            cache[runningDirectory] = instance
+            if doCache {
+                cache[runningDirectory] = instance
+            }
             return instance
         } else {
             err("实例初始化失败")
@@ -64,9 +65,9 @@ public class MinecraftInstance: Identifiable, Equatable, Hashable {
     
 
     
-    private init(minecraftDirectory: MinecraftDirectory, runningDirectory: URL, config: MinecraftConfig? = nil) {
+    private init(runningDirectory: URL, config: MinecraftConfig? = nil) {
         self.runningDirectory = runningDirectory
-        self.minecraftDirectory = minecraftDirectory
+        self.minecraftDirectory = .init(rootURL: runningDirectory.parent().parent(), name: nil)
         self.configPath = runningDirectory.appending(path: ".PCL_Mac.json")
         self.config = config
     }
@@ -164,7 +165,9 @@ public class MinecraftInstance: Identifiable, Equatable, Hashable {
         return suitableJava
     }
     
-    public func launch(_ launchOptions: LaunchOptions) async {
+    public func launch(_ launchOptions: LaunchOptions, _ launchState: LaunchState) async {
+        // 登录账号
+        await launchState.setStage(.login)
         if let account = launchOptions.account {
             launchOptions.playerName = account.name
             launchOptions.uuid = account.uuid
@@ -176,6 +179,7 @@ public class MinecraftInstance: Identifiable, Equatable, Hashable {
         }
         launchOptions.javaPath = config.javaURL
         
+        // 处理 Rosetta
         loadManifest()
         if Architecture.getArchOfFile(launchOptions.javaPath).isCompatiableWithSystem() {
             ArtifactVersionMapper.map(manifest)
@@ -186,46 +190,49 @@ public class MinecraftInstance: Identifiable, Equatable, Hashable {
             warn("正在使用 Rosetta 运行 Minecraft")
         }
         
+        // 资源完整性检查
         if !config.skipResourcesCheck && !launchOptions.skipResourceCheck {
+            await launchState.setStage(.resourcesCheck)
             log("正在进行资源完整性检查")
-            await withCheckedContinuation { continuation in
-                let task = MinecraftInstaller.createCompleteTask(self, continuation.resume)
-                task.start()
-            }
+            try? await MinecraftInstaller.completeResources(self)
             log("资源完整性检查完成")
         }
         
-        let launcher = MinecraftLauncher(self)!
-        launcher.launch(launchOptions) { exitCode in
-            if exitCode != 0 {
-                log("检测到非 0 退出代码")
-                hint("检测到 Minecraft 出现错误，错误分析已开始……")
-                Task {
-                    if await PopupManager.shared.showAsync(
-                        .init(.error, "Minecraft 出现错误", "很抱歉，PCL.Mac 暂时没有分析功能。\n如果要寻求帮助，请把错误报告文件发给对方，而不是发送这个窗口的照片或者截图。\n不要截图！不要截图！！不要截图！！！", [.ok, .init(label: "导出错误报告", style: .accent)])
-                    ) == 1 {
-                        let savePanel = NSSavePanel()
-                        savePanel.title = "选择导出位置"
-                        savePanel.prompt = "导出"
-                        savePanel.allowedContentTypes = [.zip]
-                        let formatter = DateFormatter()
-                        formatter.dateFormat = "yyyy-M-d_HH.mm.ss"
-                        savePanel.nameFieldStringValue = "错误报告-\(formatter.string(from: .init()))"
-                        savePanel.beginSheetModal(for: NSApplication.shared.windows.first!) { [unowned self] result in
-                            if result == .OK {
-                                if let url = savePanel.url {
-                                    MinecraftCrashHandler.exportErrorReport(self, launcher, to: url)
-                                }
-                            }
-                        }
-                    }
+        // 启动 Minecraft
+        let launcher = MinecraftLauncher(self, state: launchState)!
+        let exitCode = await launcher.launch(launchOptions)
+        if exitCode != 0 && exitCode != 143 {
+            log("检测到异常退出代码")
+            hint("检测到 Minecraft 出现错误，错误分析已开始……")
+            if await PopupManager.shared.showAsync(
+                .init(.error, "Minecraft 出现错误", "很抱歉，PCL.Mac 暂时没有分析功能。\n如果要寻求帮助，请把错误报告文件发给对方，而不是发送这个窗口的照片或者截图。\n不要截图！不要截图！！不要截图！！！", [.ok, .init(label: "导出错误报告", style: .accent)])
+            ) == 1 {
+                await MainActor.run {
+                    onCrash(options: launchOptions, state: launchState)
+                }
+            }
+        }
+    }
+    
+    private func onCrash(options: LaunchOptions, state: LaunchState) {
+        let savePanel = NSSavePanel()
+        savePanel.title = "选择导出位置"
+        savePanel.prompt = "导出"
+        savePanel.allowedContentTypes = [.zip]
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-M-d_HH.mm.ss"
+        savePanel.nameFieldStringValue = "错误报告-\(formatter.string(from: .init()))"
+        savePanel.beginSheetModal(for: NSApplication.shared.windows.first!) { [unowned self] result in
+            if result == .OK {
+                if let url = savePanel.url {
+                    MinecraftCrashHandler.exportErrorReport(instance: self, options: options, state: state, to: url)
                 }
             }
         }
     }
     
     @discardableResult
-    private func loadManifest() -> Bool {
+    public func loadManifest() -> Bool {
         do {
             let manifestPath = runningDirectory.appending(path: runningDirectory.lastPathComponent + ".json")
             

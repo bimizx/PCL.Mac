@@ -10,20 +10,20 @@ import SwiftUI
 struct MyList<Content: View>: View {
     @ObservedObject private var dataManager: DataManager = .shared
     
-    let content: (AppRoute, Bool) -> Content
-    @Binding var cases: [AppRoute]
-    let animationIndex: Int
-    let height: CGFloat
+    private let content: (AppRoute, Bool) -> Content
+    private let cases: [AppRoute]
+    private let animationIndex: Int
+    private let height: CGFloat
     @State private var hovering: AppRoute? = nil
     @State private var appeared: Set<AppRoute> = []
     
-    init(root: AppRoute? = nil, cases: Binding<[AppRoute]>, animationIndex: Int = 0, height: CGFloat = 32, @ViewBuilder content: @escaping (AppRoute, Bool) -> Content) {
-        self._cases = cases
+    init(root: AppRoute? = nil, cases: [AppRoute], animationIndex: Int = 0, height: CGFloat = 32, @ViewBuilder content: @escaping (AppRoute, Bool) -> Content) {
+        self.cases = cases
         self.content = content
         self.animationIndex = animationIndex
         self.height = height
         if let root = root, dataManager.router.getLast() == root {
-            dataManager.router.append(cases.first!.wrappedValue)
+            dataManager.router.append(cases.first!)
         }
     }
     
@@ -32,13 +32,13 @@ struct MyList<Content: View>: View {
             ForEach(cases.indices, id: \.self) { index in
                 let item = cases[index]
                 RouteView(content: content, item: item, height: height)
-                    .offset(x: appeared.contains(item) ? 0 : -dataManager.leftTabWidth / 2)
+                    .offset(x: appeared.contains(item) ? 0 : -dataManager.leftTabWidth / 4)
                     .opacity(appeared.contains(item) ? 1 : 0)
                     .onAppear {
                         if !appeared.contains(item) {
                             DispatchQueue.main.asyncAfter(deadline: .now() + Double(index + animationIndex) * 0.038) {
                                 let item1 = item
-                                withAnimation(.spring(response: 0.4, dampingFraction: 0.65)) {
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.65)) {
                                     _ = appeared.insert(item1)
                                 }
                             }

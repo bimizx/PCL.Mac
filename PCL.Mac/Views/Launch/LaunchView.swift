@@ -7,10 +7,104 @@
 
 import SwiftUI
 
+fileprivate struct ProgressModifier: AnimatableModifier {
+    var progress: Double
+
+    var animatableData: Double {
+        get { progress }
+        set { progress = newValue }
+    }
+
+    func body(content: Content) -> some View {
+        Text(String(format: "%.2f%%", progress * 100))
+    }
+}
+
+fileprivate struct LaunchingLeftTab: View {
+    @ObservedObject private var launchState: LaunchState
+    @State private var progress: Double = 0
+    
+    init(launchState: LaunchState) {
+        self.launchState = launchState
+    }
+    
+    var body: some View {
+        VStack {
+            // 进度条
+            HStack(spacing: 0) {
+                Rectangle()
+                    .fill(
+                        LinearGradient(
+                            gradient: Gradient(stops: [
+                                .init(color: ColorConstants.Color4, location: 0),
+                                .init(color: ColorConstants.Color3, location: 0.6)
+                            ]),
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .frame(width: progress * 260)
+                Rectangle()
+                    .fill(ColorConstants.Color6)
+                    .frame(width: (1 - progress) * 260)
+            }
+            .frame(width: 260, height: 4)
+            .padding(.bottom, 27)
+            
+            VStack(alignment: .leading, spacing: 5) {
+                LaunchingInfoRow(label: "当前步骤", value: launchState.stage.rawValue)
+                if let account = launchState.options.account {
+                    LaunchingInfoRow(label: "验证方式", value: account.authMethodName)
+                }
+                if progress < 1.0 {
+                    LaunchingInfoRow(label: "启动进度", value: "", modifier: ProgressModifier(progress: progress))
+                }
+            }
+        }
+        .onAppear {
+            DataManager.shared.leftTabId = .init()
+        }
+        .onChange(of: launchState.progress) { oldValue, newValue in
+            withAnimation(.easeInOut(duration: 0.2)) {
+                self.progress = newValue
+            }
+        }
+        .onChange(of: launchState.stage) { stage in
+            if stage == .finish {
+                DataManager.shared.objectWillChange.send()
+            }
+        }
+    }
+    
+    private struct LaunchingInfoRow<M: ViewModifier>: View {
+        private let label: String
+        private let value: String
+        private let modifier: M
+        
+        init(label: String, value: String, modifier: M = EmptyModifier()) {
+            self.label = label
+            self.value = value
+            self.modifier = modifier
+        }
+        
+        var body: some View {
+            HStack {
+                Text(label)
+                    .font(.custom("PCL English", size: 14))
+                    .foregroundStyle(Color("TextColor"))
+                    .opacity(0.5)
+                Text(value)
+                    .modifier(modifier)
+                    .font(.custom("PCL English", size: 14))
+                    .foregroundStyle(Color("TextColor"))
+            }
+        }
+    }
+}
+
 fileprivate struct LeftTab: View {
     @ObservedObject private var dataManager: DataManager = .shared
     @ObservedObject private var accountManager: AccountManager = .shared
-    
     @State private var instance: MinecraftInstance?
     
     private var accountView: some View {
@@ -44,26 +138,29 @@ fileprivate struct LeftTab: View {
         }
     }
     
-    var body: some View {
-        VStack {
-            Spacer()
-            accountView
-            Spacer()
+    private var launchButtons: some View {
+        Group {
             if let instance = self.instance {
                 MyButton(text: "启动游戏", descriptionText: instance.name, foregroundStyle: AppSettings.shared.theme.getTextStyle()) {
+                    if dataManager.launchState != nil { return }
                     let launchOptions: LaunchOptions = .init()
+                    let launchState: LaunchState = .init(options: launchOptions)
+                    dataManager.launchState = launchState
                     
                     Task {
                         guard await launchPrecheck(launchOptions) else { return }
                         debug("正在启动游戏")
-                        await instance.launch(launchOptions)
+                        await instance.launch(launchOptions, launchState)
+                        await MainActor.run {
+                            self.dataManager.launchState = nil
+                        }
                     }
                 }
                 .frame(height: 55)
                 .padding()
                 .padding(.bottom, -27)
             } else {
-                MyButton(text: "下载游戏", descriptionText: "未找到可用的游戏版本") {
+                MyButton(text: "下载游戏", descriptionText: "未找到可用的游戏实例") {
                     dataManager.router.setRoot(.download)
                 }
                 .frame(height: 55)
@@ -71,13 +168,13 @@ fileprivate struct LeftTab: View {
                 .padding(.bottom, -27)
             }
             HStack(spacing: 12) {
-                MyButton(text: "版本选择") {
+                MyButton(text: "实例选择") {
                     dataManager.router.append(.versionSelect)
                 }
                 if AppSettings.shared.defaultInstance != nil {
-                    MyButton(text: "版本设置") {
+                    MyButton(text: "实例设置") {
                         if let instance = self.instance {
-                            dataManager.router.append(.versionSettings(instance: instance))
+                            dataManager.router.append(.instanceSettings(instance: instance))
                         }
                     }
                 }
@@ -86,12 +183,26 @@ fileprivate struct LeftTab: View {
             .padding()
             .padding(.bottom, 4)
         }
+    }
+    
+    var body: some View {
+        VStack {
+            Spacer()
+            if let launchState = dataManager.launchState, launchState.stage != .finish {
+                LaunchingLeftTab(launchState: launchState)
+                Spacer()
+            } else {
+                accountView
+                Spacer()
+                launchButtons
+            }
+        }
         .frame(width: 300)
         .foregroundStyle(Color(hex: 0x343D4A))
         .onAppear {
             if let directory = AppSettings.shared.currentMinecraftDirectory,
                let defaultInstance = AppSettings.shared.defaultInstance,
-               let instance = MinecraftInstance.create(directory, directory.versionsURL.appending(path: defaultInstance)) {
+               let instance = MinecraftInstance.create(directory.versionsURL.appending(path: defaultInstance)) {
                 self.instance = instance
             }
         }
@@ -123,7 +234,7 @@ fileprivate struct LeftTab: View {
                 }
                 return false
             case .invalidMemoryConfiguration:
-                PopupManager.shared.show(.init(.error, "错误", "无效的内存配置：0MB。\n请在 版本设置 > 设置 中调整游戏内存配置", [.ok]))
+                PopupManager.shared.show(.init(.error, "错误", "无效的内存配置：0MB。\n请在 实例设置 > 设置 中调整游戏内存配置", [.ok]))
             case .rosetta:
                 if await PopupManager.shared.showAsync(.init(.normal, "警告", "你安装 / 选择了一个 x64 架构的 Java，需要通过转译运行，这将会损耗大部分性能。\n你可以进入 设置 > Java 管理，安装 / 选择一个 ARM64 架构的 Java。", [.init(label: "继续启动", style: .normal), .close]))
                 == 1 {

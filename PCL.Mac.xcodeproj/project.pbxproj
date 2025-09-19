@@ -15,8 +15,8 @@
 		EC422DAD2E2082D900FE8309 /* PCL_Mac_Core.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = EC422DA32E2082D900FE8309 /* PCL_Mac_Core.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		EC9507372DFCF17700018EE0 /* SwiftyJSON in Frameworks */ = {isa = PBXBuildFile; productRef = EC9507362DFCF17700018EE0 /* SwiftyJSON */; };
 		EC98618D2E3E09DC00C0E6F2 /* SwiftyJSON in Frameworks */ = {isa = PBXBuildFile; productRef = EC98618C2E3E09DC00C0E6F2 /* SwiftyJSON */; };
-		EC99F3162E7C27390031C5C4 /* daemon in Resources */ = {isa = PBXBuildFile; fileRef = EC99F3152E7C27390031C5C4 /* daemon */; };
-		EC9A7DCA2DE150170018815F /* glfw-patcher.jar in Resources */ = {isa = PBXBuildFile; fileRef = EC9A7DC82DE1500F0018815F /* glfw-patcher.jar */; };
+		EC99F3162E7C27390031C5C4 /* (null) in Resources */ = {isa = PBXBuildFile; };
+		ECCFFB762E7CDB1200E32618 /* daemon in Resources */ = {isa = PBXBuildFile; fileRef = ECCFFB752E7CDB1200E32618 /* daemon */; };
 		ECDBF0CC2E1124C500E81482 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = ECDBF0CB2E1124C500E81482 /* ZIPFoundation */; };
 		ECFF69BD2E542EE8000625FA /* TOMLKit in Frameworks */ = {isa = PBXBuildFile; productRef = ECFF69BC2E542EE8000625FA /* TOMLKit */; };
 		ECFF69BF2E542EFF000625FA /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = ECFF69BE2E542EFF000625FA /* ZIPFoundation */; };
@@ -59,10 +59,9 @@
 		EC01E7E72DDC3BEA006EF529 /* log4j2-1.12-.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = "log4j2-1.12-.xml"; sourceTree = "<group>"; };
 		EC23B6322DE5DC5B00CBEA9C /* PCL.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = PCL.ttf; sourceTree = "<group>"; };
 		EC422DA32E2082D900FE8309 /* PCL_Mac_Core.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = PCL_Mac_Core.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		EC99F3152E7C27390031C5C4 /* daemon */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = daemon; sourceTree = "<group>"; };
-		EC9A7DC82DE1500F0018815F /* glfw-patcher.jar */ = {isa = PBXFileReference; lastKnownFileType = archive.jar; path = "glfw-patcher.jar"; sourceTree = "<group>"; };
 		EC9EAEC92DD85E48006CEDCC /* PCL.Mac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PCL.Mac.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		ECA5D8DC2DD99A4C006C58F7 /* PCL.Mac.Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PCL.Mac.Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		ECCFFB752E7CDB1200E32618 /* daemon */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = daemon; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -78,21 +77,23 @@
 				Java/JavaDownloader.swift,
 				Java/JavaSearch.swift,
 				LogManager.swift,
-				Minecraft/AssetIndex.swift,
 				Minecraft/ClientManifest.swift,
-				Minecraft/Download/ArtifactVersionMapper.swift,
-				Minecraft/Download/InstallTask.swift,
-				Minecraft/Download/MinecraftInstaller.swift,
-				Minecraft/Download/VersionManifest.swift,
+				Minecraft/Install/ArtifactVersionMapper.swift,
+				Minecraft/Install/AssetIndex.swift,
+				Minecraft/Install/InstallTask.swift,
+				Minecraft/Install/MinecraftInstaller.swift,
+				Minecraft/Install/MinecraftInstallTask.swift,
+				Minecraft/Install/VersionManifest.swift,
 				Minecraft/Launch/LaunchOptions.swift,
 				Minecraft/Launch/LaunchPrecheck.swift,
+				Minecraft/Launch/LaunchState.swift,
+				Minecraft/Launch/MinecraftCrashHandler.swift,
 				Minecraft/Launch/MinecraftLauncher.swift,
 				Minecraft/Login/Account/AccountManager.swift,
 				Minecraft/Login/Account/MicrosoftAccount.swift,
 				Minecraft/Login/Account/OfflineAccount.swift,
 				Minecraft/Login/Account/YggdrasilAccount.swift,
 				Minecraft/Login/MsLogin.swift,
-				Minecraft/MinecraftCrashHandler.swift,
 				Minecraft/MinecraftDirectory.swift,
 				Minecraft/MinecraftInstance.swift,
 				Minecraft/MinecraftVersion.swift,
@@ -101,17 +102,19 @@
 				Minecraft/Mod/Loader/Forge/ForgeInstaller.swift,
 				Minecraft/Mod/Loader/Forge/ForgeInstallProfile.swift,
 				Minecraft/Mod/Loader/Forge/NeoforgeInstaller.swift,
+				Minecraft/Mod/Loader/ModLoaderInstallTasks.swift,
 				Minecraft/Mod/Mod.swift,
+				Modpack/Modrinth/ModrinthModpackImporter.swift,
+				Modpack/Modrinth/ModrinthModpackIndex.swift,
 				Modrinth/ModrinthProjectSearcher.swift,
 				Modrinth/ProjectSummary.swift,
-				Modrinth/ResourceDownloader.swift,
+				Modrinth/ResourceDownloadTask.swift,
 				Storage/AccessTokenStorage.swift,
 				Storage/CacheStorage.swift,
 				Temp/TemperatureDirectory.swift,
 				Theme/ThemeOwnershipChecker.swift,
 				UpdateCheck.swift,
 				Utils/ArchiveUtil.swift,
-				Utils/MyLocalizedError.swift,
 				Utils/Requests.swift,
 				Utils/Util.swift,
 				YggdrasilClient.swift,
@@ -130,21 +133,23 @@
 				Java/JavaDownloader.swift,
 				Java/JavaSearch.swift,
 				LogManager.swift,
-				Minecraft/AssetIndex.swift,
 				Minecraft/ClientManifest.swift,
-				Minecraft/Download/ArtifactVersionMapper.swift,
-				Minecraft/Download/InstallTask.swift,
-				Minecraft/Download/MinecraftInstaller.swift,
-				Minecraft/Download/VersionManifest.swift,
+				Minecraft/Install/ArtifactVersionMapper.swift,
+				Minecraft/Install/AssetIndex.swift,
+				Minecraft/Install/InstallTask.swift,
+				Minecraft/Install/MinecraftInstaller.swift,
+				Minecraft/Install/MinecraftInstallTask.swift,
+				Minecraft/Install/VersionManifest.swift,
 				Minecraft/Launch/LaunchOptions.swift,
 				Minecraft/Launch/LaunchPrecheck.swift,
+				Minecraft/Launch/LaunchState.swift,
+				Minecraft/Launch/MinecraftCrashHandler.swift,
 				Minecraft/Launch/MinecraftLauncher.swift,
 				Minecraft/Login/Account/AccountManager.swift,
 				Minecraft/Login/Account/MicrosoftAccount.swift,
 				Minecraft/Login/Account/OfflineAccount.swift,
 				Minecraft/Login/Account/YggdrasilAccount.swift,
 				Minecraft/Login/MsLogin.swift,
-				Minecraft/MinecraftCrashHandler.swift,
 				Minecraft/MinecraftDirectory.swift,
 				Minecraft/MinecraftInstance.swift,
 				Minecraft/MinecraftVersion.swift,
@@ -153,17 +158,19 @@
 				Minecraft/Mod/Loader/Forge/ForgeInstaller.swift,
 				Minecraft/Mod/Loader/Forge/ForgeInstallProfile.swift,
 				Minecraft/Mod/Loader/Forge/NeoforgeInstaller.swift,
+				Minecraft/Mod/Loader/ModLoaderInstallTasks.swift,
 				Minecraft/Mod/Mod.swift,
+				Modpack/Modrinth/ModrinthModpackImporter.swift,
+				Modpack/Modrinth/ModrinthModpackIndex.swift,
 				Modrinth/ModrinthProjectSearcher.swift,
 				Modrinth/ProjectSummary.swift,
-				Modrinth/ResourceDownloader.swift,
+				Modrinth/ResourceDownloadTask.swift,
 				Storage/AccessTokenStorage.swift,
 				Storage/CacheStorage.swift,
 				Temp/TemperatureDirectory.swift,
 				Theme/ThemeOwnershipChecker.swift,
 				UpdateCheck.swift,
 				Utils/ArchiveUtil.swift,
-				Utils/MyLocalizedError.swift,
 				Utils/Requests.swift,
 				Utils/Util.swift,
 				YggdrasilClient.swift,
@@ -259,12 +266,11 @@
 		EC01E7E52DDC3BD2006EF529 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				ECCFFB752E7CDB1200E32618 /* daemon */,
 				ECFAA4FE2E419A3200CE1E6E /* Themes */,
 				EC23B6322DE5DC5B00CBEA9C /* PCL.ttf */,
-				EC9A7DC82DE1500F0018815F /* glfw-patcher.jar */,
 				EC01E7E62DDC3BEA006EF529 /* log4j2.xml */,
 				EC01E7E72DDC3BEA006EF529 /* log4j2-1.12-.xml */,
-				EC99F3152E7C27390031C5C4 /* daemon */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -451,10 +457,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				EC9A7DCA2DE150170018815F /* glfw-patcher.jar in Resources */,
 				EC01E7E82DDC3BEA006EF529 /* log4j2.xml in Resources */,
+				ECCFFB762E7CDB1200E32618 /* daemon in Resources */,
 				EC23B6332DE5DC5B00CBEA9C /* PCL.ttf in Resources */,
-				EC99F3162E7C27390031C5C4 /* daemon in Resources */,
+				EC99F3162E7C27390031C5C4 /* (null) in Resources */,
 				EC01E7E92DDC3BEA006EF529 /* log4j2-1.12-.xml in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

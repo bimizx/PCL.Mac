@@ -20,17 +20,19 @@ struct ContentView: View {
                 if case .installing = dataManager.router.getLast() {
                     
                 } else {
-                    RoundedButton {
-                        Image("DownloadIcon")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 20)
-                            .foregroundStyle(.white)
-                    } onClick: {
-                        dataManager.router.append(.installing(tasks: tasks))
-                    }
+                    InstallTaskButtonOverlay(tasks: tasks)
                     .padding()
                 }
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+    }
+    
+    var stopGameButtonOverlay: some View {
+        Group {
+            if let state = dataManager.launchState {
+                StopGameButtonOverlay(state: state)
+                    .padding()
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
@@ -81,6 +83,7 @@ struct ContentView: View {
                 routerOverlay
             }
             installTaskButtonOverlay
+            stopGameButtonOverlay
             ProjectQueueOverlay()
             hintOverlay
             popupOverlay

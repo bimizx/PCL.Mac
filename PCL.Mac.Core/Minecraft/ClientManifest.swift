@@ -274,15 +274,17 @@ public class ClientManifest {
         let json = try JSON(data: data)
         
         if json["loader"].exists() && json["intermediary"].exists() && !json["id"].exists() { // 旧版 PCL.Mac Fabric 安装逻辑
-            warn("无法解析旧版 PCL.Mac 安装的 Fabric 版本: \(url.lastPathComponent)")
+            warn("无法解析旧版 PCL.Mac 安装的 Fabric 实例: \(url.lastPathComponent)")
             return nil
         }
         
     checkParent:
         if let inheritsFrom = json["inheritsFrom"].string,
            let minecraftDirectory = minecraftDirectory {
-            let parentURL = minecraftDirectory.versionsURL.appending(path: inheritsFrom).appending(path: "\(inheritsFrom).json")
-            
+            var parentURL = minecraftDirectory.versionsURL.appending(path: inheritsFrom).appending(path: "\(inheritsFrom).json")
+            if !FileManager.default.fileExists(atPath: parentURL.path) {
+                parentURL = url.parent().appending(path: ".parent")
+            }
             guard FileManager.default.fileExists(atPath: parentURL.path) else {
                 err("\(url.path) 中有 inheritsFrom 字段，但其对应的 JSON 不存在")
                 return nil
