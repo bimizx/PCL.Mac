@@ -166,6 +166,7 @@ public class MinecraftInstance: Identifiable, Equatable, Hashable {
     }
     
     public func launch(_ launchOptions: LaunchOptions, _ launchState: LaunchState) async {
+        config.lastLaunch = Date()
         // 登录账号
         await launchState.setStage(.login)
         if let account = launchOptions.account {
@@ -282,7 +283,7 @@ public class MinecraftInstance: Identifiable, Equatable, Hashable {
     }
 }
 
-public struct MinecraftConfig: Codable {
+public class MinecraftConfig: Codable {
     public var additionalLibraries: Set<String> = []
     public var javaURL: URL! {
         get {
@@ -296,6 +297,7 @@ public struct MinecraftConfig: Codable {
     public var maxMemory: Int32 = 4096
     public var qualityOfService: QualityOfService = .default
     public var minecraftVersion: String!
+    public var lastLaunch: Date?
     
     private var javaURLString: String
     
@@ -306,6 +308,7 @@ public struct MinecraftConfig: Codable {
         case maxMemory
         case qualityOfService
         case minecraftVersion
+        case lastLaunch
     }
     
     public init(_ json: JSON) {
@@ -315,6 +318,7 @@ public struct MinecraftConfig: Codable {
         self.maxMemory = json["maxMemory"].int32 ?? 4096
         self.qualityOfService = .init(rawValue: json["qualityOfService"].intValue) ?? .default
         self.minecraftVersion = json["minecraftVersion"].stringValue
+        self.lastLaunch = json["lastLaunch"].double.map { Date(timeIntervalSince1970: $0) }
         if qualityOfService.rawValue == 0 {
             qualityOfService = .default
         }
