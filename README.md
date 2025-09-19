@@ -16,7 +16,7 @@
 PCL.Mac 是使用 SwiftUI 框架重构的 [Plain Craft Launcher](https://github.com/Hex-Dragon/PCL2)，支持 macOS 平台。<br>
 支持与主线 (PCL) 与[社区版](https://github.com/PCL-Community/PCL2-CE)一样的游戏安装（原版、Forge、Fabric、NeoForge）、Mod 下载与游戏管理。<br>
 
-可运行本启动器的最低系统版本为 `macOS 14.0`。
+可运行本启动器的最低系统版本为 `macOS 13.0`。
 
 ## 下载
 
@@ -28,7 +28,7 @@ PCL.Mac 是使用 SwiftUI 框架重构的 [Plain Craft Launcher](https://github.
 > 2. 进入「隐私与安全性」。
 > 3. 滑到底部，点击「仍然打开」。
 > 
-> 签名并公证后的版本大概会在 2025 年 12 月发布，到时候就可以开袋即食啦～
+> 签名并公证后的版本大概会在 2026 年 3 月发布，到时候就可以开袋即食啦～
 
 ## 协议声明
 `PCL.Mac.Core` 使用 MIT License，使用其代码时请遵循 MIT License 的规定，保留原有的版权声明和许可条款。
@@ -43,6 +43,5 @@ PCL.Mac 是使用 SwiftUI 框架重构的 [Plain Craft Launcher](https://github.
 - [HMCL-Dev](https://github.com/HMCL-Dev)
 - [Copilot](https://github.com/copilot)
 - [aria2](https://github.com/aria2/aria2)
-- NT | Krnl32
 - 阿鱼 | 🐟🐟🐟
-- [Ciilu](https://github.com/Ciilu)
+- [MinecraftYJQ](https://github.com/MinecraftYJQ)
