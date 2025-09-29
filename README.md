@@ -20,7 +20,7 @@ PCL.Mac 是使用 SwiftUI 框架重构的 [Plain Craft Launcher](https://github.
 
 ## 下载
 
-本项目尚处早期开发阶段，可从 [Actions](https://github.com/CeciliaStudio/PCL.Mac/actions) 下载开发版。
+你可以在项目的 [Actions](https://github.com/CeciliaStudio/PCL.Mac/actions) 中下载最新的开发版，或者在 [Releases](https://github.com/CeciliaStudio/PCL.Mac/releases) 中下载正式发布的版本。
 
 > [!WARNING]
 > 由于 App 未签名，直接打开可能会出现“已损坏”等提示。请：
