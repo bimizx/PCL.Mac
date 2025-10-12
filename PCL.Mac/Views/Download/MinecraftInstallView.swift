@@ -1,25 +1,25 @@
 //
-//  DownloadPage.swift
+//  MinecraftInstallView.swift
 //  PCL.Mac
 //
 //  Created by YiZhiMCQiu on 2025/7/8.
 //
 
 import SwiftUI
+import SwiftyJSON
 
-struct DownloadPage: View {
-    let version: MinecraftVersion
-    let back: () -> Void
-    
+struct MinecraftInstallView: View {
+    @ObservedObject private var dataManager: DataManager = .shared
     @State private var name: String
     @State private var tasks: InstallTasks = .empty()
     @State private var errorMessage: String = ""
     @State private var loader: LoaderVersion? = nil
     
-    init(_ version: MinecraftVersion, _ back: @escaping () -> Void) {
+    let version: MinecraftVersion
+    
+    init(_ version: MinecraftVersion) {
         self.version = version
         self.name = version.displayName
-        self.back = back
     }
     
     var body: some View {
@@ -27,15 +27,6 @@ struct DownloadPage: View {
             ScrollView {
                 TitlelessMyCard {
                     HStack(alignment: .center) {
-                        Image("Back")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 15)
-                            .foregroundStyle(Color(hex: 0x96989A))
-                            .padding(EdgeInsets(top: 0, leading: 10, bottom: 0, trailing: 10))
-                            .onTapGesture {
-                                back()
-                            }
                         Image(loader != nil ? "\(loader!.loader.rawValue.capitalized)Icon" : version.getIconName())
                             .resizable()
                             .scaledToFit()
@@ -56,18 +47,17 @@ struct DownloadPage: View {
                         .animation(.easeInOut(duration: 0.2), value: errorMessage)
                     }
                 }
-                .noAnimation()
                 .padding()
                 
                 VStack {
-                    LoaderCard(loader: .fabric, selectedLoader: $loader, name: $name, version: version)
+                    LoaderCard(index: 1, loader: .fabric, selectedLoader: $loader, name: $name, version: version)
                         .padding()
                         .padding(.top, 20)
                     
-                    LoaderCard(loader: .forge, selectedLoader: $loader, name: $name, version: version)
+                    LoaderCard(index: 2, loader: .forge, selectedLoader: $loader, name: $name, version: version)
                         .padding()
                     
-                    LoaderCard(loader: .neoforge, selectedLoader: $loader, name: $name, version: version)
+                    LoaderCard(index: 3, loader: .neoforge, selectedLoader: $loader, name: $name, version: version)
                         .padding()
                 }
                 .onChange(of: loader) { old, new in
@@ -102,50 +92,79 @@ struct DownloadPage: View {
                                 .font(.custom("PCL English", size: 16))
                         }
                     } onClick: {
-                        // 若实例名无效则直接返回
-                        guard errorMessage.isEmpty else {
-                            hint(errorMessage, .critical)
-                            return
-                        }
-                        
-                        if DataManager.shared.inprogressInstallTasks != nil { return }
-                        let directory = AppSettings.shared.currentMinecraftDirectory!
-                        let instanceURL = directory.versionsURL.appending(path: name)
-                        
-                        // 如果选择了加载器，添加加载器安装任务
-                        if let loader {
-                            let task: InstallTask? =
-                            switch loader.loader {
-                            case .fabric: FabricInstallTask(instanceURL: instanceURL, loaderVersion: loader.version)
-                            case .forge, .neoforge: ForgeInstallTask(instanceURL: instanceURL, loaderVersion: loader.version, isNeoforge: loader.loader == .neoforge)
-                            default: nil
-                            }
-                            tasks.addTask(key: loader.loader.rawValue, task: task!)
-                        }
-                        
-                        // 设置 MinecraftInstallTask 的实例名
-                        let minecraftInstallTask = MinecraftInstallTask(instanceURL: instanceURL, version: version, minecraftDirectory: directory)
-                        tasks.addTask(key: "minecraft", task: minecraftInstallTask)
-                        
-                        // 切换到安装任务页面
-                        DataManager.shared.inprogressInstallTasks = self.tasks
-                        DataManager.shared.router.append(.installing(tasks: tasks))
-                        // 开始安装
-                        tasks.startAll { result in
-                            switch result {
-                            case .success(_):
-                                hint("\(name) 安装完成！", .finish)
-                                AppSettings.shared.defaultInstance = name
-                            case .failure(let failure):
-                                PopupManager.shared.show(.init(.error, "Minecraft 安装失败", "\(failure.localizedDescription)\n若要寻求帮助，请进入设置 > 其它 > 打开日志，将选中的文件发给别人，而不是发送此页面的照片或截图。", [.ok]))
-                            }
-                        }
+                        startInstall()
                     }
                     .foregroundStyle(.white)
                     .padding()
                     Spacer()
                 }
             }
+        }
+        .onAppear {
+            dataManager.leftTab(0) { EmptyView() }
+        }
+    }
+    
+    private func startInstall() {
+        // 若实例名无效则直接返回
+        guard errorMessage.isEmpty else {
+            hint(errorMessage, .critical)
+            return
+        }
+        
+        if DataManager.shared.inprogressInstallTasks != nil { return }
+        let directory: MinecraftDirectory = MinecraftDirectoryManager.shared.current
+        let instanceURL = directory.versionsURL.appending(path: name)
+        
+        // 如果选择了加载器，添加加载器安装任务
+        if let loader {
+            let task: InstallTask? =
+            switch loader.loader {
+            case .fabric: FabricInstallTask(directory: directory, instanceURL: instanceURL, loaderVersion: loader.version)
+            case .forge, .neoforge: ForgeInstallTask(directory: directory, instanceURL: instanceURL, loaderVersion: loader.version, isNeoforge: loader.loader == .neoforge)
+            default: nil
+            }
+            tasks.addTask(key: loader.loader.rawValue, task: task!)
+        }
+        
+        // 设置 MinecraftInstallTask 的实例名
+        let minecraftInstallTask = MinecraftInstallTask(instanceURL: instanceURL, version: version, minecraftDirectory: directory)
+        tasks.addTask(key: "minecraft", task: minecraftInstallTask)
+        
+        // 切换到安装任务页面
+        DataManager.shared.inprogressInstallTasks = self.tasks
+        DataManager.shared.router.append(.installing(tasks: tasks))
+        // 开始安装
+        tasks.startAll { result in
+            switch result {
+            case .success(_):
+                hint("\(name) 安装完成！", .finish)
+                onInstallFinish(directory: directory, instanceURL: instanceURL, name: name)
+                MinecraftDirectoryManager.shared.setDefaultInstance(name)
+            case .failure(let failure):
+                PopupManager.shared.show(.init(.error, "Minecraft 安装失败", "\(failure.localizedDescription)\n若要寻求帮助，请进入设置 > 其它 > 打开日志，将选中的文件发给别人，而不是发送此页面的照片或截图。", [.ok]))
+            }
+        }
+    }
+    
+    private func onInstallFinish(directory: MinecraftDirectory, instanceURL: URL, name: String) {
+        do {
+            // 修改清单中的 id
+            let manifestURL = instanceURL.appending(path: "\(instanceURL.lastPathComponent).json")
+            guard FileManager.default.fileExists(atPath: manifestURL.path),
+                  let data = try FileHandle(forReadingFrom: manifestURL).readToEnd(),
+                  var dict = try JSON(data: data).dictionaryObject else {
+                return
+            }
+            dict["id"] = instanceURL.lastPathComponent
+            try JSONSerialization.data(withJSONObject: dict, options: [.prettyPrinted, .withoutEscapingSlashes]).write(to: manifestURL)
+            
+            // 初始化实例
+            let instance = MinecraftInstance.create(directory: directory, runningDirectory: instanceURL)
+            instance?.config.minecraftVersion = version.displayName
+            instance?.saveConfig()
+        } catch {
+            err("无法修改 id: \(error.localizedDescription)")
         }
     }
     
@@ -154,8 +173,7 @@ struct DownloadPage: View {
             errorMessage = "带 Mod 加载器的实例名不能与版本号一致！"
         } else if name.isEmpty {
             errorMessage = "实例名不能为空！"
-        } else if let directory = AppSettings.shared.currentMinecraftDirectory,
-                  FileManager.default.fileExists(atPath: directory.versionsURL.appending(path: name).path) {
+        } else if FileManager.default.fileExists(atPath: MinecraftDirectoryManager.shared.current.versionsURL.appending(path: name).path) {
             errorMessage = "已有同名实例！"
         } else {
             errorMessage = ""
@@ -187,6 +205,7 @@ private struct LoaderVersion: Identifiable, Equatable {
 }
 
 fileprivate struct LoaderCard: View {
+    @State private var isAppeared: Bool = false
     @State private var showFoldController: Bool = false
     @State private var showCancelButton: Bool = false
     @State private var versions: [LoaderVersion]? = nil
@@ -195,10 +214,18 @@ fileprivate struct LoaderCard: View {
     @Binding private var selectedLoader: LoaderVersion?
     @Binding private var name: String
     
+    private let index: Int
     private let loader: ClientBrand
     private let version: MinecraftVersion
     
-    init(loader: ClientBrand, selectedLoader: Binding<LoaderVersion?>, name: Binding<String>, version: MinecraftVersion) {
+    init(
+        index: Int,
+        loader: ClientBrand,
+        selectedLoader: Binding<LoaderVersion?>,
+        name: Binding<String>,
+        version: MinecraftVersion
+    ) {
+        self.index = index
         self.loader = loader
         self.version = version
         self._selectedLoader = selectedLoader
@@ -208,7 +235,7 @@ fileprivate struct LoaderCard: View {
     var body: some View {
         ZStack {
             if showFoldController, let versions = versions {
-                MyCard(title: loader.getName(), unfoldBinding: $isUnfolded) {
+                MyCard(index: index, title: loader.getName(), unfoldBinding: $isUnfolded) {
                     LazyVStack(spacing: 0) {
                         ForEach(versions) { version in
                             ListItem(iconName: "\(loader.rawValue.capitalized)Icon", title: version.displayName, description: version.stable ? "稳定版" : "测试版", isSelected: selectedLoader == version)
@@ -224,9 +251,8 @@ fileprivate struct LoaderCard: View {
                         }
                     }
                 }
-                .noAnimation()
             } else {
-                TitlelessMyCard {
+                TitlelessMyCard(index: index) {
                     HStack {
                         MaskedTextRectangle(text: loader.getName())
                         Spacer()
@@ -247,7 +273,6 @@ fileprivate struct LoaderCard: View {
                     }
                     .frame(height: 9)
                 }
-                .noAnimation()
             }
             
             if !isUnfolded {
@@ -255,7 +280,8 @@ fileprivate struct LoaderCard: View {
                     overlayContent
                     .font(.custom("PCL English", size: 14))
                     .foregroundStyle(Color(hex: 0x8C8C8C))
-                    .offset(x: 150, y: 14)
+                    .offset(x: 150, y: isAppeared ? 14 : -11)
+                    .opacity(isAppeared ? 1 : 0)
                     
                     Spacer()
                 }
@@ -288,6 +314,13 @@ fileprivate struct LoaderCard: View {
             } else if selectedLoader == nil {
                 text = "可以添加"
                 showFoldController = true
+            }
+        }
+        .onAppear {
+            DispatchQueue.main.asyncAfter(deadline: .now() + Double(index) * 0.04) {
+                withAnimation(.spring(response: 0.4, dampingFraction: 0.5)) {
+                    isAppeared = true
+                }
             }
         }
     }

@@ -64,16 +64,28 @@ public class ModrinthModpackImporter {
             
             // 添加整合包依赖的 Mod 加载器安装任务
             if index.dependencies.requiresFabric {
-                try installTasks.addTask(key: "fabric", task: FabricInstallTask(instanceURL: instanceURL, loaderVersion: index.dependencies.fabricLoader.unwrap()))
+                try installTasks.addTask(key: "fabric", task: FabricInstallTask(
+                    directory: minecraftDirectory,
+                    instanceURL: instanceURL,
+                    loaderVersion: index.dependencies.fabricLoader.unwrap()
+                ))
             } else if index.dependencies.requiresQuilt {
                 throw MyLocalizedError(reason: "不受支持的加载器: Quilt")
-            } else if index.dependencies.requiresForge {
-                try installTasks.addTask(key: "forge", task: ForgeInstallTask(instanceURL: instanceURL, loaderVersion: index.dependencies.forge.unwrap()))
-            } else if index.dependencies.requiresNeoforge {
-                try installTasks.addTask(key: "neoforge", task: ForgeInstallTask(instanceURL: instanceURL, loaderVersion: index.dependencies.neoforge.unwrap(), isNeoforge: true))
+            } else if index.dependencies.requiresForge || index.dependencies.requiresNeoforge {
+                try installTasks.addTask(key: "forge", task: ForgeInstallTask(
+                    directory: minecraftDirectory,
+                    instanceURL: instanceURL,
+                    loaderVersion: (index.dependencies.requiresForge ? index.dependencies.forge : index.dependencies.neoforge).unwrap(),
+                    isNeoforge: index.dependencies.requiresNeoforge
+                ))
             }
             
-            let modpackInstallTask = ModpackInstallTask(instanceURL: instanceURL, index: index, temp: temp)
+            let modpackInstallTask = ModpackInstallTask(
+                directory: minecraftDirectory,
+                instanceURL: instanceURL,
+                index: index,
+                temp: temp
+            )
             installTasks.addTask(key: "modpack", task: modpackInstallTask)
             
             return installTasks
@@ -103,11 +115,18 @@ public class ModrinthModpackImporter {
 }
 
 private class ModpackInstallTask: InstallTask {
+    private let directory: MinecraftDirectory
     private let instanceURL: URL
     private let index: ModrinthModpackIndex
     private let temp: TemperatureDirectory
     
-    fileprivate init(instanceURL: URL, index: ModrinthModpackIndex, temp: TemperatureDirectory) {
+    fileprivate init(
+        directory: MinecraftDirectory,
+        instanceURL: URL,
+        index: ModrinthModpackIndex,
+        temp: TemperatureDirectory
+    ) {
+        self.directory = directory
         self.instanceURL = instanceURL
         self.index = index
         self.temp = temp
@@ -139,8 +158,16 @@ private class ModpackInstallTask: InstallTask {
             increaseProgress(step)
         }
         await MainActor.run {
-            AppSettings.shared.defaultInstance = instanceURL.lastPathComponent
+            self.directory.config.defaultInstance = instanceURL.lastPathComponent
         }
+        let manifestURL = instanceURL.appending(path: "\(instanceURL.lastPathComponent).json")
+        guard FileManager.default.fileExists(atPath: manifestURL.path),
+              let data = try FileHandle(forReadingFrom: manifestURL).readToEnd(),
+              var dict = try JSON(data: data).dictionaryObject else {
+            return
+        }
+        dict["id"] = instanceURL.lastPathComponent
+        try JSONSerialization.data(withJSONObject: dict, options: [.prettyPrinted, .withoutEscapingSlashes]).write(to: manifestURL)
     }
     
     override func getStages() -> [InstallStage] {
