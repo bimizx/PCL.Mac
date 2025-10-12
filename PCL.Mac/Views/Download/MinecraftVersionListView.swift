@@ -85,16 +85,17 @@ struct MinecraftVersionListView: View {
     
     @ViewBuilder
     private func categoryCard(index: Int, label: String, filter: (VersionManifest.GameVersion) -> Bool) -> some View {
-        let versions = dataManager.versionManifest!.versions.filter(filter)
-        MyCard(index: index, title: "\(label) (\(versions.count))") {
-            LazyVStack(spacing: 0) {
-                ForEach(versions, id: \.id) { version in
-                    VersionView(version: version)
+        if let versions = dataManager.versionManifest?.versions.filter(filter) {
+            MyCard(index: index, title: "\(label) (\(versions.count))") {
+                LazyVStack(spacing: 0) {
+                    ForEach(versions, id: \.id) { version in
+                        VersionView(version: version)
+                    }
                 }
+                .padding(.top, 12)
             }
-            .padding(.top, 12)
+            .cardId(label)
+            .padding()
         }
-        .cardId(label)
-        .padding()
     }
 }
