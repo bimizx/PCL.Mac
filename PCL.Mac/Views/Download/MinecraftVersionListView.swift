@@ -63,11 +63,10 @@ struct MinecraftVersionListView: View {
         ScrollView {
             VStack {
                 StaticMyCard(index: 0, title: "最新版本") {
-                    VStack {
+                    VStack(spacing: 0) {
                         VersionView(version: dataManager.versionManifest.getLatestRelease(), isLatest: true)
                         VersionView(version: dataManager.versionManifest.getLatestSnapshot(), isLatest: true)
                     }
-                    .padding(.top, 12)
                 }
                 .padding()
                 
