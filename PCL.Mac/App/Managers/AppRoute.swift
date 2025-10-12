@@ -97,8 +97,13 @@ public enum AppRoute: Hashable {
 public class AppRouter: ObservableObject {
     @Published public var path: [AppRoute] = [.launch] {
         willSet {
-            if path.last! == .launch && newValue.last! == .download {
-                routeID = UUID()
+            guard let old = path.last, let new = newValue.last else { return }
+            switch old {
+            case .minecraftVersionList, .projectSearch(_): break
+            default:
+                if new == .download {
+                    routeID = .init()
+                }
             }
         }
     }
