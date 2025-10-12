@@ -96,8 +96,10 @@ public enum AppRoute: Hashable {
 
 public class AppRouter: ObservableObject {
     @Published public var path: [AppRoute] = [.launch] {
-        didSet {
-            routeID = UUID()
+        willSet {
+            if path.last! == .launch && newValue.last! == .download {
+                routeID = UUID()
+            }
         }
     }
     private var routeID: UUID = UUID()
@@ -109,33 +111,33 @@ public class AppRouter: ObservableObject {
     public func makeView() -> any View {
         switch getLast() {
         case .launch:
-            LaunchView().id(routeID)
+            LaunchView()
         case .accountManagement, .accountList, .newAccount:
-            AccountManagementView().id(routeID)
+            AccountManagementView()
         case .download, .minecraftVersionList, .projectSearch(_):
             DownloadView().id(routeID)
         case .settings, .personalization, .javaSettings, .otherSettings:
-            SettingsView().id(routeID)
+            SettingsView()
         case .others, .about, .toolbox, .debug:
-            OthersView().id(routeID)
+            OthersView()
         case .installing(let tasks):
-            InstallingView(tasks: tasks).id(routeID)
+            InstallingView(tasks: tasks)
         case .instanceSelect, .instanceList(_):
-            InstanceSelectView().id(routeID)
+            InstanceSelectView()
         case .projectDownload(let summary):
-            ProjectDownloadView(id: summary.modId).id(routeID)
+            ProjectDownloadView(id: summary.modId)
         case .announcementHistory:
-            AnnouncementHistoryView().id(routeID)
+            AnnouncementHistoryView()
         case .instanceSettings, .instanceOverview, .instanceConfig, .instanceMods:
-            InstanceSettingsView().id(routeID)
+            InstanceSettingsView()
         case .javaDownload:
-            JavaInstallView().id(routeID)
+            JavaInstallView()
         case .themeUnlock:
-            ThemeUnlockView().id(routeID)
+            ThemeUnlockView()
         case .directoryConfig(let directory):
-            DirectoryConfigView(directory: directory).id(routeID)
+            DirectoryConfigView(directory: directory)
         case .minecraftInstall(let version):
-            MinecraftInstallView(version).id(routeID)
+            MinecraftInstallView(version)
         }
     }
     
@@ -144,15 +146,15 @@ public class AppRouter: ObservableObject {
     }
     
     public func removeLast() {
-        self.path.removeLast()
-        if self.path.isEmpty {
-            self.path.append(.launch)
+        if path.count == 1 {
+            path = [.launch]
+        } else {
+            path.removeLast()
         }
     }
     
     public func setRoot(_ root: AppRoute) {
-        path.removeAll()
-        path.append(root)
+        path = [root]
     }
     
     public func getLast() -> AppRoute {
