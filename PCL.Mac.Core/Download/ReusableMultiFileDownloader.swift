@@ -136,6 +136,7 @@ public final class ReusableMultiFileDownloader: @unchecked Sendable {
         if FileManager.default.fileExists(atPath: destination.path) {
             do {
                 if try Util.getSHA1(url: destination) == sha1 {
+                    totalProgress += 1
                     completion()
                     return
                 }
