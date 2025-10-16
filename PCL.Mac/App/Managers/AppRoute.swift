@@ -160,6 +160,7 @@ public class AppRouter: ObservableObject {
     
     public func setRoot(_ root: AppRoute) {
         path = [root]
+        PageState.shared.currentPageIndex = PageState.pages.firstIndex(of: root)!
     }
     
     public func getLast() -> AppRoute {
