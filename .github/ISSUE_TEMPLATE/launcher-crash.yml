@@ -1,0 +1,36 @@
+name: "启动器崩溃"
+description: "启动器意外退出。"
+labels: 
+- "等待确认"
+- "优先处理"
+
+title: "[Crash] "
+
+body:
+- type: checkboxes
+  id: checklist
+  attributes:
+    label: 检查单
+    description: "请逐项确认以下内容："
+    options:
+      - label: "我已将启动器更新至最新版，并且该问题依然存在。"
+        required: true
+- type: textarea
+  id: description
+  attributes:
+    label: 崩溃报告
+    placeholder: |
+      请根据崩溃弹窗（很抱歉，PCL.Mac 因为一些问题崩溃了开头）的提示，上传崩溃报告。
+      如果没有崩溃弹窗，请查看 [手动导出 PCL.Mac 崩溃报告](https://github.com/CeciliaStudio/PCL.Mac/wiki/帮助#手动导出-pclmac-崩溃报告) 并上传崩溃报告。
+  validations:
+    required: true
+- type: textarea
+  id: system
+  attributes:
+    label: 系统信息
+    placeholder: |
+      系统版本：macOS x.x
+      架构：（Intel 系列处理器请填写 x86_64，M 系列处理器请填写 arm64）
+      如果没有崩溃弹窗，则此项为必填。
+  validations:
+    required: false
