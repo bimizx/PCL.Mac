@@ -23,6 +23,7 @@ class Window: NSWindow {
         self.level = .normal
         self.hasShadow = true
         self.contentView = contentView
+        self.setFrameAutosaveName("MainWindow")
         self.center()
     }
     
