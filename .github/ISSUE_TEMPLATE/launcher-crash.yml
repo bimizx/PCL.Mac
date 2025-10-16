@@ -19,11 +19,13 @@ body:
   id: description
   attributes:
     label: 崩溃报告
-    placeholder: |
-      请根据崩溃弹窗（很抱歉，PCL.Mac 因为一些问题崩溃了开头）的提示，上传崩溃报告。
-      如果没有崩溃弹窗，请查看 [手动导出 PCL.Mac 崩溃报告](https://github.com/CeciliaStudio/PCL.Mac/wiki/帮助#手动导出-pclmac-崩溃报告) 并上传崩溃报告。
   validations:
     required: true
+- type: markdown
+  attributes:
+    value: |
+      请根据崩溃弹窗（很抱歉，PCL.Mac 因为一些问题崩溃了开头）的提示，拖拽崩溃报告到上方输入框。
+      如果没有崩溃弹窗，请查看 [手动导出 PCL.Mac 崩溃报告](https://github.com/CeciliaStudio/PCL.Mac/wiki/帮助#手动导出-pclmac-崩溃报告) 并上传崩溃报告。
 - type: textarea
   id: system
   attributes:
