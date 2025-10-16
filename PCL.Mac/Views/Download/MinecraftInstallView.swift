@@ -254,7 +254,7 @@ fileprivate struct LoaderCard: View {
             } else {
                 TitlelessMyCard(index: index) {
                     HStack {
-                        MaskedTextRectangle(text: loader.getName())
+                        FixedText(loader.getName())
                         Spacer()
                         if showCancelButton {
                             Image(systemName: "xmark")

@@ -91,7 +91,7 @@ struct MyCard<Content: View>: View {
             VStack(spacing: 0) {
                 ZStack {
                     HStack {
-                        MaskedTextRectangle(text: title)
+                        FixedText(title)
                         Spacer()
                         Image("FoldController")
                             .resizable()
@@ -222,7 +222,7 @@ struct StaticMyCard<Content: View>: View {
     var body: some View {
         BaseCardContainer(index: index, hasAnimation: hasAnimation) { _ in
             VStack {
-                MaskedTextRectangle(text: title)
+                FixedText(title)
                 content()
                     .foregroundStyle(Color("TextColor"))
             }
@@ -263,15 +263,19 @@ struct TitlelessMyCard<Content: View>: View {
     }
 }
 
-struct MaskedTextRectangle: View {
-    let text: String
+struct FixedText: View {
+    private let text: String
+    
+    init(_ text: String) {
+        self.text = text
+    }
 
     var body: some View {
         HStack(alignment: .center, spacing: 0) {
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
                     Rectangle()
-                        .frame(width: geo.size.width, height: geo.size.height)
+                        .frame(width: geo.size.width, height: geo.size.height + 2)
                         .mask(
                             HStack {
                                 Text(text)

@@ -46,7 +46,7 @@ struct MyComboBoxItemView<Option: Hashable>: View {
             }
             .foregroundStyle(selection == value ? AppSettings.shared.theme.getTextStyle() : AnyShapeStyle(.primary))
             .frame(width: 20, height: 20)
-            Text(text)
+            FixedText(text)
                 .font(.custom("PCL English", size: 14))
         }
         .foregroundStyle(isHovered ? AppSettings.shared.theme.getTextStyle() : AnyShapeStyle(Color("TextColor")))
