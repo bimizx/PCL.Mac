@@ -37,9 +37,13 @@ extension Announcement {
                     if let tip = Announcement.Tip.parse(from: child) {
                         contentList.append(.tip(tip))
                     }
+                case "h1", "h2", "h3":
+                    if let title = Announcement.Title.parse(from: child) {
+                        contentList.append(.title(title))
+                    }
                 default:
                     warn("不支持的元素: \(element.name)")
-                    contentList.append(.text(.init(content: "你的启动器版本过低，不支持 \(element.name) 元素的显示。", size: 14)))
+                    contentList.append(.text(.init(content: "你的启动器版本过低，不支持 \(element.name) 元素的显示。", size: 14, strike: false)))
                 }
             }
         }
@@ -56,8 +60,9 @@ extension Announcement {
 extension Announcement.Text {
     static func parse(from xml: XMLIndexer) -> Announcement.Text? {
         guard let text = xml.element?.text else { return nil }
-        
-        return Announcement.Text(content: text, size: CGFloat(Float(xml.element?.attribute(by: "size")?.text ?? "") ?? 14))
+        let size: CGFloat = CGFloat(Float(xml.element?.attribute(by: "size")?.text ?? "") ?? 14)
+        let strike: Bool = xml.element?.attribute(by: "strike")?.text == "true"
+        return Announcement.Text(content: text, size: size, strike: strike)
     }
 }
 
@@ -72,10 +77,23 @@ extension Announcement.Link {
 
 extension Announcement.Tip {
     static func parse(from xml: XMLIndexer) -> Announcement.Tip? {
-        guard let colorRaw = xml.element?.attribute(by: "color")?.text,
-              let color = TipColor(rawValue: colorRaw)
+        guard let color = xml.element?.attribute(by: "color")?.text
         else { return nil }
         let text: String = xml.element?.text ?? ""
         return Announcement.Tip(text: text, color: color)
+    }
+}
+
+extension Announcement.Title {
+    static func parse(from xml: XMLIndexer) -> Announcement.Title? {
+        guard let text = xml.element?.text else { return nil }
+        let size: CGFloat = switch xml.element?.name {
+        case "h1": 20
+        case "h2": 18
+        case "h3": 16
+        default: 14
+        }
+        
+        return Announcement.Title(text: text, size: size)
     }
 }

@@ -282,7 +282,7 @@ struct LaunchView: View {
         ScrollView {
             if let announcement = announcementManager.lastAnnouncement {
                 MyCard(title: "\(announcement.isImportant ? "重要公告" : "公告") | \(announcement.title)") {
-                    VStack(alignment: .leading, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 2) {
                         announcement.makeContentView()
                         Text("—— \(announcement.author)，\(DateFormatters.shared.displayDateFormatter.string(from: announcement.time))")
                             .font(.custom("PCL English", size: 14))

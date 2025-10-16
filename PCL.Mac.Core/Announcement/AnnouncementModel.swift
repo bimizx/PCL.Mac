@@ -20,18 +20,24 @@ public struct Announcement {
             case .text(let text): text.id
             case .link(let link): link.id
             case .tip(let tip): tip.id
+            case .title(let title): title.id
             }
         }
         
         case text(Text)
         case link(Link)
         case tip(Tip)
+        case title(Title)
     }
-    
+}
+
+/// PMA 1.0
+extension Announcement {
     public struct Text: Identifiable {
         public let id: UUID = UUID()
         public let content: String
         public let size: CGFloat
+        public let strike: Bool
     }
     
     public struct Link: Identifiable {
@@ -43,6 +49,15 @@ public struct Announcement {
     public struct Tip: Identifiable {
         public let id: UUID = UUID()
         public let text: String
-        public let color: TipColor
+        public let color: String
+    }
+}
+
+/// PMA 1.1
+extension Announcement {
+    public struct Title: Identifiable {
+        public let id: UUID = UUID()
+        public let text: String
+        public let size: CGFloat
     }
 }
