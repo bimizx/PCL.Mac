@@ -9,18 +9,23 @@ import Foundation
 import os
 
 public class LogManager {
-    public static let shared: LogManager = .init(fileURL: SharedConstants.shared.logURL)
+    public static let shared: LogManager = .init(logsURL: SharedConstants.shared.logsURL)
+    private let logFileURL: URL
     private let fileHandle: FileHandle
     
     private let logQueue: DispatchQueue = .init(label: "PCL.Mac.Log")
     private let logger: Logger = Logger()
     
-    public init(fileURL: URL) {
-        if !FileManager.default.fileExists(atPath: fileURL.path) {
-            try? FileManager.default.createDirectory(at: SharedConstants.shared.logURL.parent(), withIntermediateDirectories: true)
-            FileManager.default.createFile(atPath: fileURL.path, contents: nil)
+    public init(logsURL: URL) {
+        self.logFileURL = logsURL.appending(path: "Log1.log")
+        if !FileManager.default.fileExists(atPath: logsURL.path) {
+            try? FileManager.default.createDirectory(at: SharedConstants.shared.logsURL, withIntermediateDirectories: true)
+            FileManager.default.createFile(atPath: logFileURL.path, contents: nil)
+        } else {
+            Self.updateLogs(logsURL: logsURL)
+            FileManager.default.createFile(atPath: logFileURL.path, contents: nil)
         }
-        self.fileHandle = try! FileHandle(forWritingTo: fileURL)
+        self.fileHandle = try! FileHandle(forWritingTo: logFileURL)
         try? self.fileHandle.truncate(atOffset: 0)
     }
     
@@ -58,6 +63,18 @@ public class LogManager {
     
     public func debug(_ message: Any, file: String = #file, line: Int = #line) {
         log(message: message, level: "DEBUG", file: file, line: line)
+    }
+    
+    private static func updateLogs(logsURL: URL) {
+        try? FileManager.default.removeItem(at: logsURL.appending(path: "Log5.log"))
+        moveLog(logsURL: logsURL, from: "Log4.log", to: "Log5.log")
+        moveLog(logsURL: logsURL, from: "Log3.log", to: "Log4.log")
+        moveLog(logsURL: logsURL, from: "Log2.log", to: "Log3.log")
+        moveLog(logsURL: logsURL, from: "Log1.log", to: "Log2.log")
+    }
+    
+    private static func moveLog(logsURL: URL, from source: String, to destination: String) {
+        try? FileManager.default.moveItem(at: logsURL.appending(path: source), to: logsURL.appending(path: destination))
     }
 }
 

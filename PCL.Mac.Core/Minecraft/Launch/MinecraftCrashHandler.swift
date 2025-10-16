@@ -34,7 +34,7 @@ public class MinecraftCrashHandler {
         tmp.createFile(path: "启动命令.command", data: lastLaunchCommand.data(using: .utf8))
         
         // 导出日志与输出
-        try? FileManager.default.copyItem(at: SharedConstants.shared.logURL, to: tmp.root.appending(path: "PCL.Mac 启动器日志.log"))
+        try? FileManager.default.copyItem(at: SharedConstants.shared.logsURL.appending(path: "Log1.log"), to: tmp.root.appending(path: "PCL.Mac 启动器日志.log"))
         try? FileManager.default.copyItem(at: state.logURL, to: tmp.root.appending(path: "游戏崩溃前的输出.txt"))
         copyGameLogs(instance: instance, report: tmp.root)
         
