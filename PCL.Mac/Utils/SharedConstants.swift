@@ -32,8 +32,8 @@ public struct SharedConstants {
         
         self.isDevelopment = Self.getInfoValueOrDefault(key: "IS_DEVELOPMENT", default: "true") == "true" ? true : false
         
-        self.version = Self.getInfoValueOrDefault(key: "APP_VERSION", default: "本地构建")
-        self.branch = Self.getInfoValueOrDefault(key: "BRANCH", default: "本地构建")
+        self.version = Self.getInfoValueOrDefault(key: "APP_VERSION", default: "local")
+        self.branch = Self.getInfoValueOrDefault(key: "BRANCH", default: "local")
     }
     
     private static func getInfoValueOrDefault(key: String, default: String) -> String {

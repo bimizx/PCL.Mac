@@ -24,7 +24,7 @@ public final class ReusableMultiFileDownloader: @unchecked Sendable {
     private let connectionQueue = DispatchQueue(label: "ReusableMultiFileDownloader.connection")
     
     public init(
-        task: InstallTask?,
+        task: InstallTask? = nil,
         urls: [URL],
         destinations: [URL],
         sha1: [String],
@@ -153,6 +153,7 @@ public final class ReusableMultiFileDownloader: @unchecked Sendable {
         "Accept-Encoding: identity\r\n" +
         "Connection: keep-alive\r\n" +
         "\r\n"
+        print(request)
         connection.send(content: request.data(using: .utf8), completion: .contentProcessed { error in
             if let error = error {
                 err("发送请求失败: \(error.localizedDescription)")

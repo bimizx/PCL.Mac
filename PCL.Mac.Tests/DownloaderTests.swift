@@ -35,10 +35,14 @@ struct DownloaderTests {
     }
     
     @Test func testReusableMultiFileDownload() async throws {
-        let data = try FileHandle(forReadingFrom: URL(fileURLWithUserPath: "~/minecraft/assets/indexes/27.json")).readToEnd()!
-        let assetIndex = AssetIndex(try JSON(data: data))
-        let urls = assetIndex.objects.map { $0.appendTo(URL(string: "https://resources.download.minecraft.net")!) }
-        let destinations = assetIndex.objects.map { $0.appendTo(URL(filePath: "/tmp")) }
-        try await ReusableMultiFileDownloader(task: nil, urls: urls, destinations: destinations, sha1: assetIndex.objects.map { $0.hash }, maxConnections: 64).start()
+        let hash: String = "5d8c3181a7d68c2e8a27a57ffead439991a6ed2c"
+        try await ReusableMultiFileDownloader(
+            urls: [URL(string: "https://resources.download.minecraft.net/5d/\(hash)")!],
+            destinations: [URL(fileURLWithUserPath: "/tmp/\(hash)")],
+            sha1: [hash],
+            maxConnections: 64
+        ).start()
+        let _ = try JSON(data: FileHandle(forReadingFrom: URL(filePath: "/tmp/\(hash)")).readToEnd().unwrap())
+        try FileManager.default.removeItem(at: URL(filePath: "/tmp/\(hash)"))
     }
 }

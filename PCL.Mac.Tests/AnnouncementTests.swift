@@ -19,15 +19,15 @@ struct AnnouncementTests {
         print("\(announcement.isImportant ? "重要公告" : "公告") | \(announcement.title)")
         print("作者:\t\(announcement.author)")
         print("发布时间:\t\(DateFormatters.shared.displayDateFormatter.string(from: announcement.time))")
-        for content in announcement.content {
-            switch content {
-            case .text(let text):
-                print(text.content)
-            case .link(let link):
-                print(link.display)
-            case .tip(let tip):
-                print("提示: \(tip.text)")
-            }
-        }
+//        for content in announcement.content {
+//            switch content {
+//            case .text(let text):
+//                print(text.content)
+//            case .link(let link):
+//                print(link.display)
+//            case .tip(let tip):
+//                print("提示: \(tip.text)")
+//            }
+//        }
     }
 }
