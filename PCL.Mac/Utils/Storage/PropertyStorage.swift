@@ -9,11 +9,11 @@ import Foundation
 
 public final class PropertyStorage {
     /// App 设置
-    public static let appSettings: PropertyStorage = .init(fileURL: SharedConstants.shared.configURL.appending(path: "app.json"))
+    public static let appSettings: PropertyStorage = .init(fileURL: AppURLs.configURL.appending(path: "app.json"))
     /// 账号相关
-    public static let account: PropertyStorage = .init(fileURL: SharedConstants.shared.configURL.appending(path: "account.json"))
+    public static let account: PropertyStorage = .init(fileURL: AppURLs.configURL.appending(path: "account.json"))
     /// Minecraft 相关
-    public static let minecraft: PropertyStorage = .init(fileURL: SharedConstants.shared.configURL.appending(path: "minecraft.json"))
+    public static let minecraft: PropertyStorage = .init(fileURL: AppURLs.configURL.appending(path: "minecraft.json"))
     
     public static func loadAll() {
         do {

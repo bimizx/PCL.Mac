@@ -43,7 +43,7 @@ struct OtherSettingsView: View {
                 StaticMyCard(index: 1, title: "帮助") {
                     HStack {
                         MyButton(text: "打开日志") {
-                            NSWorkspace.shared.activateFileViewerSelecting([SharedConstants.shared.logsURL])
+                            NSWorkspace.shared.activateFileViewerSelecting([AppURLs.logsURL])
                         }
                         .frame(width: 140, height: 35)
                         

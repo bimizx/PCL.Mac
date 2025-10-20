@@ -47,7 +47,7 @@ public class MinecraftInstallTask: InstallTask {
             let _1_12_2 = MinecraftVersion(displayName: "1.12.2")
             let targetURL: URL = instanceURL.appending(path: "log4j2.xml")
             try? FileManager.default.copyItem(
-                at: SharedConstants.shared.applicationResourcesURL.appending(path: version >= _1_12_2 ? "log4j2.xml" : "log4j2-1.12-.xml"),
+                at: AppURLs.applicationResourcesURL.appending(path: version >= _1_12_2 ? "log4j2.xml" : "log4j2-1.12-.xml"),
                 to: targetURL
             )
         } catch {

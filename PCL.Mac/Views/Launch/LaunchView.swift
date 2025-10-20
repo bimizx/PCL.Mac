@@ -295,22 +295,13 @@ struct LaunchView: View {
                 .padding()
             }
             
-            if SharedConstants.shared.isDevelopment {
+            if Metadata.version == "本地构建" {
                 StaticMyCard(index: 1, title: "警告") {
                     VStack(spacing: 4) {
-                        Text("你正在使用开发版本的 PCL.Mac！")
-                            .font(.custom("PCL English", size: 14))
-                        HStack(spacing: 4) {
-                            Text("如果遇到问题请")
-                                .font(.custom("PCL English", size: 14))
-                            Text("点击此处反馈")
-                                .font(.custom("PCL English", size: 14))
-                                .onTapGesture {
-                                    NSWorkspace.shared.open(URL(string: "https://github.com/CeciliaStudio/PCL.Mac/issues/new?template=bug-反馈.md")!)
-                                }
-                                .foregroundStyle(AppSettings.shared.theme.getTextStyle())
-                        }
+                        Text("你正在使用本地构建的 PCL.Mac！")
+                        Text("请不要在 GitHub 上反馈本启动器中出现的 Bug！")
                     }
+                    .font(.custom("PCL English", size: 14))
                     .foregroundStyle(Color("TextColor"))
                 }
                 .padding()

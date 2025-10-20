@@ -65,7 +65,7 @@ fileprivate struct ProjectVersionListView: View {
     private func onVersionClick(_ version: ProjectVersion) {
         if summary.type == .modpack {
             // 下载整合包
-            let modpackURL = SharedConstants.shared.temperatureURL.appending(path: version.name)
+            let modpackURL = AppURLs.temperatureURL.appending(path: version.name)
             let modpackDownloadTask: InstallTask = CustomFileDownloadTask(url: version.downloadURL, destination: modpackURL)
             let tasks = InstallTasks.single(modpackDownloadTask)
             dataManager.inprogressInstallTasks = tasks

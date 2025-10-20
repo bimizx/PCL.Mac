@@ -9,7 +9,7 @@ import Foundation
 import os
 
 public class LogManager {
-    public static let shared: LogManager = .init(logsURL: SharedConstants.shared.logsURL)
+    public static let shared: LogManager = .init(logsURL: AppURLs.logsURL)
     private let logFileURL: URL
     private let fileHandle: FileHandle
     
@@ -19,7 +19,7 @@ public class LogManager {
     public init(logsURL: URL) {
         self.logFileURL = logsURL.appending(path: "Log1.log")
         if !FileManager.default.fileExists(atPath: logsURL.path) {
-            try? FileManager.default.createDirectory(at: SharedConstants.shared.logsURL, withIntermediateDirectories: true)
+            try? FileManager.default.createDirectory(at: AppURLs.logsURL, withIntermediateDirectories: true)
             FileManager.default.createFile(atPath: logFileURL.path, contents: nil)
         } else {
             Self.updateLogs(logsURL: logsURL)

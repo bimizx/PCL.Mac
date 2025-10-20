@@ -148,7 +148,7 @@ public final class ReusableMultiFileDownloader: @unchecked Sendable {
         let request: String =
         "GET \(url.path) HTTP/1.1\r\n" +
         "Host: \(host)\r\n" +
-        "User-Agent: PCL-Mac/\(SharedConstants.shared.version)\r\n" +
+        "User-Agent: \(Metadata.userAgent)\r\n" +
         "Accept: */*\r\n" +
         "Accept-Encoding: identity\r\n" +
         "Connection: keep-alive\r\n" +

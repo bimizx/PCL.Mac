@@ -34,7 +34,7 @@ public class SingleFileDownloader {
         // 创建请求并设置 User-Agent
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
-        request.setValue("PCL-Mac/\(SharedConstants.shared.version)", forHTTPHeaderField: "User-Agent")
+        request.setValue(Metadata.userAgent, forHTTPHeaderField: "User-Agent")
         
         // 发送请求
         let (byteStream, response) = try await URLSession.shared.bytes(for: request)
@@ -47,7 +47,7 @@ public class SingleFileDownloader {
         }
         
         // 创建临时文件
-        let tempURL = SharedConstants.shared.temperatureURL.appendingPathComponent(UUID().uuidString)
+        let tempURL = AppURLs.temperatureURL.appendingPathComponent(UUID().uuidString)
         FileManager.default.createFile(atPath: tempURL.path, contents: nil)
         
         let handle = try FileHandle(forWritingTo: tempURL)

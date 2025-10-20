@@ -28,7 +28,7 @@ struct OthersView: View {
                 VStack(alignment: .leading, spacing: 0) {
                     MyList(
                         root: .others,
-                        cases: SharedConstants.shared.isDevelopment ? [.about, .toolbox, .debug] : [.about, .toolbox]
+                        cases: Metadata.isDevelopment ? [.about, .toolbox, .debug] : [.about, .toolbox]
                     ) { type, isSelected in
                         createListItemView(type)
                             .foregroundStyle(isSelected ? AnyShapeStyle(AppSettings.shared.theme.getTextStyle()) : AnyShapeStyle(Color("TextColor")))

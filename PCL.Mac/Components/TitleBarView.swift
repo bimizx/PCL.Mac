@@ -73,6 +73,10 @@ struct TitleBarView: View {
                         .bold()
                     MyTag(label: "Mac", backgroundColor: .white)
                         .foregroundStyle(AppSettings.shared.theme.getTextStyle())
+                    if Metadata.isDevelopment {
+                        MyTag(label: "Dev", backgroundColor: .blue)
+                            .foregroundStyle(Color("TextColor"))
+                    }
                 }
                 Spacer()
                 MenuItemButton(route: .launch)

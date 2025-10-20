@@ -13,7 +13,7 @@ import PCL_Mac_Core
 
 struct ThemeParseTest {
     @Test func testGradientParsing() throws {
-        let url = SharedConstants.shared.applicationResourcesURL.appending(path: "pcl.json")
+        let url = AppURLs.applicationResourcesURL.appending(path: "pcl.json")
         let data = try FileHandle(forReadingFrom: url).readToEnd()!
         let json = try JSON(data: data)
         

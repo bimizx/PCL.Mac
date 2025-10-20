@@ -8,7 +8,7 @@
 import Foundation
 
 public class TemperatureDirectory {
-    public var root: URL { SharedConstants.shared.temperatureURL.appending(path: name) }
+    public var root: URL { AppURLs.temperatureURL.appending(path: name) }
     private let name: String
     
     public init(name: String) {

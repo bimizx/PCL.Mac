@@ -75,7 +75,7 @@ struct AboutView: View {
                     ProfileCard(
                         imageName: "Icon",
                         name: "PCL.Mac",
-                        description: "当前版本：\(SharedConstants.shared.version) (\(SharedConstants.shared.branch))",
+                        description: "当前版本：\(Metadata.version) (\(Metadata.branch))",
                         buttonName: "查看源代码",
                         buttonURL: "https://github.com/CeciliaStudio/PCL.Mac"
                     )
@@ -174,9 +174,4 @@ struct AboutView: View {
             }
         }
     }
-}
-
-#Preview {
-    AboutView()
-        .padding()
 }

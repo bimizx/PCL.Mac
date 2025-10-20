@@ -45,7 +45,7 @@ class Window: NSWindow {
 }
 
 class AppDelegate: NSObject, NSApplicationDelegate {
-    private static let exitFlagURL = SharedConstants.shared.applicationSupportURL.appending(path: ".exit.flag")
+    private static let exitFlagURL = AppURLs.applicationSupportURL.appending(path: ".exit.flag")
     var window: Window!
     
     // MARK: 注册字体
@@ -78,8 +78,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     // MARK: 初始化 App
     func applicationWillFinishLaunching(_ notification: Notification) {
-        if !FileManager.default.fileExists(atPath: SharedConstants.shared.temperatureURL.path) {
-            try? FileManager.default.createDirectory(at: SharedConstants.shared.temperatureURL, withIntermediateDirectories: true)
+        if !FileManager.default.fileExists(atPath: AppURLs.temperatureURL.path) {
+            try? FileManager.default.createDirectory(at: AppURLs.temperatureURL, withIntermediateDirectories: true)
         }
         FileManager.default.createFile(atPath: Self.exitFlagURL.path, contents: nil)
         let start = Date().timeIntervalSince1970
@@ -95,7 +95,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
 #if !DEBUG
         let daemonProcess = Process()
-        daemonProcess.executableURL = SharedConstants.shared.applicationResourcesURL.appending(path: "daemon")
+        daemonProcess.executableURL = AppURLs.applicationResourcesURL.appending(path: "daemon")
         daemonProcess.arguments = [
             String(describing: ProcessInfo.processInfo.processIdentifier),
             Self.exitFlagURL.path

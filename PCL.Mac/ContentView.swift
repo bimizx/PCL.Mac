@@ -79,7 +79,7 @@ struct ContentView: View {
                     .transition(.opacity)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-            if SharedConstants.shared.isDevelopment {
+            if Metadata.isDevelopment {
                 routerOverlay
             }
             installTaskButtonOverlay

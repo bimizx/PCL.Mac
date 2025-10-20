@@ -19,13 +19,13 @@ public class UpdateChecker {
     }
     
     public static func isLauncherUpToDate(list: LauncherVersionList) -> Bool {
-        guard let version = list.getVersion(name: SharedConstants.shared.version) else {
+        guard let version = list.getVersion(name: Metadata.version) else {
             return true
         }
         if AppSettings.shared.launcherVersionId == -1 {
             AppSettings.shared.launcherVersionId = version.id
         }
-        if SharedConstants.shared.isDevelopment {
+        if Metadata.isDevelopment {
             return true
         }
         return list.getLatestVersion().id <= AppSettings.shared.launcherVersionId

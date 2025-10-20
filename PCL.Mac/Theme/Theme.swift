@@ -41,8 +41,8 @@ public class Theme: Codable, Hashable, Equatable {
     
     public static func load(id: String) -> Theme {
         do {
-            let internalURL: URL = SharedConstants.shared.applicationResourcesURL.appending(path: "\(id).json")
-            let externalURL: URL = SharedConstants.shared.applicationSupportURL.appending(path: "Themes").appending(path: "\(id).json")
+            let internalURL: URL = AppURLs.applicationResourcesURL.appending(path: "\(id).json")
+            let externalURL: URL = AppURLs.applicationSupportURL.appending(path: "Themes").appending(path: "\(id).json")
             
             let data = try FileHandle(forReadingFrom: FileManager.default.fileExists(atPath: internalURL.path) ? internalURL : externalURL).readToEnd()!
             let json = try JSON(data: data)
