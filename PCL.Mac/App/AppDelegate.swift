@@ -8,6 +8,8 @@
 import Cocoa
 import SwiftUI
 
+fileprivate let isMacOS26: Bool = ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 26
+
 class Window: NSWindow {
     init(contentView: NSView) {
         super.init(
@@ -34,11 +36,11 @@ class Window: NSWindow {
            let zoom = self.standardWindowButton(.zoomButton) {
             
             if AppSettings.shared.windowControlButtonStyle == .macOS {
-                close.frame.origin = CGPoint(x: 16, y: -4)
+                close.frame.origin = CGPoint(x: isMacOS26 ? 18 : 16, y: isMacOS26 ? 0 : -4)
             } else {
                 close.frame.origin = CGPoint(x: 64, y: 64)
             }
-            min.frame.origin = CGPoint(x: close.frame.maxX + 6, y: close.frame.minY)
+            min.frame.origin = CGPoint(x: close.frame.maxX + (isMacOS26 ? 8 : 6), y: close.frame.minY)
             zoom.frame.origin = CGPoint(x: 64, y: 64)
         }
     }
@@ -50,11 +52,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     // MARK: 注册字体
     private func registerCustomFonts() {
-        guard let fontURL = Bundle.main.url(forResource: "PCL", withExtension: "ttf") else {
-            err("Bundle 内未找到字体")
-            return
-        }
-        
+        let fontURL = AppURLs.applicationResourcesURL.appending(path: "PCL.ttf")
         var error: Unmanaged<CFError>?
         if CTFontManagerRegisterFontsForURL(fontURL as CFURL, .process, &error) == false {
             if let error = error?.takeUnretainedValue() {
@@ -113,7 +111,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let swiftUIView = ContentView()
         let hostingView = NSHostingView(rootView: swiftUIView)
         hostingView.wantsLayer = true
-        hostingView.layer?.cornerRadius = 10
+        hostingView.layer?.cornerRadius = isMacOS26 ? 25 : 10
         hostingView.layer?.masksToBounds = true
         window = Window(contentView: hostingView)
         window.makeKeyAndOrderFront(nil)
