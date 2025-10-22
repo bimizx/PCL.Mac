@@ -319,8 +319,8 @@ public class MinecraftConfig: Codable {
     public var skipResourcesCheck: Bool = false
     /// 最大内存分配（MB）
     public var maxMemory: Int32 = 4096
-    /// 实例进程 QoS
-    public var qualityOfService: QualityOfService = .default
+    /// 实例进程优先级
+    public var processPriority: ProcessPriority = .default
     /// 实例版本（缓存）
     public var minecraftVersion: String!
     /// 上次启动时间
@@ -357,4 +357,6 @@ public enum ClientBrand: String, Codable, Hashable {
     }
 }
 
-extension QualityOfService: Codable { }
+public enum ProcessPriority: String, Codable, CaseIterable {
+    case veryHigh, high, `default`, low, veryLow
+}

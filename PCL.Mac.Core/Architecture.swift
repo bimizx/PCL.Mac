@@ -7,7 +7,7 @@
 
 import Foundation
 
-public enum Architecture {
+public enum Architecture: String {
     public static var system: Architecture {
         get {
             if _systemArch == nil {

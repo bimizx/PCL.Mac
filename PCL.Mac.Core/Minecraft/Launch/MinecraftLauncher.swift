@@ -42,10 +42,13 @@ public class MinecraftLauncher {
         MinecraftCrashHandler.lastLaunchCommand = command
         process.currentDirectoryURL = instance.runningDirectory
         
-        if instance.config.qualityOfService.rawValue == 0 {
-            instance.config.qualityOfService = .default
+        process.qualityOfService = switch instance.config.processPriority {
+        case .veryHigh: .userInteractive
+        case .high: .userInitiated
+        case .default: .default
+        case .low: .utility
+        case .veryLow: .background
         }
-        process.qualityOfService = instance.config.qualityOfService
         
         state.process = process
         do {
