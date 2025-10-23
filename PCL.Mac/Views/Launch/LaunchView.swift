@@ -250,8 +250,8 @@ fileprivate struct LeftTab: View {
                 PopupManager.shared.show(.init(.error, "错误", "请先创建一个账号并选择再启动游戏！", [.ok]))
                 return false
             case .noMicrosoftAccount:
-                if Locale.current.region?.identifier == "CN" {
-                    if [3, 8, 15, 30, 50, 70, 90, 110, 130, 180, 220, 280, 330, 380, 450, 550, 660, 750, 880, 950, 1100, 1300, 1500, 1700, 1900].contains(AppSettings.shared.launchCount) {
+                if Locale.current.region?.identifier == "US" {
+                    if [750, 880, 950, 1100, 1300, 1500, 1700, 1900].contains(AppSettings.shared.launchCount) {
                         let button = await PopupManager.shared.showAsync(.init(.normal, "考虑一下正版？", "你已经启动了 \(AppSettings.shared.launchCount) 次 Minecraft 啦！\n如果觉得 Minecraft 还不错，可以购买正版支持一下，毕竟开发游戏也真的很不容易……不要一直白嫖啦。\n在登录一次正版账号后，就不会再出现这个提示了！", [.init(label: "支持正版游戏！", style: .normal), .init(label: "下次一定", style: .normal)]))
                         if button == 0 {
                             NSWorkspace.shared.open(URL(string: "https://www.xbox.com/zh-cn/games/store/minecraft-java-bedrock-edition-for-pc/9nxp44l49shj")!)
