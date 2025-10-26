@@ -11,11 +11,11 @@ fileprivate struct VersionView: View, Identifiable {
     private let name: String
     private let description: String
     private let icon: String
-    private let version: VersionManifest.GameVersion
+    private let version: VersionManifest.Version
     
     let id: UUID = UUID()
     
-    init(version: VersionManifest.GameVersion, isLatest: Bool = false) {
+    init(version: VersionManifest.Version, isLatest: Bool = false) {
         self.name = version.id
         
         var description = DateFormatters.shared.displayDateFormatter.string(from: version.releaseTime)
@@ -26,7 +26,7 @@ fileprivate struct VersionView: View, Identifiable {
         }
         self.description = description
         self.version = version
-        self.icon = version.parse().getIconName()
+        self.icon = version.type.getIconName()
     }
     
     var body: some View {
@@ -51,7 +51,7 @@ fileprivate struct VersionView: View, Identifiable {
             }
         }
         .onTapGesture {
-            DataManager.shared.router.append(.minecraftInstall(version: version.parse()))
+            DataManager.shared.router.append(.minecraftInstall(version: MinecraftVersion(displayName: version.id)))
         }
     }
 }
@@ -64,8 +64,10 @@ struct MinecraftVersionListView: View {
             VStack {
                 StaticMyCard(index: 0, title: "最新版本") {
                     VStack(spacing: 0) {
-                        VersionView(version: dataManager.versionManifest.getLatestRelease(), isLatest: true)
-                        VersionView(version: dataManager.versionManifest.getLatestSnapshot(), isLatest: true)
+                        VersionView(version: VersionManifest.getLatestRelease(), isLatest: true)
+                        if let snapshot = VersionManifest.getLatestSnapshot() {
+                            VersionView(version: snapshot, isLatest: true)
+                        }
                     }
                 }
                 .padding()
@@ -84,18 +86,17 @@ struct MinecraftVersionListView: View {
     }
     
     @ViewBuilder
-    private func categoryCard(index: Int, label: String, filter: (VersionManifest.GameVersion) -> Bool) -> some View {
-        if let versions = dataManager.versionManifest?.versions.filter(filter) {
-            MyCard(index: index, title: "\(label) (\(versions.count))") {
-                LazyVStack(spacing: 0) {
-                    ForEach(versions, id: \.id) { version in
-                        VersionView(version: version)
-                    }
+    private func categoryCard(index: Int, label: String, filter: (VersionManifest.Version) -> Bool) -> some View {
+        let versions = VersionManifest.latest.versionMap.values.filter(filter).sorted { $0.releaseTime > $1.releaseTime }
+        MyCard(index: index, title: "\(label) (\(versions.count))") {
+            LazyVStack(spacing: 0) {
+                ForEach(versions, id: \.id) { version in
+                    VersionView(version: version)
                 }
-                .padding(.top, 12)
             }
-            .cardId(label)
-            .padding()
+            .padding(.top, 12)
         }
+        .cardId(label)
+        .padding()
     }
 }

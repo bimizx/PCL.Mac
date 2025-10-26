@@ -19,7 +19,7 @@ struct MinecraftAvatar: View {
         self.account = account
         self.src = src
         self.size = size
-        if let cached = SkinCacheStorage.shared.skinCache[account.uuid] {
+        if let cached = SkinCacheStorage.get(uuid: account.uuid) {
             self._skinData = State(initialValue: cached)
         }
     }
@@ -38,7 +38,7 @@ struct MinecraftAvatar: View {
         .task {
             if skinData == nil {
                 do {
-                    self.skinData = try await SkinCacheStorage.shared.loadSkin(account: account)
+                    self.skinData = try await SkinCacheStorage.loadSkin(account: account)
                 } catch {
                     err("无法加载头像: \(error.localizedDescription)")
                 }

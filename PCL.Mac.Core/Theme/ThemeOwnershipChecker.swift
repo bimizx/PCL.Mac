@@ -32,32 +32,8 @@ public class ThemeOwnershipChecker {
         return String(hash.compactMap { String(format: "%02x", $0) }.joined().prefix(16))
     }
     
-    private func decrypt(code: String, key: String) -> String? {
-        guard let keyData = key.data(using: .utf8),
-              let combinedData = Data(base64Encoded: code),
-              combinedData.count > (12 + 16) else { return nil }
-        
-        let nonce = combinedData.prefix(12)
-        let tag = combinedData.suffix(16)
-        let cipherText = combinedData[12..<(combinedData.count - 16)]
-        let symmetricKey = SymmetricKey(data: keyData)
-        
-        do {
-            let sealedBox = try AES.GCM.SealedBox(
-                nonce: AES.GCM.Nonce(data: nonce),
-                ciphertext: cipherText,
-                tag: tag
-            )
-            let decryptedData = try AES.GCM.open(sealedBox, using: symmetricKey)
-            return String(data: decryptedData, encoding: .utf8)
-        } catch {
-            return nil
-        }
-    }
-    
     public func tryUnlockOld(code: String) -> String? {
-        if let jsonString = decrypt(code: code, key: getDeviceHash()),
-           let data = jsonString.data(using: .utf8),
+        if let data = try? AESUtil.decrypt(data: Data(base64Encoded: code).unwrap(), key: getDeviceHash()),
            let json = try? JSON(data: data),
            json["verify"].intValue == 20250517 {
             return json["theme"].stringValue
@@ -67,7 +43,8 @@ public class ThemeOwnershipChecker {
     }
     
     public func tryUnlock(code: String) -> String? {
-        if let code = decrypt(code: code, key: THEME_KEY) {
+        if let data = try? AESUtil.decrypt(data: Data(base64Encoded: code).unwrap(), key: THEME_KEY),
+           let code = String(data: data, encoding: .utf8) {
             return tryUnlockOld(code: code)
         }
         return nil

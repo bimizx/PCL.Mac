@@ -50,7 +50,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private static let exitFlagURL = AppURLs.applicationSupportURL.appending(path: ".exit.flag")
     var window: Window!
     
-    // MARK: 注册字体
+    
+    
+    /// 注册字体
     private func registerCustomFonts() {
         let fontURL = AppURLs.applicationResourcesURL.appending(path: "PCL.ttf")
         var error: Unmanaged<CFError>?
@@ -65,7 +67,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
     
-    // MARK: 初始化 Java 列表
+    /// 初始化 Java 列表
     private func initJavaList() {
         do {
             try JavaSearch.searchAndSet()
@@ -74,18 +76,32 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
     
-    // MARK: 初始化 App
+    /// 创建数据目录
+    private func createDataDirectories() {
+        try? FileManager.default.createDirectory(at: AppURLs.logsURL, withIntermediateDirectories: true)
+        try? FileManager.default.createDirectory(at: AppURLs.configURL, withIntermediateDirectories: true)
+        try? FileManager.default.createDirectory(at: AppURLs.cacheURL, withIntermediateDirectories: true)
+        try? FileManager.default.createDirectory(at: AppURLs.cacheURL.appending(path: "skin"), withIntermediateDirectories: true)
+        try? FileManager.default.createDirectory(at: AppURLs.temperatureURL, withIntermediateDirectories: true)
+    }
+    
+    /// 初始化 App
     func applicationWillFinishLaunching(_ notification: Notification) {
-        if !FileManager.default.fileExists(atPath: AppURLs.temperatureURL.path) {
-            try? FileManager.default.createDirectory(at: AppURLs.temperatureURL, withIntermediateDirectories: true)
-        }
+        createDataDirectories()
         FileManager.default.createFile(atPath: Self.exitFlagURL.path, contents: nil)
         let start = Date().timeIntervalSince1970
         log("App 已启动")
         PropertyStorage.loadAll()
         _ = AppSettings.shared
         registerCustomFonts()
-        DataManager.shared.refreshVersionManifest()
+        do {
+            try VersionManifest.loadFromCache()
+        } catch {
+            err("无法加载缓存中的版本清单: \(error.localizedDescription)")
+        }
+        Task {
+            try await VersionManifest.fetchVersionManifest()
+        }
         
         log("正在初始化 Java 列表")
         initJavaList()

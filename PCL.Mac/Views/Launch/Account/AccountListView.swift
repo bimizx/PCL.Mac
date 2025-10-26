@@ -83,7 +83,7 @@ fileprivate struct AccountView: View {
                             .onTapGesture {
                                 Task {
                                     do {
-                                        try await SkinCacheStorage.shared.loadSkin(account: account)
+                                        try await SkinCacheStorage.loadSkin(account: account)
                                         hint("刷新成功！", .finish)
                                     } catch {
                                         hint("无法刷新头像：\(error.localizedDescription)", .critical)

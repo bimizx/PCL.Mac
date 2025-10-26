@@ -27,7 +27,7 @@ struct MinecraftInstallView: View {
             ScrollView {
                 TitlelessMyCard {
                     HStack(alignment: .center) {
-                        Image(loader != nil ? "\(loader!.loader.rawValue.capitalized)Icon" : version.getIconName())
+                        Image(loader != nil ? "\(loader!.loader.rawValue.capitalized)Icon" : version.type.getIconName())
                             .resizable()
                             .scaledToFit()
                             .frame(width: 35)

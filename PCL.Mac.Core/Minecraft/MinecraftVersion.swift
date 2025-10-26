@@ -10,21 +10,21 @@ import Foundation
 public class MinecraftVersion: Comparable, Hashable {
     public let displayName: String
     public let type: VersionType
-    private var _releaseDate: Date?
-    public var releaseDate: Date {
-        if _releaseDate == nil {
-            _releaseDate = VersionManifest.getReleaseDate(self)
-        }
-        return _releaseDate ?? Date(timeIntervalSince1970: TimeInterval(0))
-    }
+    public let releaseDate: Date
     
     public func hash(into hasher: inout Hasher) {
         hasher.combine(displayName)
     }
     
-    public init(displayName: String, type: VersionType? = nil) {
+    public init(displayName: String) {
         self.displayName = displayName
-        self.type = type ?? .parse(displayName)
+        if let version = VersionManifest.latest.versionMap[displayName] {
+            self.type = version.type
+            self.releaseDate = version.releaseTime
+        } else {
+            self.type = .release
+            self.releaseDate = Date(timeIntervalSince1970: 0)
+        }
     }
     
     public static func < (lhs: MinecraftVersion, rhs: MinecraftVersion) -> Bool {
@@ -33,16 +33,6 @@ public class MinecraftVersion: Comparable, Hashable {
     
     public static func == (lhs: MinecraftVersion, rhs: MinecraftVersion) -> Bool {
         lhs.displayName == rhs.displayName && lhs.type == rhs.type
-    }
-    
-    public func getIconName() -> String {
-        switch type {
-        case .release: "ReleaseVersionIcon"
-        case .snapshot, .pending: "SnapshotVersionIcon"
-        case .beta, .alpha: "OldVersionIcon"
-        case .aprilFool: "AprilFoolVersionIcon"
-        default: "ReleaseVersionIcon"
-        }
     }
 }
 
@@ -56,16 +46,13 @@ public enum VersionType: String, Codable {
     case aprilFool = "april_fool"
     case pending = "pending"
     
-    public static func parse(_ displayVersion: String) -> VersionType {
-        guard let manifest = DataManager.shared.versionManifest else {
-            err("版本清单加载时机错误，请将此问题报告给开发者")
-            return .release
+    public func getIconName() -> String {
+        switch self {
+        case .release: "ReleaseVersionIcon"
+        case .snapshot, .pending: "SnapshotVersionIcon"
+        case .beta, .alpha: "OldVersionIcon"
+        case .aprilFool: "AprilFoolVersionIcon"
+        default: "ReleaseVersionIcon"
         }
-        
-        guard let version = manifest.versions.find({ $0.id == displayVersion }) else {
-            return .release
-        }
-        
-        return version.type
     }
 }

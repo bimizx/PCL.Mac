@@ -8,16 +8,21 @@
 import Foundation
 
 class SkinCacheStorage {
-    public static let shared: SkinCacheStorage = .init()
-    
-    @StoredProperty(.account, "skinCache") var skinCache: [UUID : Data] = [:]
+    private static let skinURL: URL = AppURLs.cacheURL.appending(path: "skin")
     
     @discardableResult
-    public func loadSkin(account: AnyAccount) async throws -> Data {
+    public static func loadSkin(account: AnyAccount) async throws -> Data {
         let skinData = try await account.getSkinData()
-        skinCache[account.uuid] = skinData
+        put(skin: skinData, uuid: account.uuid)
         return skinData
     }
     
-    private init() {}
+    public static func put(skin: Data, uuid: UUID) {
+        FileManager.default.createFile(atPath: skinURL.appending(path: "\(uuid.uuidString).png").path, contents: skin)
+    }
+    
+    public static func get(uuid: UUID) -> Data? {
+        let url: URL = skinURL.appending(path: "\(uuid.uuidString).png")
+        return try? FileHandle(forReadingFrom: url).readToEnd().unwrap()
+    }
 }
