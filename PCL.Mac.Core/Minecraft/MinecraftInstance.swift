@@ -224,8 +224,12 @@ public class MinecraftInstance: Identifiable, Equatable, Hashable {
         if !config.skipResourcesCheck && !launchOptions.skipResourceCheck {
             await launchState.setStage(.resourcesCheck)
             log("正在进行资源完整性检查")
-            try? await MinecraftInstaller.completeResources(self)
-            log("资源完整性检查完成")
+            do {
+                try await MinecraftInstaller.completeResources(self)
+                log("资源完整性检查完成")
+            } catch {
+                err("资源完整性检查失败: \(error.localizedDescription)")
+            }
         }
         
         // 启动 Minecraft

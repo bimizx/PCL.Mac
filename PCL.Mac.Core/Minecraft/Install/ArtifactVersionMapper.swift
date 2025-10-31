@@ -11,7 +11,9 @@ public struct ArtifactVersionMapper {
     public static func map(_ manifest: ClientManifest, arch: Architecture = .system) {
         if arch != .arm64 {
             for (library, _) in manifest.getNeededNatives() {
-                library.name = "org.lwjgl:\(library.artifactId):3.3.2:natives-macos"
+                if library.groupId.starts(with: "org.lwjgl") && library.artifactId != "lwjgl-platform" {
+                    library.name = "org.lwjgl:\(library.artifactId):3.3.2:natives-macos"
+                }
             }
             return
         }
@@ -58,6 +60,9 @@ public struct ArtifactVersionMapper {
         
         // MARK: - 替换本地库版本
         for (library, artifact) in manifest.getNeededNatives() {
+            if library.name.contains("java-objc-bridge") {
+                
+            }
             switch library.groupId {
             case "org.lwjgl":
                 if library.version.starts(with: "3.") && library.version != "3.3.3" {
