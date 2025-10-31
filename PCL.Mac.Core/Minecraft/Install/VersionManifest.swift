@@ -8,102 +8,91 @@
 import Foundation
 import SwiftyJSON
 
-public class VersionManifest: Codable {
+public class VersionManifest {
+    public private(set) static var latest: VersionManifest = .init()
     private static let aprilFoolVersions: [String] = ["15w14a", "1.rv-pre1", "3d shareware v1.34", "20w14infinite", "22w13oneblockatatime", "23w13a_or_b", "24w14potato", "25w14craftmine"]
-    public let latest: LatestVersions
-    public fileprivate(set) var versions: [GameVersion]
+    private static let cacheURL: URL = AppURLs.cacheURL.appending(path: "version_manifest.json")
     
-    public init(_ json: JSON) {
-        self.latest = LatestVersions(json["latest"])
-        self.versions = json["versions"].arrayValue.map(GameVersion.init)
+    public let latestVersions: LatestVersions
+    public let versionMap: [String: Version]
+    
+    private init() {
+        self.latestVersions = .init()
+        self.versionMap = [:]
     }
     
-    public struct LatestVersions: Codable {
+    public init(_ json: JSON, base: VersionManifest? = nil) {
+        if let base {
+            self.latestVersions = base.latestVersions
+        } else {
+            self.latestVersions = LatestVersions(json["latest"])
+        }
+        self.versionMap = Dictionary(uniqueKeysWithValues: json["versions"].arrayValue.map { versionJSON in
+            let version: Version = Version(versionJSON)
+            return (version.id, version)
+        }).merging(base?.versionMap ?? [:], uniquingKeysWith: { v1, v2 in v1 })
+    }
+    
+    public struct LatestVersions {
         public let release: String
-        public let snapshot: String
+        public let snapshot: String?
+        
+        fileprivate init() {
+            self.release = ""
+            self.snapshot = nil
+        }
         
         public init(_ json: JSON) {
             self.release = json["release"].stringValue
-            self.snapshot = json["snapshot"].stringValue
+            self.snapshot = json["snapshot"].stringValue == release ? nil : json["snapshot"].stringValue
         }
     }
     
-    public class GameVersion: Codable, Hashable {
-        public fileprivate(set) var id: String
-        public fileprivate(set) var type: VersionType
-        public fileprivate(set) var url: String
-        public let time: Date
+    public class Version {
+        public let id: String
+        public let type: VersionType
+        public let url: URL
         public let releaseTime: Date
         
         public init(_ json: JSON) {
-            let formatter = ISO8601DateFormatter()
-            self.id = json["id"].stringValue.replacing(" Pre-Release ", with: "-pre")
-            self.type = .init(rawValue: json["type"].stringValue) ?? .release
-            self.url = json["url"].stringValue
-            self.time = formatter.date(from: json["time"].stringValue)!
-            self.releaseTime = formatter.date(from: json["releaseTime"].stringValue)!
-            
-            if VersionManifest.isAprilFoolVersion(self) {
-                self.type = .aprilFool
-            }
-        }
-        
-        public func parse() -> MinecraftVersion {
-            MinecraftVersion(displayName: id, type: type)
-        }
-        
-        public static func == (lhs: GameVersion, rhs: GameVersion) -> Bool { lhs.id == rhs.id }
-        public func hash(into hasher: inout Hasher) {
-            hasher.combine(id)
+            self.id = json["id"].stringValue
+                .replacingOccurrences(of: " Pre-Release ", with: "-pre")
+                .replacingOccurrences(of: "point", with: ".")
+            let type = VersionType(rawValue: json["type"].stringValue)!
+            self.type = VersionManifest.isAprilFoolVersion(id: id, type: type) ? .aprilFool : type
+            self.url = Util.replaceRoot(
+                url: json["url"].stringValue,
+                root: "https://zkitefly.github.io/unlisted-versions-of-minecraft",
+                target: "https://alist.8mi.tech/d/mirror/unlisted-versions-of-minecraft/Auto"
+            ).url
+            self.releaseTime = DateFormatters.shared.iso8601Formatter.date(from: json["releaseTime"].stringValue)!
         }
     }
     
-    public static func getVersionManifest() async -> VersionManifest? {
-        debug("正在获取版本清单")
-        do {
-            let versions = VersionManifest(try await Requests.get(DownloadSourceManager.shared.getVersionManifestURL()).getJSONOrThrow())
-            if let unlistedVersions = await Requests.get("https://alist.8mi.tech/d/mirror/unlisted-versions-of-minecraft/Auto/version_manifest.json").json.map(VersionManifest.init(_:)) {
-                for version in unlistedVersions.versions {
-                    version.url = Util.replaceRoot(
-                        url: version.url,
-                        root: "https://zkitefly.github.io/unlisted-versions-of-minecraft",
-                        target: "https://alist.8mi.tech/d/mirror/unlisted-versions-of-minecraft/Auto"
-                    ).url.absoluteString
-                }
-                versions.versions.append(contentsOf: unlistedVersions.versions)
-                versions.versions.sort { $0.releaseTime > $1.releaseTime }
-            }
-            return versions
-        } catch {
-            err("无法获取版本清单: \(error.localizedDescription)")
-            return nil
-        }
+    /// 拉取版本清单并保存至本地缓存文件。
+    public static func fetchVersionManifest() async throws {
+        let response = await Requests.get(DownloadSourceManager.shared.getVersionManifestURL())
+        FileManager.default.createFile(atPath: cacheURL.path, contents: try response.getDataOrThrow())
+        let base = VersionManifest(try response.getJSONOrThrow())
+        // 与 UVMC 清单合并
+        let full = VersionManifest(try await Requests.get("https://alist.8mi.tech/d/mirror/unlisted-versions-of-minecraft/Auto/version_manifest.json").getJSONOrThrow(), base: base)
+        latest = full
     }
     
-    public func getLatestRelease() -> GameVersion {
-        return self.versions.find { $0.id == self.latest.release }!
+    /// 尝试从本地缓存中加载版本清单。
+    public static func loadFromCache() throws {
+        guard FileManager.default.fileExists(atPath: cacheURL.path) else { return }
+        let data = try FileHandle(forReadingFrom: cacheURL).readToEnd().unwrap()
+        let json = try JSON(data: data)
+        latest = VersionManifest(json)
     }
     
-    public func getLatestSnapshot() -> GameVersion {
-        return self.versions.find { $0.id == self.latest.snapshot }!
-    }
-    
-    public static func getReleaseDate(_ version: MinecraftVersion) -> Date? {
-        if let manifest = DataManager.shared.versionManifest {
-            return manifest.versions.find { $0.id == version.displayName }?.releaseTime // 需要缓存
-        } else {
-            warn("正在获取 \(version.displayName) 的发布日期，但版本清单未初始化完成") // 哦天呐，不会吧哥们
-        }
-        return nil
-    }
-    
-    public static func isAprilFoolVersion(_ version: GameVersion) -> Bool {
-        version.id = version.id.replacingOccurrences(of: "point", with: ".")
-        if aprilFoolVersions.contains(version.id.lowercased()) { return true }
-        return version.type == .snapshot // 是快照
-            && version.id.wholeMatch(of: /[0-9]{2}w[0-9]{2}.{1}/) == nil // 且不是标准快照格式 (如 23w33a)
-            && version.id.rangeOfCharacter(from: .letters) != nil // 至少有一个字母 (筛掉 1.x 与 1.x.x)
-            && !version.id.contains("-pre") && !version.id.contains("-rc") // 不是 Pre Release 或 Release Candidate
+    public static func isAprilFoolVersion(id: String, type: VersionType) -> Bool {
+        if aprilFoolVersions.contains(id.lowercased()) { return true }
+        return type == .snapshot // 是快照
+        && id.wholeMatch(of: /[0-9]{2}w[0-9]{2}.{1}/) == nil // 且不是标准快照格式 (如 23w33a)
+        && id.rangeOfCharacter(from: .letters) != nil // 至少有一个字母 (筛掉 1.x 与 1.x.x)
+        && !id.contains("-pre") && !id.contains("-rc") // 不是 Pre Release 或 Release Candidate
     }
     
     public static func getAprilFoolDescription(_ name: String) -> String {
@@ -137,5 +126,13 @@ public class VersionManifest: Codable {
         } else {
             return ""
         }
+    }
+    
+    public static func getLatestRelease() -> Version {
+        return latest.versionMap[latest.latestVersions.release]!
+    }
+    
+    public static func getLatestSnapshot() -> Version? {
+        return latest.latestVersions.snapshot.map { latest.versionMap[$0]! }
     }
 }

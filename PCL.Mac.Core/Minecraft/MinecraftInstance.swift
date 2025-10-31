@@ -13,9 +13,9 @@ import Cocoa
 public class MinecraftInstance: Identifiable, Equatable, Hashable {
     private static var cache: [URL : MinecraftInstance] = [:]
     
-    private static let RequiredJava16: MinecraftVersion = MinecraftVersion(displayName: "21w19a", type: .snapshot)
-    private static let RequiredJava17: MinecraftVersion = MinecraftVersion(displayName: "1.18-pre2", type: .snapshot)
-    private static let RequiredJava21: MinecraftVersion = MinecraftVersion(displayName: "24w14a", type: .snapshot)
+    private static let RequiredJava16: MinecraftVersion = MinecraftVersion(displayName: "21w19a")
+    private static let RequiredJava17: MinecraftVersion = MinecraftVersion(displayName: "1.18-pre2")
+    private static let RequiredJava21: MinecraftVersion = MinecraftVersion(displayName: "24w14a")
     
     public let runningDirectory: URL
     public let minecraftDirectory: MinecraftDirectory
@@ -224,8 +224,12 @@ public class MinecraftInstance: Identifiable, Equatable, Hashable {
         if !config.skipResourcesCheck && !launchOptions.skipResourceCheck {
             await launchState.setStage(.resourcesCheck)
             log("正在进行资源完整性检查")
-            try? await MinecraftInstaller.completeResources(self)
-            log("资源完整性检查完成")
+            do {
+                try await MinecraftInstaller.completeResources(self)
+                log("资源完整性检查完成")
+            } catch {
+                err("资源完整性检查失败: \(error.localizedDescription)")
+            }
         }
         
         // 启动 Minecraft
@@ -305,10 +309,10 @@ public class MinecraftInstance: Identifiable, Equatable, Hashable {
     }
     
     public func getIconName() -> String {
-        if self.clientBrand == .vanilla {
-            return self.version.getIconName()
+        if clientBrand == .vanilla {
+            return version.type.getIconName()
         }
-        return "\(self.clientBrand.rawValue.capitalized)Icon"
+        return "\(clientBrand.rawValue.capitalized)Icon"
     }
 }
 

@@ -24,7 +24,7 @@ public class OfficialDownloadSource: DownloadSource {
     }
     
     public func getClientManifestURL(_ version: MinecraftVersion) -> URL? {
-        return try? URL(string: DataManager.shared.versionManifest!.versions.find { $0.id == version.displayName }.unwrap().url)
+        return try? VersionManifest.latest.versionMap[version.displayName].unwrap().url
     }
     
     public func getAssetIndexURL(_ version: MinecraftVersion, _ manifest: ClientManifest) -> URL? {

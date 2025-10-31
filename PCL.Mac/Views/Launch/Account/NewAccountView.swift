@@ -147,7 +147,7 @@ fileprivate struct NewOfflineAccountView: View {
     private func addAccount() {
         warningText = checkPlayerName(state.playerName)
         if warningText != "" {
-            HintManager.default.add(.init(text: warningText, type: .critical))
+            hint(warningText, .critical)
             return
         }
         
@@ -162,7 +162,7 @@ fileprivate struct NewOfflineAccountView: View {
         accountManager.accounts.append(account)
         accountManager.accountId = account.id
         
-        HintManager.default.add(.init(text: "添加成功", type: .finish))
+        hint("添加成功", .finish)
         dataManager.router.removeLast()
         dataManager.router.append(.accountList)
         StateManager.shared.newAccount = .init()
@@ -240,19 +240,19 @@ fileprivate struct NewMicrosoftAccountView: View {
                 state.authToken.setObject(authToken)
             }
             
-            HintManager.default.add(.init(text: "登录成功！正在检测你是否拥有 Minecraft……", type: .finish))
+            hint("登录成功！正在检测你是否拥有 Minecraft……", .finish)
             if try await MsLogin.hasMinecraftGame(authToken) {
-                HintManager.default.add(.init(text: "你购买了 Minecraft！正在保存账号数据……", type: .finish))
+                hint("你购买了 Minecraft！正在保存账号数据……", .finish)
                 if let msAccount = await MicrosoftAccount.create(authToken) {
                     DispatchQueue.main.async { AccountManager.shared.accounts.append(.microsoft(msAccount)) }
-                    HintManager.default.add(.init(text: "登录成功！", type: .finish))
+                    hint("登录成功！", .finish)
                     AppSettings.shared.hasMicrosoftAccount = true
                 } else {
-                    HintManager.default.add(.init(text: "在创建账号实例时发生错误", type: .critical))
+                    hint("在创建账号实例时发生错误", .critical)
                 }
                 DispatchQueue.main.async { StateManager.shared.newAccount = .init() }
             } else {
-                HintManager.default.add(.init(text: "你还没有购买 Minecraft！", type: .critical))
+                hint("你还没有购买 Minecraft！", .critical)
             }
         } catch {
             err(error.localizedDescription)

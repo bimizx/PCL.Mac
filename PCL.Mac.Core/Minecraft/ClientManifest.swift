@@ -371,12 +371,14 @@ public class ClientManifest {
             lhs.library.groupId == rhs.library.groupId
             && lhs.library.artifactId == rhs.library.artifactId
             && lhs.library.classifier == rhs.library.classifier
+            && lhs.library.isNativeLibrary == rhs.library.isNativeLibrary
         }
         
         func hash(into hasher: inout Hasher) {
             hasher.combine(library.groupId)
             hasher.combine(library.artifactId)
             hasher.combine(library.classifier)
+            hasher.combine(library.isNativeLibrary)
         }
     }
 }

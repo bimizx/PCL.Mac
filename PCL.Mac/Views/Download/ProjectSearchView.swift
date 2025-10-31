@@ -149,7 +149,7 @@ struct ProjectListItem: View {
             gameVersions: Set(supportedVersions
                 .filter { MinecraftVersion(displayName: $0).type == .release}
                 .map { Int($0.split(separator: ".")[1])! }).sorted(by: { $0 > $1 }),
-            mcVersionHighest: Int(DataManager.shared.versionManifest!.latest.release.split(separator: ".")[1])!)
+            mcVersionHighest: Int(VersionManifest.latest.latestVersions.release.split(separator: ".")[1])!)
         )
         return supportDescription
     }

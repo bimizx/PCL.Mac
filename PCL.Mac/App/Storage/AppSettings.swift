@@ -92,9 +92,6 @@ public class AppSettings: ObservableObject {
     
     // MARK: - Minecraft 相关
     
-    /// 最后一次获取到的 VersionManifest，断网时使用
-    @StoredProperty(.minecraft, "lastVersionManifest") public var lastVersionManifest: VersionManifest? = nil
-    
     /// 所有 MinecraftDirectory 的 URL
     @StoredProperty(.minecraft, "minecraftDirectoryURLs") public var minecraftDirectoryURLs: [URL] = [URL(fileURLWithUserPath: "~/Library/Application Support/minecraft")]
     

@@ -7,7 +7,6 @@
 
 import Foundation
 
-public let ARTIFACT_PAT: String = "{{ARTIFACT_PAT}}"
 public let CLIENT_ID: String = "{{CLIENT_ID}}"
 public let THEME_KEY: String = "{{THEME_KEY}}"
 
