@@ -45,11 +45,19 @@ jobs:
         run: |
           mkdir "PCL.Mac-$APP_VERSION"
           mv build.xcarchive/Products/Applications/PCL.Mac.app "./PCL.Mac-$APP_VERSION/PCL.Mac.app"
+          mkdir "PCL.Mac.app.dSYM"
+          mv build.xcarchive/dSYMs/PCL.Mac.app.dSYM ./PCL.Mac.app.dSYM/PCL.Mac.app.dSYM
         env:
           APP_VERSION: ${{ github.event.inputs.app_version }}
 
-      - name: Upload artifact
+      - name: Upload app artifact
         uses: actions/upload-artifact@v4
         with:
           name: PCL.Mac-${{ github.event.inputs.app_version }}
           path: ./PCL.Mac-${{ github.event.inputs.app_version }}
+      
+      - name: Upload dSYM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: PCL.Mac.app.dSYM
+          path: ./PCL.Mac.app.dSYM
