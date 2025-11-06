@@ -61,15 +61,12 @@ struct JavaSettingsView: View {
             .padding()
             
             TitlelessMyCard(index: 1) {
-                Text("搜索耗时: \(dataManager.lastTimeUsed)ms")
-                    .font(.custom("PCL English", size: 14))
                 VStack(spacing: 0) {
                     ForEach(dataManager.javaVirtualMachines) { javaEntity in
                         JavaListItemView(jvm: javaEntity)
                     }
                     .animation(.easeInOut(duration: 0.2), value: dataManager.javaVirtualMachines)
                 }
-                .padding()
             }
             .padding()
             .padding(.bottom, 30)

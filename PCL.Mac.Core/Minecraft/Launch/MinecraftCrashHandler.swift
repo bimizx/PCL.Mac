@@ -20,10 +20,11 @@ public class MinecraftCrashHandler {
         log("开发者模式: \(Metadata.isDevelopment)")
         log("========== 架构 ==========")
         log("系统架构: \(Architecture.system)")
-        log("Java 架构: \(Architecture.getArchOfFile(instance.config.javaURL!))")
+        log("Java 架构: \(Architecture.getArchOfFile(instance.config.javaURL))")
         log("Rosetta: \(instance.isUsingRosetta ? "已启用" : "未启用")")
         printNativesArchitecture(nativesDirectory: instance.runningDirectory.appending(path: "natives"))
         log("========== 账号与其它 ==========")
+        log("Java 版本: \(JavaVirtualMachine.of(instance.config.javaURL).version)")
         log("账号类型: \(options.account!.authMethodName)")
         log("跳过资源完整性检查: \(options.skipResourceCheck)")
         log("试玩模式: \(options.isDemo)")
@@ -54,6 +55,10 @@ public class MinecraftCrashHandler {
                 at: nativesDirectory,
                 includingPropertiesForKeys: nil
             )
+            if contents.isEmpty {
+                log("natives 目录为空")
+                return
+            }
             for fileURL in contents {
                 if fileURL.pathExtension != "dylib" { continue }
                 log("\(fileURL.lastPathComponent) 架构: \(Architecture.getArchOfFile(fileURL))")

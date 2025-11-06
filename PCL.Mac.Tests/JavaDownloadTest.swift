@@ -12,7 +12,7 @@ import SwiftyJSON
 
 struct JavaDownloadTest {
     @Test func testFetchVersions() async throws {
-        let packages = try await JavaDownloader.search()
+        let packages = try await JavaInstaller.search()
         for package in packages.prefix(10) {
             print("\(package.versionString) \(package.arch)")
         }

@@ -13,7 +13,6 @@ class DataManager: ObservableObject {
     static let shared = DataManager()
     
     @Published var javaVirtualMachines: [JavaVirtualMachine] = []
-    @Published var lastTimeUsed: Int = 0
     @Published var networkMonitor: NetworkSpeedMonitor = NetworkSpeedMonitor()
     @Published var router: AppRouter = .init()
     @Published var leftTabWidth: CGFloat = 310

@@ -227,6 +227,13 @@ fileprivate struct LeftTab: View {
                     }
                 }
                 return false
+            case .javaUnusable(let minVersion):
+                PopupManager.shared.show(.init(.error, "错误", "当前 Java 版本不满足条件！\n你需要选择 Java \(minVersion) 及以上的 Java！", [.init(label: "Java 管理", style: .normal), .close])) { button in
+                    if button == 0 {
+                        dataManager.router.path = [.settings, .javaSettings]
+                    }
+                }
+                return false
             case .javaNotSupport:
                 PopupManager.shared.show(.init(.error, "错误", "你安装 / 选择了一个 ARM64 架构的 Java，但你的电脑不支持。\n请进入 设置 > Java 管理，安装 / 选择一个 x64 架构的 Java。", [.init(label: "安装 Java", style: .normal), .close])) { button in
                     if button == 0 {

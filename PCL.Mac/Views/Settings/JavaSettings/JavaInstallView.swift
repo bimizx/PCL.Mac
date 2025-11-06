@@ -70,7 +70,7 @@ struct JavaInstallView: View {
     private func search() {
         self.searchTask?.cancel()
         searchTask = Task {
-            let packages = try await JavaDownloader.search(
+            let packages = try await JavaInstaller.search(
                 version: version.isEmpty ? nil : version,
                 arch: onlyUsableArchs ? .system : nil,
                 onlyLTS: onlyLTS
@@ -117,8 +117,11 @@ struct JavaPackageView: View {
                             DataManager.shared.inprogressInstallTasks = tasks
                             tasks.startAll { result in
                                 switch result {
-                                case .success(_): hint("\(package.type.rawValue.uppercased()) \(package.versionString) 安装成功！", .finish)
-                                case .failure(let failure): hint("无法安装 Java：\(failure.localizedDescription)", .critical)
+                                case .success(_):
+                                    hint("\(package.type.rawValue.uppercased()) \(package.versionString) 安装成功！", .finish)
+                                    try? JavaSearch.searchAndSet()
+                                case .failure(let failure):
+                                    hint("无法安装 Java：\(failure.localizedDescription)", .critical)
                                 }
                             }
                         }
