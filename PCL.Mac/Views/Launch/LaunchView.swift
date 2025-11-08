@@ -22,10 +22,11 @@ fileprivate struct ProgressModifier: AnimatableModifier {
 
 fileprivate struct LaunchingLeftTab: View {
     @ObservedObject private var launchState: LaunchState
-    @State private var progress: Double = 0
+    @State private var progress: Double
     
     init(launchState: LaunchState) {
         self.launchState = launchState
+        self._progress = State(initialValue: launchState.progress)
     }
     
     var body: some View {
