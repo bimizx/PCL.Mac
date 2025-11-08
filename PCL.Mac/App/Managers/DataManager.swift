@@ -20,6 +20,7 @@ class DataManager: ObservableObject {
     @Published var leftTabId: UUID = .init()
     @Published var inprogressInstallTasks: InstallTasks?
     @Published var launchState: LaunchState?
+    @Published var launchTask: Task<Void, Error>?
     
     var defaultInstance: MinecraftInstance? {
         let directory: MinecraftDirectory = MinecraftDirectoryManager.shared.current

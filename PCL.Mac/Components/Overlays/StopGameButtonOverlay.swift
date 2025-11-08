@@ -24,16 +24,27 @@ struct StopGameButtonOverlay: View {
                 .frame(width: 20)
                 .foregroundStyle(.white)
         } onClick: {
-            state.process.terminate()
+            dataManager.launchTask?.cancel()
             dataManager.launchState = nil
+            state.process?.terminate()
         }
         .scaleEffect(isAppeared ? 1 : 0)
         .onChange(of: state.process) { _ in
             if state.process != nil {
-                withAnimation(.spring(response: 0.4, dampingFraction: 0.85)) {
-                    isAppeared = true
-                }
+                appear()
             }
+        }
+        .onAppear {
+            if dataManager.launchTask != nil {
+                appear()
+            }
+        }
+    }
+    
+    private func appear() {
+        if isAppeared { return }
+        withAnimation(.spring(response: 0.4, dampingFraction: 0.85)) {
+            isAppeared = true
         }
     }
 }

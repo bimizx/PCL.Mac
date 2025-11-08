@@ -14,7 +14,7 @@ public class MinecraftLauncher {
     private let state: LaunchState
     public let logURL: URL
     
-    public init?(_ instance: MinecraftInstance, state: LaunchState) {
+    public init(_ instance: MinecraftInstance, state: LaunchState) {
         self.instance = instance
         self.logURL = AppURLs.applicationSupportURL.appending(path: "GameLogs").appending(path: id.uuidString + ".log")
         self.state = state
