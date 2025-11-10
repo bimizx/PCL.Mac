@@ -61,14 +61,13 @@ public class JavaInstaller {
 }
 
 public class JavaInstallTask: InstallTask {
-    private static let defaultJavaInstallDirectory = URL(fileURLWithUserPath: "~/Library/Java/JavaVirtualMachines")
+    private static let javaInstallDirectory = URL(fileURLWithUserPath: "~/Library/Java/JavaVirtualMachines")
     private let package: JavaPackage
     @Published private var progress: Double = 0
     
     public init(package: JavaPackage) {
         self.package = package
         super.init()
-        self.remainingFiles = 1
     }
     
     public override func getTitle() -> String { "\(package.name) 安装" }
@@ -77,11 +76,8 @@ public class JavaInstallTask: InstallTask {
         let temp = TemperatureDirectory(name: "JavaDownload")
         defer { temp.free() }
         setStage(.javaDownload)
-        remainingFiles = 1
         let zipDestination = temp.root.appending(path: "\(package.name).zip")
-        try await SingleFileDownloader.download(url: package.downloadURL, destination: zipDestination) { progress in
-            self.setProgress(progress / 2)
-        }
+        try await SingleFileDownloader.download(task: self, url: package.downloadURL, destination: zipDestination)
         completeOneFile()
         setStage(.javaInstall)
         
@@ -89,12 +85,12 @@ public class JavaInstallTask: InstallTask {
         setProgress(0.75)
         
         
-        let javaDirectoryPath = temp.root.appending(path: package.name).appending(path: "zulu-\(package.version[0]).\(package.type.rawValue)")
+        let javaDirectoryPath = temp.root.appending(path: package.name).appending(path: "zulu-\(package.version[0]).\(package.type)")
         if !FileManager.default.fileExists(atPath: javaDirectoryPath.path) {
             throw MyLocalizedError(reason: "发生未知错误")
         }
         
-        let saveURL = JavaInstallTask.defaultJavaInstallDirectory.appending(path: javaDirectoryPath.lastPathComponent)
+        let saveURL = JavaInstallTask.javaInstallDirectory.appending(path: "zulu-\(package.versionString)-\(package.arch).\(package.type)")
         
         try? FileManager.default.createDirectory(
             at: saveURL.parent(),
