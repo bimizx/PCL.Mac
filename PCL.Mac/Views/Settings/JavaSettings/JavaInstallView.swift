@@ -11,6 +11,7 @@ struct JavaInstallView: View {
     @ObservedObject private var dataManager: DataManager = .shared
     @State private var version: String = ""
     @State private var onlyLTS: Bool = true
+    @State private var onlyUsableArchs: Bool = true
     @State private var packages: [JavaPackage]? = nil
     @State private var searchTask: Task<Void, Error>?
     
@@ -25,12 +26,18 @@ struct JavaInstallView: View {
                         .onSubmit {
                             search()
                         }
-                    Toggle("仅 LTS 版本", isOn: $onlyLTS)
-                        .font(.custom("PCL English", size: 14))
-                        .foregroundStyle(Color("TextColor"))
-                        .onChange(of: onlyLTS) { _ in
-                            search()
-                        }
+                    VStack(alignment: .leading) {
+                        Toggle("仅 LTS 版本", isOn: $onlyLTS)
+                            .onChange(of: onlyLTS) { _ in
+                                search()
+                            }
+                        Toggle("仅可用的架构", isOn: $onlyUsableArchs)
+                            .onChange(of: onlyUsableArchs) { _ in
+                                search()
+                            }
+                    }
+                    .font(.custom("PCL English", size: 14))
+                    .foregroundStyle(Color("TextColor"))
                 }
             }
             .padding()
@@ -63,7 +70,11 @@ struct JavaInstallView: View {
     private func search() {
         self.searchTask?.cancel()
         searchTask = Task {
-            let packages = try await JavaDownloader.search(version: version.isEmpty ? nil : version, onlyLTS: onlyLTS)
+            let packages = try await JavaInstaller.search(
+                version: version.isEmpty ? nil : version,
+                arch: onlyUsableArchs ? .system : nil,
+                onlyLTS: onlyLTS
+            )
             await MainActor.run {
                 self.packages = packages
                 self.searchTask = nil
@@ -88,7 +99,7 @@ struct JavaPackageView: View {
                     Text("\(package.type.rawValue.uppercased()) \(package.version[0])")
                         .foregroundStyle(isHovered ? AppSettings.shared.theme.getTextStyle() : .init(Color("TextColor")))
                     HStack {
-                        Text("\(package.versionString)，\(package.arch.hashValue) 架构")
+                        Text("\(package.versionString)，\(package.arch) 架构")
                     }
                     .foregroundStyle(Color(hex: 0x8C8C8C))
                 }
@@ -106,8 +117,11 @@ struct JavaPackageView: View {
                             DataManager.shared.inprogressInstallTasks = tasks
                             tasks.startAll { result in
                                 switch result {
-                                case .success(_): hint("\(package.type.rawValue.uppercased()) \(package.versionString) 安装成功！", .finish)
-                                case .failure(let failure): hint("无法安装 Java：\(failure.localizedDescription)", .critical)
+                                case .success(_):
+                                    hint("\(package.type.rawValue.uppercased()) \(package.versionString) 安装成功！", .finish)
+                                    try? JavaSearch.searchAndSet()
+                                case .failure(let failure):
+                                    hint("无法安装 Java：\(failure.localizedDescription)", .critical)
                                 }
                             }
                         }

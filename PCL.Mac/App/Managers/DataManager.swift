@@ -13,7 +13,6 @@ class DataManager: ObservableObject {
     static let shared = DataManager()
     
     @Published var javaVirtualMachines: [JavaVirtualMachine] = []
-    @Published var lastTimeUsed: Int = 0
     @Published var networkMonitor: NetworkSpeedMonitor = NetworkSpeedMonitor()
     @Published var router: AppRouter = .init()
     @Published var leftTabWidth: CGFloat = 310
@@ -21,6 +20,7 @@ class DataManager: ObservableObject {
     @Published var leftTabId: UUID = .init()
     @Published var inprogressInstallTasks: InstallTasks?
     @Published var launchState: LaunchState?
+    @Published var launchTask: Task<Void, Error>?
     
     var defaultInstance: MinecraftInstance? {
         let directory: MinecraftDirectory = MinecraftDirectoryManager.shared.current

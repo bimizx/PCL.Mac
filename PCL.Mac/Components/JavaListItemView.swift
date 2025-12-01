@@ -34,7 +34,7 @@ struct JavaListItemView: View {
                         if let implementor = jvm.implementor {
                             MyTag(label: implementor, backgroundColor: Color("TagColor"), fontSize: 12)
                         }
-                        MyTag(label: String(describing: jvm.arch), backgroundColor: Color("TagColor"), fontSize: 12)
+                        MyTag(label: String(describing: jvm.architecture), backgroundColor: Color("TagColor"), fontSize: 12)
                         MyTag(label: jvm.callMethod.getDisplayName(), backgroundColor: Color("TagColor"), fontSize: 12)
                     }
                     .foregroundStyle(Color(hex: 0x8C8C8C))

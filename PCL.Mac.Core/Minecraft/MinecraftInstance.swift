@@ -193,7 +193,7 @@ public class MinecraftInstance: Identifiable, Equatable, Hashable {
         return suitableJava
     }
     
-    public func launch(_ launchOptions: LaunchOptions, _ launchState: LaunchState) async {
+    public func launch(_ launchOptions: LaunchOptions, _ launchState: LaunchState) async throws {
         config.lastLaunch = Date()
         saveConfig()
         // 登录账号
@@ -204,7 +204,7 @@ public class MinecraftInstance: Identifiable, Equatable, Hashable {
             log("正在登录")
             await account.putAccessToken(options: launchOptions)
             if case .yggdrasil = account {
-                try? await MinecraftLauncher.downloadAuthlibInjector() // 后面改成可抛出 + 多阶段
+                try await MinecraftLauncher.downloadAuthlibInjector()
             }
         }
         launchOptions.javaPath = config.javaURL
@@ -231,9 +231,9 @@ public class MinecraftInstance: Identifiable, Equatable, Hashable {
                 err("资源完整性检查失败: \(error.localizedDescription)")
             }
         }
-        
+        try Task.checkCancellation()
         // 启动 Minecraft
-        let launcher = MinecraftLauncher(self, state: launchState)!
+        let launcher = MinecraftLauncher(self, state: launchState)
         let exitCode = await launcher.launch(launchOptions)
         if exitCode != 0 && exitCode != 143 {
             log("检测到异常退出代码")

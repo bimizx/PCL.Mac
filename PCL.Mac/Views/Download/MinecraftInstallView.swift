@@ -15,6 +15,8 @@ struct MinecraftInstallView: View {
     @State private var errorMessage: String = ""
     @State private var loader: LoaderVersion? = nil
     
+    @State private var isAppeared: Bool = false
+    
     let version: MinecraftVersion
     
     init(_ version: MinecraftVersion) {
@@ -47,6 +49,7 @@ struct MinecraftInstallView: View {
                         .animation(.easeInOut(duration: 0.2), value: errorMessage)
                     }
                 }
+                .noAnimation()
                 .padding()
                 
                 VStack {
@@ -102,6 +105,12 @@ struct MinecraftInstallView: View {
         }
         .onAppear {
             dataManager.leftTab(0) { EmptyView() }
+        }
+        .offset(x: isAppeared ? 0 : 300)
+        .onAppear {
+            withAnimation(.spring(duration: 0.15)) {
+                isAppeared = true
+            }
         }
     }
     
@@ -205,7 +214,6 @@ private struct LoaderVersion: Identifiable, Equatable {
 }
 
 fileprivate struct LoaderCard: View {
-    @State private var isAppeared: Bool = false
     @State private var showFoldController: Bool = false
     @State private var showCancelButton: Bool = false
     @State private var versions: [LoaderVersion]? = nil
@@ -251,6 +259,7 @@ fileprivate struct LoaderCard: View {
                         }
                     }
                 }
+                .noAnimation()
             } else {
                 TitlelessMyCard(index: index) {
                     HStack {
@@ -273,6 +282,7 @@ fileprivate struct LoaderCard: View {
                     }
                     .frame(height: 9)
                 }
+                .noAnimation()
             }
             
             if !isUnfolded {
@@ -280,8 +290,7 @@ fileprivate struct LoaderCard: View {
                     overlayContent
                     .font(.custom("PCL English", size: 14))
                     .foregroundStyle(Color(hex: 0x8C8C8C))
-                    .offset(x: 150, y: isAppeared ? 14 : -11)
-                    .opacity(isAppeared ? 1 : 0)
+                    .offset(x: 150, y: 14)
                     
                     Spacer()
                 }
@@ -314,13 +323,6 @@ fileprivate struct LoaderCard: View {
             } else if selectedLoader == nil {
                 text = "可以添加"
                 showFoldController = true
-            }
-        }
-        .onAppear {
-            DispatchQueue.main.asyncAfter(deadline: .now() + Double(index) * 0.04) {
-                withAnimation(.spring(response: 0.4, dampingFraction: 0.5)) {
-                    isAppeared = true
-                }
             }
         }
     }

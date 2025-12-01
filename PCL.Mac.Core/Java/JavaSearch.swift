@@ -15,8 +15,7 @@ public class JavaSearch {
     public static func searchAndSet() throws {
         let before = Date().timeIntervalSince1970
         DataManager.shared.javaVirtualMachines = try search()
-        DataManager.shared.lastTimeUsed = Int((Date().timeIntervalSince1970 - before) * 1000)
-        log("搜索 Java 耗时 \(DataManager.shared.lastTimeUsed)ms")
+        log("搜索 Java 耗时 \(Int((Date().timeIntervalSince1970 - before) * 1000))ms")
         
         loadCustomJVMs()
     }
@@ -29,9 +28,7 @@ public class JavaSearch {
     }
     
     public static func search() throws -> [JavaVirtualMachine] {
-        var executableURLs: [URL] = [
-            URL(fileURLWithPath: "/usr/bin/java")
-        ]
+        var executableURLs: [URL] = []
         
         let javaDirectoryParents = [
             "/Library/Java/JavaVirtualMachines",

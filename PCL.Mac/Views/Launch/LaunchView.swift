@@ -22,10 +22,11 @@ fileprivate struct ProgressModifier: AnimatableModifier {
 
 fileprivate struct LaunchingLeftTab: View {
     @ObservedObject private var launchState: LaunchState
-    @State private var progress: Double = 0
+    @State private var progress: Double
     
     init(launchState: LaunchState) {
         self.launchState = launchState
+        self._progress = State(initialValue: launchState.progress)
     }
     
     var body: some View {
@@ -147,15 +148,29 @@ fileprivate struct LeftTab: View {
                     let launchState: LaunchState = .init(options: launchOptions)
                     dataManager.launchState = launchState
                     
-                    Task {
+                    dataManager.launchTask = Task {
+                        defer {
+                            DispatchQueue.main.async {
+                                self.dataManager.launchTask = nil
+                                self.dataManager.launchState = nil
+                            }
+                        }
                         guard await launchPrecheck(launchOptions) else {
                             dataManager.launchState = nil
                             return
                         }
                         debug("正在启动游戏")
-                        await instance.launch(launchOptions, launchState)
-                        await MainActor.run {
-                            dataManager.launchState = nil
+                        do {
+                            try await instance.launch(launchOptions, launchState)
+                        } catch {
+                            guard error is CancellationError else {
+                                // 启动中遇到的错误
+                                err("启动失败：\(error)")
+                                PopupManager.shared.show(
+                                    .init(.error, "启动失败", "\(error.localizedDescription)\n若要寻求帮助，请进入设置 > 其它 > 打开日志，将选中的文件发给别人，而不是发送此页面的照片或截图。", [.ok])
+                                )
+                                return
+                            }
                         }
                     }
                 }
@@ -174,11 +189,9 @@ fileprivate struct LeftTab: View {
                 MyButton(text: "实例选择") {
                     dataManager.router.append(.instanceSelect)
                 }
-                if MinecraftDirectoryManager.shared.getDefaultInstance() != nil {
+                if let instance = self.instance {
                     MyButton(text: "实例设置") {
-                        if let instance = self.instance {
-                            dataManager.router.append(.instanceSettings(instance: instance))
-                        }
+                        dataManager.router.append(.instanceSettings(instance: instance))
                     }
                 }
             }
@@ -224,6 +237,13 @@ fileprivate struct LeftTab: View {
                 PopupManager.shared.show(.init(.error, "错误", "当前没有满足条件的 Java 版本\n你需要安装 \(minVersion) 及以上版本的 Java！", [.init(label: "安装 Java", style: .normal), .close])) { button in
                     if button == 0 {
                         dataManager.router.path = [.settings, .javaSettings, .javaDownload]
+                    }
+                }
+                return false
+            case .javaUnusable(let minVersion):
+                PopupManager.shared.show(.init(.error, "错误", "当前 Java 版本不满足条件！\n你需要选择 Java \(minVersion) 及以上的 Java！", [.init(label: "Java 管理", style: .normal), .close])) { button in
+                    if button == 0 {
+                        dataManager.router.path = [.settings, .javaSettings]
                     }
                 }
                 return false

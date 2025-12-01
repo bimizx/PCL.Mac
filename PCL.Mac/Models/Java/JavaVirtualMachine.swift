@@ -8,9 +8,9 @@
 import Foundation
 
 public class JavaVirtualMachine: Identifiable, Equatable {
-    static let Error = JavaVirtualMachine(arch: .unknown, version: -1, displayVersion: "错误", executableURL: URL(fileURLWithPath: "Error"), callMethod: .incompatible, _isError: true)
+    static let error = JavaVirtualMachine(arch: .unknown, version: -1, displayVersion: "错误", executableURL: URL(fileURLWithPath: "Error"), callMethod: .incompatible, _isError: true)
     
-    public let arch: Architecture
+    public let architecture: Architecture
     public var version: Int
     public var displayVersion: String
     public var implementor: String?
@@ -33,7 +33,7 @@ public class JavaVirtualMachine: Identifiable, Equatable {
     public let id = UUID()
     
     public init(arch: Architecture, version: Int, displayVersion: String, implementor: String? = nil, executableURL: URL, callMethod: CallMethod, isJdk: Bool? = nil, _isError: Bool? = nil, _isAddedByUser: Bool? = nil) {
-        self.arch = arch
+        self.architecture = arch
         self.version = version
         self.displayVersion = displayVersion
         self.implementor = implementor
@@ -59,11 +59,11 @@ public class JavaVirtualMachine: Identifiable, Equatable {
         // 判断文件是否合法
         guard FileManager.default.fileExists(atPath: executableURL.path) else {
             err("\(executableURL) not found!")
-            return Error
+            return error
         }
         guard executableURL.isFileURL else {
             err("\(executableURL.path()) 不是文件!")
-            return Error
+            return error
         }
         
         // 设置架构及调用方式

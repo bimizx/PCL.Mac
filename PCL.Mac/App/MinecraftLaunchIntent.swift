@@ -37,7 +37,7 @@ struct MinecraftLaunchIntent: AppIntent {
         }
         
         Task {
-            await instance.launch(options, LaunchState(options: options))
+            try await instance.launch(options, LaunchState(options: options))
         }
         
         return .result(dialog: .init("在 \((DispatchTime.now().uptimeNanoseconds - before.uptimeNanoseconds) / 1_000_000)ms 内成功创建进程。"))
